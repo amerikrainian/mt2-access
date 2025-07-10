@@ -1,2 +1,3 @@
-# mt2-access
-Accessibility For Monster Train 2
+# Monster Train 2 Accessibility
+
+Screen Reader Accessibility for Monster Train 2
