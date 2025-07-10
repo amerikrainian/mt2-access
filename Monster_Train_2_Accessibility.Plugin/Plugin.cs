@@ -32,6 +32,7 @@ namespace Monster_Train_2_Accessibility.Plugin
         {
             // Plugin startup logic
             Logger = base.Logger;
+            ScreenReader.Initialize(Logger);
 
             var builder = Railhead.GetBuilder();
             builder.Configure(
@@ -49,10 +50,14 @@ namespace Monster_Train_2_Accessibility.Plugin
             );
 
             Logger.LogInfo($"Plugin {MyPluginInfo.PLUGIN_GUID} is loaded!");
-            
-            // Uncomment if you need harmony patches, if you are writing your own custom effects.
-            //var harmony = new Harmony(MyPluginInfo.PLUGIN_GUID);
-            //harmony.PatchAll();
+
+            var harmony = new Harmony(MyPluginInfo.PLUGIN_GUID);
+            harmony.PatchAll();
+        }
+
+        public void OnDestroy()
+        {
+            ScreenReader.Dispose();
         }
     }
 }

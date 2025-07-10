@@ -15,6 +15,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="BepInEx.PluginInfoProps" Version="2.*" />
+    <PackageReference Include="SpeechCore.CrossPlatform" Version="1.0.0" />
     <PackageReference Include="TrainworksReloaded.Base" Version="0.4.0" />
   </ItemGroup>
 
