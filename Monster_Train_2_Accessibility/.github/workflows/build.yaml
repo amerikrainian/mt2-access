@@ -1,0 +1,78 @@
+name: Build
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - "*"
+
+permissions:
+  packages: write
+  contents: write
+
+env:
+  base_version: '0.1.0'
+  mod_namespace: 'mt2_access'
+  mod_name: 'Monster_Train_2_Accessibility'
+  release_name: 'Monster_Train_2_Accessibility.Plugin'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Install Thunderstore
+        run: |
+          dotnet tool install --global tcli
+
+      - name: Set VERSION Variable
+        run: |
+          if [[ "$GITHUB_REF" == refs/tags/* ]]; then
+            TAG_NAME=${GITHUB_REF#refs/tags/}
+            echo "VERSION=$TAG_NAME" >> $GITHUB_ENV
+          else
+            echo "VERSION=${{ env.base_version }}-preview.${{ github.run_number }}" >> $GITHUB_ENV
+          fi
+
+      - name: Setup NuGet Credentials
+        run: |
+          dotnet nuget update source monster-train-packages -u USERNAME -p ${{ secrets.GH_AUTH_TOKEN }} --store-password-in-clear-text
+
+      - name: Restore Dependencies
+        run: dotnet restore
+        
+      - name: Setup Directory
+        run: mkdir -p plugin_build
+
+      - name: Build Release
+        run: dotnet build ${{ env.release_name }} -c Release --no-restore --output ./plugin_build/plugins /p:Version=${VERSION}
+
+      - name: Build thunderstore package
+        run: tcli build
+        
+      - name: Upload Build
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-bundle
+          path: ${{ env.mod_namespace }}-${{ env.mod_name }}-${{ github.ref_name }}.zip
+
+      - name: Release
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: ${{ env.mod_namespace }}-${{ env.mod_name }}-${{ github.ref_name }}.zip
+          prerelease: true
+          generate_release_notes: true
+
+      - name: Publish to Thunderstore
+        run: tcli publish --file "${{ env.mod_namespace }}-${{ env.mod_name }}-${{ github.ref_name }}.zip" --token ${{ secrets.TCLI_AUTH_TOKEN }}
+        if: startsWith(github.ref, 'refs/tags/')
+

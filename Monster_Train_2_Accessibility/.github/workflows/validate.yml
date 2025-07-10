@@ -1,0 +1,27 @@
+name: Validate schema
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - Monster_Train_2_Accessibility.Plugin/json/**
+  pull_request:
+    branches:
+      - main
+    paths:
+      - Monster_Train_2_Accessibility.Plugin/json/**
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Install check-jsonschema
+      run: pip install check-jsonschema
+
+    - name: Validate JSON Schema
+      run: check-jsonschema Monster_Train_2_Accessibility.Plugin/json/**/*.json --schemafile=https://raw.githubusercontent.com/Monster-Train-2-Modding-Group/Trainworks-Reloaded/refs/heads/main/schemas/base.json
