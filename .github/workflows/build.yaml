@@ -42,12 +42,12 @@ jobs:
             echo "VERSION=${{ env.base_version }}-preview.${{ github.run_number }}" >> $GITHUB_ENV
           fi
 
-      - name: Setup NuGet Credentials
-        run: |
-          dotnet nuget update source monster-train-packages -u USERNAME -p ${{ secrets.GH_AUTH_TOKEN }} --store-password-in-clear-text
+      # Removed NuGet credential setup - using environment variable instead
 
       - name: Restore Dependencies
         run: dotnet restore
+        env:
+          NUGET_AUTH_TOKEN: ${{ secrets.GH_AUTH_TOKEN }}
         
       - name: Setup Directory
         run: mkdir -p plugin_build
@@ -75,4 +75,3 @@ jobs:
       - name: Publish to Thunderstore
         run: tcli publish --file "${{ env.mod_namespace }}-${{ env.mod_name }}-${{ github.ref_name }}.zip" --token ${{ secrets.TCLI_AUTH_TOKEN }}
         if: startsWith(github.ref, 'refs/tags/')
-
