@@ -401,3 +401,6 @@ FodyWeavers.xsd
 *.sln.iml
 
 dist/
+
+# Todo: figure out better windows build
+build.bat
