@@ -16,5 +16,10 @@ If the mod does not speak:
 
 ## Controller Notes
 
-Controller support is wired through the game's controller input system. If a controller behaves unexpectedly, check Steam Input settings and verify the game itself is receiving the controller correctly. Since the author lacks a controller (BOO!) this path has yet to be tested as thoroughly. Or, really, at all, why lie about it?
+Controller support is wired through the game's controller input system. If a controller behaves unexpectedly, check Steam Input settings and verify the game itself is receiving the controller correctly. Since the author lacks a controller (BOO!) this path has yet to be tested as thoroughly.
+
+## The Tutorial mentions scrolling and dragging things?
+
+Yeh, it does. Short of abandoning the run you'll keep seeing the popups telling you information that might or might not be helpful. We found it confusing for the most part. You can definitely ignore all the parts that say to try out scrolling or dragging; we do none of that here.
+
 
