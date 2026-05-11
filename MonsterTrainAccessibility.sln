@@ -1,0 +1,24 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.2.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MonsterTrainAccessibility", "MonsterTrainAccessibility.csproj", "{6312BFAC-D7DF-8840-8924-FF4EA8BD9F4A}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{6312BFAC-D7DF-8840-8924-FF4EA8BD9F4A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6312BFAC-D7DF-8840-8924-FF4EA8BD9F4A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6312BFAC-D7DF-8840-8924-FF4EA8BD9F4A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6312BFAC-D7DF-8840-8924-FF4EA8BD9F4A}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {F7FF25C1-63C5-444E-A48B-E5A41DC1A6EE}
+	EndGlobalSection
+EndGlobal

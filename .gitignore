@@ -1,0 +1,8 @@
+release
+bin
+obj
+# Where we decompiled the game to
+game/
+
+# Build artifacts
+*.zip

@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+mapfile -t STAGED_CS < <(
+  git diff --cached --name-only --diff-filter=ACM -- '*.cs'
+)
+
+if [ "${#STAGED_CS[@]}" -eq 0 ]; then
+  exit 0
+fi
+
+echo "Formatting staged C# files..."
+dotnet format MonsterTrainAccessibility.sln \
+  --include "${STAGED_CS[@]}" \
+  --no-restore
+
+for file in "${STAGED_CS[@]}"; do
+  if [ -f "$file" ]; then
+    git add "$file"
+  fi
+done

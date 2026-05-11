@@ -1,0 +1,149 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Configuration Condition="'$(Configuration)' == ''">Release</Configuration>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <AssemblyName>MonsterTrainAccessibility</AssemblyName>
+    <RootNamespace>MonsterTrainAccessibility</RootNamespace>
+    <LangVersion>8.0</LangVersion>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <EnableDefaultNoneItems>false</EnableDefaultNoneItems>
+
+    <!-- Default game path - override with environment variable or command line -->
+    <MonsterTrainPath Condition="'$(MONSTER_TRAIN_PATH)' != ''">$(MONSTER_TRAIN_PATH)</MonsterTrainPath>
+    <MonsterTrainPath Condition="'$(MonsterTrainPath)' == ''">C:\Program Files (x86)\Steam\steamapps\common\Monster Train 2</MonsterTrainPath>
+
+    <!-- Output settings - build directly to release folder -->
+    <OutputPath>release\BepInEx\plugins\</OutputPath>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    <GamePluginsPath>$(MonsterTrainPath)\BepInEx\plugins\</GamePluginsPath>
+    <GameLocalizationPath>$(GamePluginsPath)Localization\Strings\</GameLocalizationPath>
+    <ReleaseRootPath>release\</ReleaseRootPath>
+    <PrismNativePath>prism\native\win-x64\prism.dll</PrismNativePath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="MonsterTrainAccessibility\**\*.cs"
+             Exclude="MonsterTrainAccessibility\bin\**;MonsterTrainAccessibility\obj\**" />
+  </ItemGroup>
+
+  <!-- BepInEx References (from game folder) -->
+  <ItemGroup>
+    <Reference Include="BepInEx">
+      <HintPath>$(MonsterTrainPath)\BepInEx\core\BepInEx.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="0Harmony">
+      <HintPath>$(MonsterTrainPath)\BepInEx\core\0Harmony.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+  <!-- Unity References (from game folder) -->
+  <ItemGroup>
+    <Reference Include="UnityEngine">
+      <HintPath>$(MonsterTrainPath)\MonsterTrain2_Data\Managed\UnityEngine.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.CoreModule">
+      <HintPath>$(MonsterTrainPath)\MonsterTrain2_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.UI">
+      <HintPath>$(MonsterTrainPath)\MonsterTrain2_Data\Managed\UnityEngine.UI.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.IMGUIModule">
+      <HintPath>$(MonsterTrainPath)\MonsterTrain2_Data\Managed\UnityEngine.IMGUIModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.InputLegacyModule">
+      <HintPath>$(MonsterTrainPath)\MonsterTrain2_Data\Managed\UnityEngine.InputLegacyModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="Unity.TextMeshPro">
+      <HintPath>$(MonsterTrainPath)\MonsterTrain2_Data\Managed\Unity.TextMeshPro.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+  <!-- Game Assembly Reference (for type information) -->
+  <ItemGroup>
+    <Reference Include="Assembly-CSharp">
+      <HintPath>$(MonsterTrainPath)\MonsterTrain2_Data\Managed\Assembly-CSharp.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+  <!-- Package references for .NET Standard compatibility -->
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="all" />
+    <PackageReference Include="System.Text.Json" Version="8.0.5" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <JsonRuntimeDll Include="$(NuGetPackageRoot)system.text.json\8.0.5\lib\netstandard2.0\System.Text.Json.dll" />
+    <JsonRuntimeDll Include="$(NuGetPackageRoot)system.text.encodings.web\8.0.0\lib\netstandard2.0\System.Text.Encodings.Web.dll" />
+    <JsonRuntimeDll Include="$(NuGetPackageRoot)system.memory\4.5.5\lib\netstandard2.0\System.Memory.dll" />
+    <JsonRuntimeDll Include="$(NuGetPackageRoot)system.buffers\4.5.1\lib\netstandard2.0\System.Buffers.dll" />
+    <JsonRuntimeDll Include="$(NuGetPackageRoot)system.runtime.compilerservices.unsafe\6.0.0\lib\netstandard2.0\System.Runtime.CompilerServices.Unsafe.dll" />
+    <JsonRuntimeDll Include="$(NuGetPackageRoot)microsoft.bcl.asyncinterfaces\8.0.0\lib\netstandard2.0\Microsoft.Bcl.AsyncInterfaces.dll" />
+    <JsonRuntimeDll Include="$(NuGetPackageRoot)system.numerics.vectors\4.5.0\lib\netstandard2.0\System.Numerics.Vectors.dll" />
+    <JsonRuntimeDll Include="$(NuGetPackageRoot)system.threading.tasks.extensions\4.5.4\lib\netstandard2.0\System.Threading.Tasks.Extensions.dll" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="MonsterTrainAccessibility\Localization\Strings\**\*.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Link>Localization\Strings\%(RecursiveDir)%(Filename)%(Extension)</Link>
+    </None>
+  </ItemGroup>
+
+  <!-- Copy the built DLL to the game's plugins folder so a dev build is playable immediately. -->
+  <Target Name="CopyToGameFolder" AfterTargets="Build">
+    <Copy SourceFiles="@(JsonRuntimeDll)"
+          DestinationFolder="$(OutputPath)"
+          SkipUnchangedFiles="true"
+          Condition="Exists('%(JsonRuntimeDll.Identity)')" />
+    <ItemGroup>
+      <PluginArtifacts Include="$(OutputPath)MonsterTrainAccessibility.dll" />
+      <PluginArtifacts Include="$(OutputPath)MonsterTrainAccessibility.deps.json" />
+      <PluginArtifacts Include="$(OutputPath)System.Text.Json.dll" />
+      <PluginArtifacts Include="$(OutputPath)System.Text.Encodings.Web.dll" />
+      <PluginArtifacts Include="$(OutputPath)System.Memory.dll" />
+      <PluginArtifacts Include="$(OutputPath)System.Buffers.dll" />
+      <PluginArtifacts Include="$(OutputPath)System.Runtime.CompilerServices.Unsafe.dll" />
+      <PluginArtifacts Include="$(OutputPath)Microsoft.Bcl.AsyncInterfaces.dll" />
+      <PluginArtifacts Include="$(OutputPath)System.Numerics.Vectors.dll" />
+      <PluginArtifacts Include="$(OutputPath)System.Threading.Tasks.Extensions.dll" />
+    </ItemGroup>
+    <Copy SourceFiles="@(PluginArtifacts)"
+          DestinationFolder="$(GamePluginsPath)"
+          SkipUnchangedFiles="true"
+          Condition="Exists('%(PluginArtifacts.Identity)')" />
+    <ItemGroup>
+      <LocalizationFiles Include="$(OutputPath)Localization\Strings\**\*.json" />
+    </ItemGroup>
+    <Copy SourceFiles="@(LocalizationFiles)"
+          DestinationFiles="@(LocalizationFiles->'$(GameLocalizationPath)%(RecursiveDir)%(Filename)%(Extension)')"
+          SkipUnchangedFiles="true"
+          Condition="Exists('%(LocalizationFiles.Identity)')" />
+    <Message Text="Copied $(AssemblyName).dll to $(GamePluginsPath)" Importance="high" />
+  </Target>
+
+  <!-- Copy prism.dll (native screen reader bridge) to the game root so the OS loader finds it. -->
+  <Target Name="CopyPrismNative" AfterTargets="Build">
+    <Copy SourceFiles="$(PrismNativePath)"
+          DestinationFolder="$(ReleaseRootPath)"
+          SkipUnchangedFiles="true" />
+    <Copy SourceFiles="$(PrismNativePath)"
+          DestinationFolder="$(MonsterTrainPath)\"
+          SkipUnchangedFiles="true"
+          Condition="Exists('$(MonsterTrainPath)\MonsterTrain2.exe') and Exists('$(PrismNativePath)')" />
+    <Message Text="Copied prism.dll to release\ and $(MonsterTrainPath)\" Importance="high" />
+  </Target>
+
+</Project>
