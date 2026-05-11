@@ -4,13 +4,43 @@ Combat is the piece of the game, besides the compendium, that has received the m
 
 ## How It All Normally Works
 
-In Monster Train 2, combat may take place on any one of the 4 train floors. Enemies enter the train on floor one and are super eager to come up and gaze in awe at your pyre. They do so by moving up to the next floor at the end of each round, assuming they're still alive, of course. Oh, and they might just want to show their appreciation when they reach the topmost room by giving your pyre a couple of good smacks. Just, y'know. Because.
+Combat unfolds across the train's four floors. Your pyre sits proudly at the top of floor 4, minding its own business. Enemies appear at the bottom of floor 1 with one ambition in their tiny ill-fated hearts: climb the train and bonk your pyre. Your job is to make sure they don't get that far.
 
-If at any point enemies encounter your summoned units on the train, they exchange blows before moving higher on the train. With the exception of bosses, they do not wait until one side is fully eradicated; the pyre calls!
+The rhythm goes like this:
 
-Enemies generally attack first, followed by your unit. Your frontmost unit, in left-to-right order, gets attacked first, followed by the nextmost, and so on. Likewise, when your monsters retaliate, they hit the front enemy unit, followed by the unit after that, and so on.
+1. **A wave spawns on floor 1.** Enemies line up shoulder-to-shoulder, looking purposeful.
+2. **Wherever your units and theirs share a floor, they trade blows.** One round of combat per turn; nobody waits around for full annihilation before the survivors continue their journey. (Bosses, the dramatic sort, make exceptions for themselves.)
+3. **Enemies swing first, in front-to-back order. Each one targets your frontmost living unit.** That means a single beleaguered frontliner can get piled on by the whole enemy lineup before anyone on your side gets a word in edgewise. Only if the frontmost falls does the next attack cascade to whoever is now in front.
+4. **Then your units retaliate, also in front-to-back order, each targeting the enemy's frontmost living unit.** Same piling-on rule, just in the other direction.
+5. **Survivors climb.** At the end of the round, any enemy still standing trudges up to the next floor and gears up to do it all again with whoever you've stationed there.
+6. **At the pyre, the pleasantries end.** Enemies who reach floor 4 with nothing left to fight will whack the pyre directly, round after round, until either they or it ceases to exist.
 
-This proceeds on all floors, top-to-bottom, until the enemies get to your pyre. At this point, since they have nowhere to go, they'll keep giving it some good pats until either they, or your pyre, dies.
+### An Example, Because Words Are Hard
+
+Picture floor 1. You've placed two units, in left-to-right order:
+
+- **Spear steward** (back)
+- **Shield steward** (front, nearest the action)
+
+A wave arrives with three enemies, in left-to-right order:
+
+- **Fallen champion** (front, nearest your line)
+- **Ominous acolyte**
+- **Collector** (back, leaning casually against the wall)
+
+Enemies attack first:
+
+1. The **Fallen champion** swings at your **Shield steward** (your frontmost).
+2. The **Ominous acolyte** also swings at your **Shield steward**. (Shield is still the frontmost; the Acolyte doesn't get to pick a different target just because someone else already had a go.)
+
+Then your units retaliate, Shield first (frontmost on your side), then Spear:
+
+3. **Shield steward** swings back at the **Fallen champion** (their frontmost).
+4. **Spear steward** swings next, and here things branch:
+   - **If the Fallen champion survived Shield's attack**, Spear hits the Fallen champion. The pile-on continues.
+   - **If the Fallen champion died**, the Ominous acolyte is now the enemy's frontmost, and Spear hits the Acolyte instead.
+
+And the Collector? The Collector watches the whole thing serenely from the back, entirely unscathed. Your line ran out of attackers before anyone got around to it. This is the price of fielding only two units; the Collector will be very much involved next turn.
 
 ## How the Mod Makes This Accessible
 
