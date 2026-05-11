@@ -14,6 +14,7 @@ namespace MonsterTrainAccessibility.UI.Screens
             _registered = true;
 
             ScreenManager.RegisterUIScreen<global::IntroStartScreen>(global::ScreenName.IntroStart, screen => new IntroStartScreen(screen));
+            ScreenManager.RegisterUIScreen<global::FirstTimeSettingsScreen>(global::ScreenName.FirstTimeSettings, screen => new FirstTimeSettingsScreen(screen));
             ScreenManager.RegisterUIScreen<global::MainMenuScreen>(global::ScreenName.MainMenu, screen => new MainMenuScreen(screen));
             ScreenManager.RegisterUIScreen<global::SoulSaviorScreen>(global::ScreenName.SoulSavior, screen => new SoulSaviorScreen(screen));
             ScreenManager.RegisterUIScreen<global::SoulforgeScreen>(global::ScreenName.Soulforge, screen => new SoulforgeScreen(screen));

@@ -221,6 +221,10 @@ namespace MonsterTrainAccessibility.UI.Screens
             _root.Add(CreateAction(
                 () => Message.Localized("ui", "DEBUG.CREDITS"),
                 OpenCredits));
+
+            _root.Add(CreateAction(
+                () => Message.Localized("ui", "DEBUG.FIRST_TIME_SETTINGS"),
+                OpenFirstTimeSettings));
         }
 
         private void AddBackControl()
@@ -326,6 +330,30 @@ namespace MonsterTrainAccessibility.UI.Screens
             {
                 Log.Error("[AccessibilityDebug] Failed to open credits screen: " + ex);
                 SpeechManager.Output(Message.Localized("ui", "DEBUG.SCREEN_OPEN_FAILED", new { name = Message.Localized("ui", "DEBUG.CREDITS").Resolve() }));
+                return true;
+            }
+        }
+
+        private bool OpenFirstTimeSettings()
+        {
+            global::ScreenManager gameScreenManager = GameManagers.GetScreenManager();
+            if (gameScreenManager == null)
+            {
+                SpeechManager.Output(Message.Localized("ui", "DEBUG.SCREEN_OPEN_FAILED", new { name = Message.Localized("ui", "DEBUG.FIRST_TIME_SETTINGS").Resolve() }));
+                return true;
+            }
+
+            try
+            {
+                Log.Info("[AccessibilityDebug] Opening test screen: First-time settings");
+                Close(announce: false);
+                gameScreenManager.ShowScreen(global::ScreenName.FirstTimeSettings);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Log.Error("[AccessibilityDebug] Failed to open first-time settings screen: " + ex);
+                SpeechManager.Output(Message.Localized("ui", "DEBUG.SCREEN_OPEN_FAILED", new { name = Message.Localized("ui", "DEBUG.FIRST_TIME_SETTINGS").Resolve() }));
                 return true;
             }
         }

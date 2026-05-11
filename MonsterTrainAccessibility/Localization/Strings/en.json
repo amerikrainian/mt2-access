@@ -121,6 +121,7 @@
     "DEBUG.ARTIFACTS": "Artifacts",
     "DEBUG.TEST_SCREENS": "Test screens",
     "DEBUG.CREDITS": "Credits",
+    "DEBUG.FIRST_TIME_SETTINGS": "First-time settings",
     "DEBUG.BACK": "Back",
     "DEBUG.CLOSE": "Close",
     "DEBUG.NO_ITEMS": "No items.",

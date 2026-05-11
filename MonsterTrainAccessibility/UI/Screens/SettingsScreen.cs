@@ -1,26 +1,14 @@
-using System;
-using System.Collections.Generic;
 using System.Reflection;
 using HarmonyLib;
-using MonsterTrainAccessibility.Localization;
-using MonsterTrainAccessibility.Speech;
-using MonsterTrainAccessibility.UI;
 using MonsterTrainAccessibility.UI.Elements;
 using ShinyShoe;
-using TMPro;
-using UnityEngine;
-using UnityEngine.EventSystems;
 
 namespace MonsterTrainAccessibility.UI.Screens
 {
-    internal sealed class SettingsScreen : GameScreen
+    internal sealed class SettingsScreen : SettingsControlsScreen
     {
         private static readonly FieldInfo PauseDialogField = AccessTools.Field(typeof(global::SettingsScreen), "pauseDialog")!;
         private static readonly FieldInfo SettingsDialogField = AccessTools.Field(typeof(global::SettingsScreen), "settingsDialog")!;
-        private static readonly FieldInfo VolumeSliderField = AccessTools.Field(typeof(global::VolumeControl), "slider")!;
-        private static readonly FieldInfo VolumeMuteButtonField = AccessTools.Field(typeof(global::VolumeControl), "muteButton")!;
-        private static readonly FieldInfo ScrollSensitivitySliderField = AccessTools.Field(typeof(global::ScrollSensitivityControl), "slider")!;
-        private static readonly FieldInfo DropdownEntriesField = AccessTools.Field(typeof(GameUISelectableDropdown), "entries")!;
         private static readonly FieldInfo GlobalVolumeControlField = AccessTools.Field(typeof(global::SettingsDialog), "globalVolumeControl")!;
         private static readonly FieldInfo SfxVolumeControlField = AccessTools.Field(typeof(global::SettingsDialog), "sfxVolumeControl")!;
         private static readonly FieldInfo MusicVolumeControlField = AccessTools.Field(typeof(global::SettingsDialog), "musicVolumeControl")!;
@@ -122,259 +110,54 @@ namespace MonsterTrainAccessibility.UI.Screens
 
         private void AddAudioGroup(ListContainer root, global::SettingsDialog dialog)
         {
-            ListContainer group = AddGroup(root);
-            RegisterVolumeControl(Get<global::VolumeControl>(dialog, GlobalVolumeControlField), group);
-            RegisterVolumeControl(Get<global::VolumeControl>(dialog, SfxVolumeControlField), group);
-            RegisterVolumeControl(Get<global::VolumeControl>(dialog, MusicVolumeControlField), group);
-            RegisterToggle(Get<GameUISelectableToggle>(dialog, BackgroundMuteToggleField), group);
+            ListContainer group = AddSettingsGroup(root);
+            RegisterSettingsVolumeControl(Get<global::VolumeControl>(dialog, GlobalVolumeControlField), group);
+            RegisterSettingsVolumeControl(Get<global::VolumeControl>(dialog, SfxVolumeControlField), group);
+            RegisterSettingsVolumeControl(Get<global::VolumeControl>(dialog, MusicVolumeControlField), group);
+            RegisterSettingsToggle(Get<GameUISelectableToggle>(dialog, BackgroundMuteToggleField), group);
         }
 
         private void AddGraphicsGroup(ListContainer root, global::SettingsDialog dialog)
         {
-            ListContainer group = AddGroup(root);
-            RegisterTab(Get<global::SettingsTab>(dialog, GraphicsTabField), group);
-            RegisterToggle(Get<GameUISelectableToggle>(dialog, GraphicsQualityToggleField), group);
-            RegisterDropdown(Get<GameUISelectableDropdown>(dialog, ResolutionDropdownField), group);
-            RegisterDropdown(Get<GameUISelectableDropdown>(dialog, FullScreenDropdownField), group);
-            RegisterToggle(Get<GameUISelectableToggle>(dialog, VsyncToggleField), group);
-            RegisterDropdown(Get<GameUISelectableDropdown>(dialog, FramerateDropdownField), group);
+            ListContainer group = AddSettingsGroup(root);
+            RegisterSettingsTab(Get<global::SettingsTab>(dialog, GraphicsTabField), group);
+            RegisterSettingsToggle(Get<GameUISelectableToggle>(dialog, GraphicsQualityToggleField), group);
+            RegisterSettingsDropdown(Get<GameUISelectableDropdown>(dialog, ResolutionDropdownField), group);
+            RegisterSettingsDropdown(Get<GameUISelectableDropdown>(dialog, FullScreenDropdownField), group);
+            RegisterSettingsToggle(Get<GameUISelectableToggle>(dialog, VsyncToggleField), group);
+            RegisterSettingsDropdown(Get<GameUISelectableDropdown>(dialog, FramerateDropdownField), group);
         }
 
         private void AddGameplayGroup(ListContainer root, global::SettingsDialog dialog)
         {
-            ListContainer group = AddGroup(root);
-            RegisterDropdown(Get<GameUISelectableDropdown>(dialog, GameSpeedDropdownField), group);
-            RegisterDropdown(Get<GameUISelectableDropdown>(dialog, DialogueSpeedDropdownField), group);
-            RegisterToggle(Get<GameUISelectableToggle>(dialog, RoomScrollToggleField), group);
-            RegisterToggle(Get<GameUISelectableToggle>(dialog, TitanTrialDefaultToggleField), group);
-            RegisterScrollSensitivity(Get<global::ScrollSensitivityControl>(dialog, ScrollSensitivityControlField), group);
-            RegisterToggle(Get<GameUISelectableToggle>(dialog, LoreTooltipsToggleField), group);
-            RegisterButton(Get<GameUISelectableButton>(dialog, KeyMappingButtonField), group);
+            ListContainer group = AddSettingsGroup(root);
+            RegisterSettingsDropdown(Get<GameUISelectableDropdown>(dialog, GameSpeedDropdownField), group);
+            RegisterSettingsDropdown(Get<GameUISelectableDropdown>(dialog, DialogueSpeedDropdownField), group);
+            RegisterSettingsToggle(Get<GameUISelectableToggle>(dialog, RoomScrollToggleField), group);
+            RegisterSettingsToggle(Get<GameUISelectableToggle>(dialog, TitanTrialDefaultToggleField), group);
+            RegisterSettingsScrollSensitivity(Get<global::ScrollSensitivityControl>(dialog, ScrollSensitivityControlField), group);
+            RegisterSettingsToggle(Get<GameUISelectableToggle>(dialog, LoreTooltipsToggleField), group);
+            RegisterSettingsButton(Get<GameUISelectableButton>(dialog, KeyMappingButtonField), group);
         }
 
         private void AddAccessibilityGroup(ListContainer root, global::SettingsDialog dialog)
         {
-            ListContainer group = AddGroup(root);
-            RegisterToggle(Get<GameUISelectableToggle>(dialog, BackgroundScrollToggleField), group);
-            RegisterToggle(Get<GameUISelectableToggle>(dialog, CameraShakeToggleField), group);
-            RegisterDropdown(Get<GameUISelectableDropdown>(dialog, ColorblindModeDropdownField), group);
-            RegisterDropdown(Get<GameUISelectableDropdown>(dialog, UIScaleDropdownField), group);
-            RegisterButton(Get<GameUISelectableButton>(dialog, SafeZoneButtonField), group);
+            ListContainer group = AddSettingsGroup(root);
+            RegisterSettingsToggle(Get<GameUISelectableToggle>(dialog, BackgroundScrollToggleField), group);
+            RegisterSettingsToggle(Get<GameUISelectableToggle>(dialog, CameraShakeToggleField), group);
+            RegisterSettingsDropdown(Get<GameUISelectableDropdown>(dialog, ColorblindModeDropdownField), group);
+            RegisterSettingsDropdown(Get<GameUISelectableDropdown>(dialog, UIScaleDropdownField), group);
+            RegisterSettingsButton(Get<GameUISelectableButton>(dialog, SafeZoneButtonField), group);
         }
 
         private void AddOtherGroup(ListContainer root, global::SettingsDialog dialog)
         {
-            ListContainer group = AddGroup(root);
-            RegisterDropdown(Get<GameUISelectableDropdown>(dialog, LanguageDropdownField), group);
-            RegisterToggle(Get<GameUISelectableToggle>(dialog, StreamerModeToggleField), group);
-            RegisterToggle(Get<GameUISelectableToggle>(dialog, GooglyEyesToggleField), group);
-            RegisterToggle(Get<GameUISelectableToggle>(dialog, RefreshRateUncapToggleField), group);
-            RegisterButton(Get<GameUISelectableButton>(dialog, ResetSaveButtonField), group);
-        }
-
-        private static ListContainer AddGroup(ListContainer root)
-        {
-            ListContainer group = new ListContainer
-            {
-                AnnounceName = false,
-                AnnouncePosition = false
-            };
-            root.Add(group);
-            return group;
-        }
-
-        private void RegisterTab(global::SettingsTab tab, ListContainer container)
-        {
-            ProxySettingsTab element = new ProxySettingsTab(tab);
-            if (element.Button == null)
-            {
-                return;
-            }
-
-            Add(container, element.Button.gameObject, element);
-        }
-
-        private void RegisterVolumeControl(global::VolumeControl control, ListContainer container)
-        {
-            SelectableSliderHelper slider = Get<SelectableSliderHelper>(control, VolumeSliderField);
-            GameUISelectableButton muteButton = Get<GameUISelectableButton>(control, VolumeMuteButtonField);
-            string label = ProxySettingsButton.FindLabelInSettingsEntry(control);
-
-            if (slider != null)
-            {
-                RegisterSlider(slider, container, label);
-            }
-
-            if (muteButton != null)
-            {
-                ProxySettingsVolumeMute muteElement = new ProxySettingsVolumeMute(control, muteButton);
-                Add(container, muteButton.gameObject, muteElement);
-            }
-
-            Action<bool, float> listener = (muted, volume) =>
-            {
-                if (IsFocused(muteButton))
-                {
-                    SpeechManager.Output(ProxySettingsVolumeMute.StateMessage(muted));
-                }
-            };
-            control.volumeSetSignal.AddListener(listener);
-            TrackUnsubscribe(() => control.volumeSetSignal.RemoveListener(listener));
-        }
-
-        private void RegisterScrollSensitivity(global::ScrollSensitivityControl control, ListContainer container)
-        {
-            SelectableSliderHelper slider = Get<SelectableSliderHelper>(control, ScrollSensitivitySliderField);
-            if (slider == null)
-            {
-                return;
-            }
-
-            RegisterSlider(slider, container, ProxySettingsButton.FindLabelInSettingsEntry(control));
-        }
-
-        private void RegisterSlider(SelectableSliderHelper slider, ListContainer container, string label = null)
-        {
-            SliderElement element = new SliderElement(slider)
-            {
-                HasOverrideLabel = true,
-                OverrideLabel = label ?? ProxySettingsButton.FindLabelInSettingsEntry(slider)
-            };
-            Add(container, slider.gameObject, element);
-        }
-
-        private void RegisterDropdown(GameUISelectableDropdown dropdown, ListContainer container)
-        {
-            if (dropdown == null)
-            {
-                return;
-            }
-
-            ProxyDropdown element = new ProxyDropdown(dropdown.gameObject)
-            {
-                HasOverrideLabel = true,
-                OverrideLabel = ProxySettingsButton.FindLabelInSettingsEntry(dropdown)
-            };
-            Add(container, dropdown.gameObject, element);
-            RegisterDropdownEntries(dropdown, container);
-            ConnectDropdown(dropdown);
-        }
-
-        private void RegisterToggle(GameUISelectableToggle toggle, ListContainer container)
-        {
-            if (toggle == null)
-            {
-                return;
-            }
-
-            ToggleElement element = new ToggleElement(toggle)
-            {
-                HasOverrideLabel = true,
-                OverrideLabel = ProxySettingsButton.FindLabelInSettingsEntry(toggle)
-            };
-            Add(container, toggle.gameObject, element);
-        }
-
-        private void RegisterButton(GameUISelectableButton button, ListContainer container)
-        {
-            if (button == null)
-            {
-                return;
-            }
-
-            ProxySettingsButton element = new ProxySettingsButton(button);
-            Add(container, button.gameObject, element);
-        }
-
-        private void ConnectDropdown(GameUISelectableDropdown dropdown)
-        {
-            Action<int, string> listener = (index, value) =>
-            {
-                if (!IsFocused(dropdown))
-                {
-                    return;
-                }
-
-                Message status = Message.RawCleaned(ProxySettingsDropdownEntry.ResolveDropdownText(value)) ?? Message.RawCleaned(ProxyDropdown.ResolveStatus(dropdown.gameObject));
-                SpeechManager.Output(status);
-            };
-            dropdown.optionChosenSignal.AddListener(listener);
-            TrackUnsubscribe(() => dropdown.optionChosenSignal.RemoveListener(listener));
-        }
-
-        private void RegisterDropdownEntries(GameUISelectableDropdown dropdown, ListContainer container)
-        {
-            List<global::SettableLabel> entries = Get<List<global::SettableLabel>>(dropdown, DropdownEntriesField);
-            if (entries == null)
-            {
-                return;
-            }
-
-            ListContainer entriesContainer = new ListContainer
-            {
-                AnnounceName = false,
-                AnnouncePosition = true
-            };
-
-            for (int i = 0; i < entries.Count; i++)
-            {
-                global::SettableLabel entry = entries[i];
-                if (entry == null)
-                {
-                    continue;
-                }
-
-                GameUISelectableButton button = entry.GetComponent<GameUISelectableButton>();
-                if (button == null)
-                {
-                    continue;
-                }
-
-                ProxySettingsDropdownEntry element = new ProxySettingsDropdownEntry(entry, button);
-                Add(entriesContainer, entry.gameObject, element);
-            }
-
-            if (entriesContainer.Children.Count > 0)
-            {
-                container.Add(entriesContainer);
-            }
-        }
-
-        private void Add(ListContainer container, GameObject target, UIElement element)
-        {
-            if (container == null || target == null || element == null)
-            {
-                return;
-            }
-
-            container.Add(element);
-            Register(target, element);
-        }
-
-        private static bool IsFocused(Component component)
-        {
-            if (component == null)
-            {
-                return false;
-            }
-
-            GameObject selected = EventSystem.current?.currentSelectedGameObject;
-            if (selected != null &&
-                (selected == component.gameObject ||
-                selected.transform.IsChildOf(component.transform) ||
-                component.transform.IsChildOf(selected.transform)))
-            {
-                return true;
-            }
-
-            IGameUIComponent uiComponent = component as IGameUIComponent;
-            IGameUIComponent selectedComponent = global::InputManager.Inst?.GetSelectedGameUIComponent();
-            return uiComponent != null && selectedComponent?.IsGameUIComponent(uiComponent) == true;
-        }
-
-        private static T Get<T>(object owner, FieldInfo field) where T : class
-        {
-            return owner != null ? field.GetValue(owner) as T : null;
+            ListContainer group = AddSettingsGroup(root);
+            RegisterSettingsDropdown(Get<GameUISelectableDropdown>(dialog, LanguageDropdownField), group);
+            RegisterSettingsToggle(Get<GameUISelectableToggle>(dialog, StreamerModeToggleField), group);
+            RegisterSettingsToggle(Get<GameUISelectableToggle>(dialog, GooglyEyesToggleField), group);
+            RegisterSettingsToggle(Get<GameUISelectableToggle>(dialog, RefreshRateUncapToggleField), group);
+            RegisterSettingsButton(Get<GameUISelectableButton>(dialog, ResetSaveButtonField), group);
         }
     }
 }
