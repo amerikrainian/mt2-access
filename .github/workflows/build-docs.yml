@@ -18,7 +18,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: peaceiris/actions-mdbook@v2
+      - name: Install mdBook
+        run: cargo install mdbook --version 0.4.52 --locked
       - name: Generate docs
         working-directory: ./docs_src
         run: mdbook build
