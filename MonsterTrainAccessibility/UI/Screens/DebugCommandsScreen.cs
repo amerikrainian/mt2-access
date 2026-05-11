@@ -16,7 +16,8 @@ namespace MonsterTrainAccessibility.UI.Screens
             Root,
             Events,
             Artifacts,
-            TestScreens
+            TestScreens,
+            Tutorials
         }
 
         private readonly Mode _mode;
@@ -123,6 +124,9 @@ namespace MonsterTrainAccessibility.UI.Screens
                 case Mode.TestScreens:
                     AddTestScreenControls();
                     break;
+                case Mode.Tutorials:
+                    AddTutorialControls();
+                    break;
             }
         }
 
@@ -139,6 +143,10 @@ namespace MonsterTrainAccessibility.UI.Screens
             _root.Add(CreateAction(
                 () => Message.Localized("ui", "DEBUG.TEST_SCREENS"),
                 () => ReplaceWith(Mode.TestScreens)));
+
+            _root.Add(CreateAction(
+                () => Message.Localized("ui", "DEBUG.TUTORIALS"),
+                () => ReplaceWith(Mode.Tutorials)));
 
             _root.Add(CreateAction(
                 () => Message.Localized("ui", "DEBUG.CLOSE"),
@@ -225,6 +233,22 @@ namespace MonsterTrainAccessibility.UI.Screens
             _root.Add(CreateAction(
                 () => Message.Localized("ui", "DEBUG.FIRST_TIME_SETTINGS"),
                 OpenFirstTimeSettings));
+        }
+
+        private void AddTutorialControls()
+        {
+            AddBackControl();
+            _root.Add(CreateAction(
+                () => Message.Localized("ui", "DEBUG.TUTORIAL_CARD_DOWN"),
+                () => ResetTutorial(OneTimeMessage.CardDown, ensureCombatPrerequisites: true)));
+
+            _root.Add(CreateAction(
+                () => Message.Localized("ui", "DEBUG.TUTORIAL_CARD_ROOM_TARGETING_MOVE"),
+                () => ResetTutorial(OneTimeMessage.CardRoomTargetingMove, ensureCombatPrerequisites: true)));
+
+            _root.Add(CreateAction(
+                () => Message.Localized("ui", "DEBUG.TUTORIALS_RESET_ALL"),
+                ResetAllTutorials));
         }
 
         private void AddBackControl()
@@ -358,6 +382,67 @@ namespace MonsterTrainAccessibility.UI.Screens
             }
         }
 
+        private bool ResetTutorial(OneTimeMessage tutorial, bool ensureCombatPrerequisites)
+        {
+            SaveManager saveManager = GameManagers.GetSaveManager();
+            if (saveManager == null)
+            {
+                SpeechManager.Output(Message.Localized("ui", "DEBUG.NO_SAVE_MANAGER"));
+                return true;
+            }
+
+            try
+            {
+                if (ensureCombatPrerequisites)
+                {
+                    saveManager.MarkOneTimeMessageComplete(OneTimeMessage.DeploymentPhase);
+                    saveManager.MarkOneTimeMessageComplete(OneTimeMessage.FirstMonsterPlayed);
+                }
+
+                saveManager.GetMetagameSave().MarkOneTimeMessageIncomplete(tutorial);
+                Log.Info("[AccessibilityDebug] Marked tutorial unseen: " + tutorial);
+                SpeechManager.Output(Message.Localized("ui", "DEBUG.TUTORIAL_RESET", new { name = TutorialLabel(tutorial) }));
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Log.Error("[AccessibilityDebug] Failed to reset tutorial " + tutorial + ": " + ex);
+                SpeechManager.Output(Message.Localized("ui", "DEBUG.TUTORIAL_RESET_FAILED", new { name = TutorialLabel(tutorial) }));
+                return true;
+            }
+        }
+
+        private bool ResetAllTutorials()
+        {
+            SaveManager saveManager = GameManagers.GetSaveManager();
+            if (saveManager == null)
+            {
+                SpeechManager.Output(Message.Localized("ui", "DEBUG.NO_SAVE_MANAGER"));
+                return true;
+            }
+
+            try
+            {
+                foreach (OneTimeMessage tutorial in Enum.GetValues(typeof(OneTimeMessage)))
+                {
+                    if (tutorial != OneTimeMessage.NONE)
+                    {
+                        saveManager.GetMetagameSave().MarkOneTimeMessageIncomplete(tutorial);
+                    }
+                }
+
+                Log.Info("[AccessibilityDebug] Marked all tutorials unseen.");
+                SpeechManager.Output(Message.Localized("ui", "DEBUG.TUTORIALS_RESET_ALL_DONE"));
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Log.Error("[AccessibilityDebug] Failed to reset all tutorials: " + ex);
+                SpeechManager.Output(Message.Localized("ui", "DEBUG.TUTORIALS_RESET_ALL_FAILED"));
+                return true;
+            }
+        }
+
         private void Close(bool announce)
         {
             if (_closed)
@@ -389,8 +474,23 @@ namespace MonsterTrainAccessibility.UI.Screens
                     return Message.Localized("ui", "DEBUG.ARTIFACTS");
                 case Mode.TestScreens:
                     return Message.Localized("ui", "DEBUG.TEST_SCREENS");
+                case Mode.Tutorials:
+                    return Message.Localized("ui", "DEBUG.TUTORIALS");
                 default:
                     return Message.Localized("ui", "DEBUG.TITLE");
+            }
+        }
+
+        private static string TutorialLabel(OneTimeMessage tutorial)
+        {
+            switch (tutorial)
+            {
+                case OneTimeMessage.CardDown:
+                    return Message.Localized("ui", "DEBUG.TUTORIAL_CARD_DOWN").Resolve();
+                case OneTimeMessage.CardRoomTargetingMove:
+                    return Message.Localized("ui", "DEBUG.TUTORIAL_CARD_ROOM_TARGETING_MOVE").Resolve();
+                default:
+                    return tutorial.ToString();
             }
         }
 

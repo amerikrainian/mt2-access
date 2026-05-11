@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using HarmonyLib;
 using MonsterTrainAccessibility.Events;
+using MonsterTrainAccessibility.Input;
 using MonsterTrainAccessibility.Localization;
 using MonsterTrainAccessibility.UI.Elements;
 using ShinyShoe;
@@ -28,6 +29,16 @@ namespace MonsterTrainAccessibility.UI.Screens
         public override bool ShouldRestoreNavigationFocus() => false;
 
         public override bool ShouldAcceptGameSelection() => false;
+
+        public override bool BlocksGameInput(InputAction action)
+        {
+            if (IsActionOnlyDialog())
+            {
+                return false;
+            }
+
+            return base.BlocksGameInput(action);
+        }
 
         public override void OnUpdate()
         {
@@ -100,6 +111,12 @@ namespace MonsterTrainAccessibility.UI.Screens
                 List<global::Dialog> stack = Get<List<global::Dialog>>(_screen, ActiveDialogStackField);
                 return stack != null && stack.Count > 0 ? stack[stack.Count - 1] : null;
             }
+        }
+
+        private bool IsActionOnlyDialog()
+        {
+            global::Dialog.Data data = Get<global::Dialog.Data>(TopDialog, DialogDataField);
+            return data != null && data.hideAllButtons && data.applyScreenInput != null;
         }
 
         private static string ButtonSignature(GameUISelectableButton button)
