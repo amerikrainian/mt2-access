@@ -10,7 +10,6 @@ namespace MonsterTrainAccessibility.UI.Elements
         public ProxyRunOpeningBossDetails(global::BossDetailsUI boss)
             : base(
                 boss != null ? boss.gameObject : null,
-                typeKey: "button",
                 label: null)
         {
             _boss = boss;

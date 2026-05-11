@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Reflection;
+using HarmonyLib;
 using MonsterTrainAccessibility.Buffers;
 using MonsterTrainAccessibility.Core;
 using MonsterTrainAccessibility.Input;
@@ -493,6 +495,7 @@ namespace MonsterTrainAccessibility.UI.Screens
                 new Dictionary<global::ScreenName, UIScreenFactoryRegistration>();
             private readonly List<TransitionFactoryRegistration> _transitionFactories = new List<TransitionFactoryRegistration>();
             private readonly Dictionary<int, ActiveTransitionRegistration> _activeTransitions = new Dictionary<int, ActiveTransitionRegistration>();
+            private static readonly FieldInfo DialogActiveStackField = AccessTools.Field(typeof(global::DialogScreen), "activeDialogStack")!;
 
             private int _nextTransitionOrder;
             private global::UIScreen _currentUIScreen;
@@ -696,13 +699,15 @@ namespace MonsterTrainAccessibility.UI.Screens
             {
                 global::ScreenManager gameScreenManager = GameManagers.GetScreenManager();
                 global::DialogScreen dialogScreen = null;
+                global::Dialog topDialog = null;
                 int dialogKey = 0;
 
                 if (gameScreenManager != null &&
                     gameScreenManager.GetTopScreen(ignoreDialog: false) == global::ScreenName.Dialog)
                 {
                     dialogScreen = gameScreenManager.GetScreen(global::ScreenName.Dialog) as global::DialogScreen;
-                    dialogKey = dialogScreen != null ? dialogScreen.GetInstanceID() : 0;
+                    topDialog = TopDialog(dialogScreen);
+                    dialogKey = topDialog != null ? topDialog.GetInstanceID() : 0;
                 }
 
                 if (dialogKey == _currentDialogScreenKey)
@@ -717,13 +722,21 @@ namespace MonsterTrainAccessibility.UI.Screens
                 }
 
                 _currentDialogScreenKey = dialogKey;
-                if (dialogScreen != null)
+                if (dialogScreen != null && topDialog != null)
                 {
                     _currentDialogScreen = new AccessibleDialogScreen(dialogScreen);
                     PushScreen(_currentDialogScreen);
                 }
 
                 return true;
+            }
+
+            private static global::Dialog TopDialog(global::DialogScreen dialogScreen)
+            {
+                List<global::Dialog> stack = dialogScreen != null
+                    ? DialogActiveStackField.GetValue(dialogScreen) as List<global::Dialog>
+                    : null;
+                return stack != null && stack.Count > 0 ? stack[stack.Count - 1] : null;
             }
 
             private bool PruneInactiveTransitions()

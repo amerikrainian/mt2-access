@@ -117,7 +117,7 @@ namespace MonsterTrainAccessibility.UI.Screens
             for (int i = 0; i < targets.Length; i++)
             {
                 global::BossTargetUI target = targets[i];
-                AddTarget(root, target.gameObject, new LabeledButton(target.gameObject, () => Message.FromText(TooltipText(target))));
+                AddTarget(root, target.gameObject, new GameObjectElement(target.gameObject, () => Message.FromText(TooltipText(target))));
             }
         }
 

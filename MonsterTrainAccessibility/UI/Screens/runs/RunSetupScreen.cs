@@ -20,6 +20,7 @@ namespace MonsterTrainAccessibility.UI.Screens
         private static readonly FieldInfo ClanSelectionDialogField = AccessTools.Field(typeof(global::RunSetupScreen), "clanSelectionDialog")!;
         private static readonly FieldInfo PyreHeartSelectionDialogField = AccessTools.Field(typeof(global::RunSetupScreen), "pyreHeartSelectionDialog")!;
         private static readonly FieldInfo MutatorSelectionDialogField = AccessTools.Field(typeof(global::RunSetupScreen), "mutatorSelectionDialog")!;
+        private static readonly FieldInfo FtueCovenantSelectionDialogField = AccessTools.Field(typeof(global::RunSetupScreen), "ftueCovenantSelectionDialog")!;
         private static readonly FieldInfo CovenantSelectionUIField = AccessTools.Field(typeof(global::RunSetupScreen), "covenantSelectionUI")!;
         private static readonly FieldInfo MainClassButtonField = AccessTools.Field(typeof(global::RunSetupScreen), "mainClassButton")!;
         private static readonly FieldInfo MainClassSwapChampionButtonField = AccessTools.Field(typeof(global::RunSetupScreen), "mainClassSwapChampionButton")!;
@@ -40,6 +41,7 @@ namespace MonsterTrainAccessibility.UI.Screens
         private ClanSelectionDialogScreen _clanSelectionScreen;
         private PyreHeartSelectionDialogScreen _pyreHeartSelectionScreen;
         private MutatorSelectionDialogScreen _mutatorSelectionScreen;
+        private RunSetupFtueCovenantSelectionScreen _ftueCovenantSelectionScreen;
         private string _championSignature;
 
         public RunSetupScreen(global::RunSetupScreen screen)
@@ -51,6 +53,30 @@ namespace MonsterTrainAccessibility.UI.Screens
         {
             base.OnPush();
             (RootElement as ListContainer)?.FocusFirst();
+        }
+
+        public override void OnFocus()
+        {
+            base.OnFocus();
+            SyncChildDialogs();
+            if (ActiveChild != null)
+            {
+                return;
+            }
+
+            ListContainer root = RootElement as ListContainer;
+            if (root == null)
+            {
+                return;
+            }
+
+            if (root.FocusIndex >= 0)
+            {
+                root.SetFocusIndex(root.FocusIndex);
+                return;
+            }
+
+            root.FocusFirst();
         }
 
         public override void OnUpdate()
@@ -162,6 +188,10 @@ namespace MonsterTrainAccessibility.UI.Screens
             {
                 _mutatorSelectionScreen = null;
             }
+            if (_ftueCovenantSelectionScreen != null && _ftueCovenantSelectionScreen.Parent == null)
+            {
+                _ftueCovenantSelectionScreen = null;
+            }
 
             global::RunSetupClanSelectionUI clanDialog = Get<global::RunSetupClanSelectionUI>(_screen, ClanSelectionDialogField);
             if (clanDialog != null && clanDialog.IsOpen)
@@ -206,6 +236,21 @@ namespace MonsterTrainAccessibility.UI.Screens
             {
                 RemoveChild(_mutatorSelectionScreen);
                 _mutatorSelectionScreen = null;
+            }
+
+            global::RunSetupFtueCovenantSelectionUI ftueCovenantDialog = Get<global::RunSetupFtueCovenantSelectionUI>(_screen, FtueCovenantSelectionDialogField);
+            if (ftueCovenantDialog != null && ftueCovenantDialog.IsConsumingInputs())
+            {
+                if (_ftueCovenantSelectionScreen == null)
+                {
+                    _ftueCovenantSelectionScreen = new RunSetupFtueCovenantSelectionScreen(ftueCovenantDialog);
+                    PushChild(_ftueCovenantSelectionScreen);
+                }
+            }
+            else if (_ftueCovenantSelectionScreen != null)
+            {
+                RemoveChild(_ftueCovenantSelectionScreen);
+                _ftueCovenantSelectionScreen = null;
             }
         }
 

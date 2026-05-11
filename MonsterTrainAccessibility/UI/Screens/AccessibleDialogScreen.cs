@@ -1,12 +1,10 @@
 using System.Collections.Generic;
 using System.Reflection;
 using HarmonyLib;
-using MonsterTrainAccessibility.Events;
 using MonsterTrainAccessibility.Input;
 using MonsterTrainAccessibility.Localization;
 using MonsterTrainAccessibility.UI.Elements;
 using ShinyShoe;
-using TMPro;
 
 namespace MonsterTrainAccessibility.UI.Screens
 {
@@ -78,7 +76,7 @@ namespace MonsterTrainAccessibility.UI.Screens
 
         private void AddButton(GameUISelectableButton button, string label)
         {
-            if (button == null)
+            if (button == null || !button.gameObject.activeInHierarchy || !Message.ShouldAdd(Message.Clean(label)))
             {
                 return;
             }
@@ -101,7 +99,7 @@ namespace MonsterTrainAccessibility.UI.Screens
             }
 
             _lastAnnouncedContent = text;
-            EventDispatcher.Enqueue(new BasicEvent(Message.Raw(text)));
+            Events.EventDispatcher.Enqueue(new Events.BasicEvent(Message.Raw(text)));
         }
 
         private global::Dialog TopDialog
