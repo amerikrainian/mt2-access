@@ -3,8 +3,6 @@ run-name: ${{ github.actor }} is generating docs for GitHub Pages.
 
 on:
   workflow_dispatch:
-  release:
-    types: [published]
   push:
     branches: [main]
     paths:
