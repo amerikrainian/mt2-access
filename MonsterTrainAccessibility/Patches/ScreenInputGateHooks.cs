@@ -26,6 +26,11 @@ namespace MonsterTrainAccessibility.Patches
                 return false;
             }
 
+            if (ShouldStopSpeechForControllerPress(mapping))
+            {
+                ModInputManager.StopSpeechForControllerPress();
+            }
+
             if (ModInputManager.ShouldBlockNativeMapping(mapping))
             {
                 return false;
@@ -49,6 +54,13 @@ namespace MonsterTrainAccessibility.Patches
             }
 
             return false;
+        }
+
+        private static bool ShouldStopSpeechForControllerPress(CoreInputControlMapping mapping)
+        {
+            return mapping.deviceID == InputDeviceType.Gamepad &&
+                mapping.inputTypeID == InputType.Button &&
+                mapping.IsNotHeld();
         }
 
         private static InputAction ResolveAction(

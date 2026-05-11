@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using MonsterTrainAccessibility.Core;
 using MonsterTrainAccessibility.Localization;
+using MonsterTrainAccessibility.Speech;
 using ShinyShoe;
 using UnityEngine;
 using ModScreenManager = MonsterTrainAccessibility.UI.Screens.ScreenManager;
@@ -26,6 +27,7 @@ namespace MonsterTrainAccessibility.Input
         private static readonly HashSet<KeyCode> _listenInitialHeldKeys = new HashSet<KeyCode>();
         private static System.Action<InputBinding> _listenCallback;
         private static ControllerInput? _listenControllerModifier;
+        private static int _lastControllerSpeechStopFrame = -1;
 
         private static bool _initialized;
 
@@ -56,6 +58,7 @@ namespace MonsterTrainAccessibility.Input
             _listenInitialHeldKeys.Clear();
             _listenCallback = null;
             _listenControllerModifier = null;
+            _lastControllerSpeechStopFrame = -1;
             RegisterGameNavigationActions();
             RegisterModActions();
         }
@@ -80,6 +83,7 @@ namespace MonsterTrainAccessibility.Input
             _listenInitialHeldKeys.Clear();
             _listenCallback = null;
             _listenControllerModifier = null;
+            _lastControllerSpeechStopFrame = -1;
         }
 
         public static bool IsListening => _listenCallback != null;
@@ -159,6 +163,17 @@ namespace MonsterTrainAccessibility.Input
             return input != null && _blockedNativeControllerInputs.Contains(input.Value);
         }
 
+        public static void StopSpeechForControllerPress()
+        {
+            if (_lastControllerSpeechStopFrame == Time.frameCount)
+            {
+                return;
+            }
+
+            _lastControllerSpeechStopFrame = Time.frameCount;
+            SpeechManager.Stop();
+        }
+
         public static void PollController(CoreInputDriverGamepad driver)
         {
             if (!_initialized || driver == null)
@@ -168,6 +183,7 @@ namespace MonsterTrainAccessibility.Input
 
             _blockedNativeControllerInputs.Clear();
             UpdateHeldControllerInputs(driver);
+            StopSpeechForControllerPresses();
 
             if (_listenCallback != null)
             {
@@ -413,6 +429,14 @@ namespace MonsterTrainAccessibility.Input
             }
 
             return false;
+        }
+
+        private static void StopSpeechForControllerPresses()
+        {
+            if (_justPressedControllerInputs.Count > 0)
+            {
+                StopSpeechForControllerPress();
+            }
         }
 
         private static ControllerBinding GetHeldControllerBinding(InputAction action)
