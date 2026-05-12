@@ -6,6 +6,7 @@ using HarmonyLib;
 using MonsterTrainAccessibility.Buffers;
 using MonsterTrainAccessibility.Events;
 using MonsterTrainAccessibility.Localization;
+using MonsterTrainAccessibility.Presentation;
 using MonsterTrainAccessibility.Presentation.Relics;
 using MonsterTrainAccessibility.Presentation.Rewards;
 using MonsterTrainAccessibility.UI;
@@ -14,6 +15,7 @@ using ShinyShoe;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using AccessiblePresentation = MonsterTrainAccessibility.Presentation.Presentation;
 
 namespace MonsterTrainAccessibility.UI.Screens
 {
@@ -265,17 +267,32 @@ namespace MonsterTrainAccessibility.UI.Screens
                 return null;
             }
 
-            List<Message> context = ChoiceBufferContext(choice);
-            for (int i = 0; i < rewards.Count; i++)
+            LineBuffer uiBuffer = buffers.GetBuffer("ui");
+            if (uiBuffer == null)
             {
-                string bufferKey = BindRewardInfoBuffer(buffers, rewards[i], saveManager, relicManager, context);
-                if (bufferKey != null)
-                {
-                    return bufferKey;
-                }
+                return null;
             }
 
-            return null;
+            List<Message> lines = ChoiceBufferContext(choice);
+            for (int i = 0; i < rewards.Count; i++)
+            {
+                AddRewardInfoBufferLines(lines, rewards[i], saveManager, relicManager);
+            }
+
+            lines = MessageList.Dedupe(lines);
+            if (lines.Count == 0)
+            {
+                return null;
+            }
+
+            uiBuffer.Clear();
+            for (int i = 0; i < lines.Count; i++)
+            {
+                uiBuffer.Add(lines[i]);
+            }
+
+            buffers.EnableBuffer("ui", true);
+            return "ui";
         }
 
         private static Message RewardPreviewTooltip(StoryChoiceData.RewardInfo reward, SaveManager saveManager, RelicManager relicManager)
@@ -470,107 +487,100 @@ namespace MonsterTrainAccessibility.UI.Screens
                 cachedCard.GetTemporaryCardStateModifiers());
         }
 
-        private static string BindRewardInfoBuffer(
-            BufferManager buffers,
+        private static void AddRewardInfoBufferLines(
+            List<Message> lines,
             StoryChoiceData.RewardInfo reward,
             SaveManager saveManager,
-            RelicManager relicManager,
-            List<Message> context)
+            RelicManager relicManager)
         {
-            if (reward == null || saveManager == null)
+            if (lines == null || reward == null || saveManager == null)
             {
-                return null;
+                return;
             }
 
             switch (reward.previewType)
             {
                 case StoryChoiceData.PreviewType.Card:
-                    return BindCardBuffer(
-                        buffers,
-                        CreateCardState(saveManager.GetAllGameData().FindCardDataByName(reward.dataKey), saveManager, relicManager),
-                        context);
+                    AddCardBufferLines(lines, CreateCardState(saveManager.GetAllGameData().FindCardDataByName(reward.dataKey), saveManager, relicManager));
+                    return;
                 case StoryChoiceData.PreviewType.Relic:
                 case StoryChoiceData.PreviewType.Relic_Name:
-                    return BindRelicBuffer(
-                        buffers,
-                        saveManager.GetAllGameData().FindCollectableRelicDataByName(reward.dataKey),
-                        context);
+                    AddRelicBufferLines(lines, saveManager.GetAllGameData().FindCollectableRelicDataByName(reward.dataKey));
+                    return;
                 case StoryChoiceData.PreviewType.Upgrade:
-                    return BindRelicBuffer(
-                        buffers,
-                        saveManager.GetAllGameData().FindEnhancerDataByName(reward.dataKey),
-                        context);
+                    AddRelicBufferLines(lines, saveManager.GetAllGameData().FindEnhancerDataByName(reward.dataKey));
+                    return;
                 case StoryChoiceData.PreviewType.Reward:
                 case StoryChoiceData.PreviewType.DeckReward:
-                    return BindRewardDataBuffer(
-                        buffers,
+                    AddRewardDataBufferLines(
+                        lines,
                         saveManager.GetAllGameData().FindRewardDataByName(reward.dataKey),
                         saveManager,
-                        relicManager,
-                        context);
+                        relicManager);
+                    return;
                 case StoryChoiceData.PreviewType.DelayedEnhanceReward:
-                    return BindCardBuffer(buffers, CreateDelayedEnhancedCardState(reward, saveManager, relicManager), context);
+                    AddCardBufferLines(lines, CreateDelayedEnhancedCardState(reward, saveManager, relicManager));
+                    return;
                 case StoryChoiceData.PreviewType.DeckRewards:
-                    return BindDeckRewardsBuffer(buffers, reward, saveManager, relicManager, context);
-                default:
-                    return null;
+                    AddDeckRewardsBufferLines(lines, reward, saveManager, relicManager);
+                    return;
+                case StoryChoiceData.PreviewType.Coin:
+                    MessageList.Add(lines, CoinPreviewTooltip(reward, saveManager));
+                    return;
             }
         }
 
-        private static string BindRewardDataBuffer(
-            BufferManager buffers,
+        private static void AddRewardDataBufferLines(
+            List<Message> lines,
             GrantableRewardData rewardData,
             SaveManager saveManager,
-            RelicManager relicManager,
-            List<Message> context)
+            RelicManager relicManager)
         {
-            if (rewardData == null)
+            if (lines == null || rewardData == null)
             {
-                return null;
+                return;
             }
 
             if (rewardData is GrantUpgradedCachedCardRewardData upgradedCachedCard)
             {
-                return BindCardBuffer(
-                    buffers,
+                AddCardBufferLines(
+                    lines,
                     CreateUpgradedCardState(
                         upgradedCachedCard.GetCardData(saveManager),
                         saveManager,
                         relicManager,
                         new List<CardUpgradeData> { upgradedCachedCard.GetCardUpgradeData() },
                         upgradedCachedCard.GetCardState(saveManager)?.GetCardStateModifiers(),
-                        null),
-                    context);
+                        null));
+                return;
             }
 
             if (rewardData is BuildCardRewardData buildCard)
             {
-                return BindCardBuffer(
-                    buffers,
+                AddCardBufferLines(
+                    lines,
                     CreateUpgradedCardState(
                         buildCard.GetCardData(),
                         saveManager,
                         relicManager,
                         buildCard.GetUpgradeDatas(saveManager),
                         null,
-                        null),
-                    context);
+                        null));
+                return;
             }
 
             if (rewardData is CardRewardData cardReward)
             {
-                return BindCardBuffer(
-                    buffers,
-                    CreateCardState(cardReward.GetCardData(), saveManager, relicManager),
-                    context);
+                AddCardBufferLines(lines, CreateCardState(cardReward.GetCardData(), saveManager, relicManager));
+                return;
             }
 
             if (rewardData is RelicRewardData relicReward)
             {
                 if (relicReward.UseCachedCard)
                 {
-                    return BindCardBuffer(
-                        buffers,
+                    AddCardBufferLines(
+                        lines,
                         CreateDelayedEnhancedCardState(
                             new StoryChoiceData.RewardInfo
                             {
@@ -578,35 +588,26 @@ namespace MonsterTrainAccessibility.UI.Screens
                                 dataKey = rewardData.name
                             },
                             saveManager,
-                            relicManager),
-                        context);
+                            relicManager));
+                    return;
                 }
 
-                return BindRelicBuffer(buffers, relicReward.GetRelicData(), context);
+                AddRelicBufferLines(lines, relicReward.GetRelicData());
+                return;
             }
 
-            PresentationBuffer<RewardPresentationSource> rewardBuffer =
-                buffers.GetBuffer("reward") as PresentationBuffer<RewardPresentationSource>;
-            if (rewardBuffer == null)
-            {
-                return null;
-            }
-
-            rewardBuffer.Bind(new RewardPresentationSource(rewardData, null, context));
-            buffers.EnableBuffer("reward", true);
-            return "reward";
+            AddPresentationLines(lines, PhaseRegistry.Rewards.Build(new RewardPresentationSource(rewardData)));
         }
 
-        private static string BindDeckRewardsBuffer(
-            BufferManager buffers,
+        private static void AddDeckRewardsBufferLines(
+            List<Message> lines,
             StoryChoiceData.RewardInfo reward,
             SaveManager saveManager,
-            RelicManager relicManager,
-            List<Message> context)
+            RelicManager relicManager)
         {
-            if (reward == null || string.IsNullOrWhiteSpace(reward.dataKey))
+            if (lines == null || reward == null || string.IsNullOrWhiteSpace(reward.dataKey))
             {
-                return null;
+                return;
             }
 
             string[] rewardIds = reward.dataKey.Split(',');
@@ -618,46 +619,43 @@ namespace MonsterTrainAccessibility.UI.Screens
                     continue;
                 }
 
-                string bufferKey = BindRewardDataBuffer(
-                    buffers,
+                AddRewardDataBufferLines(
+                    lines,
                     saveManager.GetAllGameData().FindRewardDataByName(rewardId),
                     saveManager,
-                    relicManager,
-                    context);
-                if (bufferKey != null)
-                {
-                    return bufferKey;
-                }
+                    relicManager);
             }
-
-            return null;
         }
 
-        private static string BindCardBuffer(BufferManager buffers, CardState cardState, List<Message> context)
+        private static void AddCardBufferLines(List<Message> lines, CardState cardState)
         {
-            PresentationBuffer<CardState> cardBuffer = buffers.GetBuffer("card") as PresentationBuffer<CardState>;
-            if (cardBuffer == null || cardState == null)
+            if (lines == null || cardState == null)
             {
-                return null;
+                return;
             }
 
-            cardBuffer.Bind(cardState, context);
-            buffers.EnableBuffer("card", true);
-            return "card";
+            AddPresentationLines(lines, PhaseRegistry.Cards.Build(cardState));
         }
 
-        private static string BindRelicBuffer(BufferManager buffers, RelicData relicData, List<Message> context)
+        private static void AddRelicBufferLines(List<Message> lines, RelicData relicData)
         {
-            PresentationBuffer<RelicPresentationSource> relicBuffer =
-                buffers.GetBuffer("relic") as PresentationBuffer<RelicPresentationSource>;
-            if (relicBuffer == null || relicData == null)
+            if (lines == null || relicData == null)
             {
-                return null;
+                return;
             }
 
-            relicBuffer.Bind(RelicPresentationSource.FromState(new RelicState(relicData), includeDynamicInfo: true, context));
-            buffers.EnableBuffer("relic", true);
-            return "relic";
+            AddPresentationLines(
+                lines,
+                PhaseRegistry.Relics.Build(RelicPresentationSource.FromState(new RelicState(relicData), includeDynamicInfo: true)));
+        }
+
+        private static void AddPresentationLines(List<Message> lines, AccessiblePresentation presentation)
+        {
+            IReadOnlyList<Message> rendered = PresentationRenderer.BufferLines(presentation);
+            for (int i = 0; i < rendered.Count; i++)
+            {
+                MessageList.Add(lines, rendered[i]);
+            }
         }
 
         private static List<Message> ChoiceBufferContext(StoryChoiceItem choice)
