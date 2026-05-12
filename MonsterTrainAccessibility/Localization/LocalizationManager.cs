@@ -65,6 +65,7 @@ namespace MonsterTrainAccessibility.Localization
         {
             _currentLanguageCode = NormalizeLanguageCode(languageCode);
             _tables.Clear();
+            _missingKeys.Clear();
 
             foreach (string path in ResolveCandidateFiles(_currentLanguageCode))
             {
