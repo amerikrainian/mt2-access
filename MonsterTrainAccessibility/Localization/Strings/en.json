@@ -73,7 +73,7 @@
     "ICON.EMBER": "ember",
     "ICON.GOLD": "gold",
     "ICON.HEALTH": "health",
-    "PYRE": "Pyre",
+    "PYRE": "Pyre health",
     "ICON.CAPACITY": "capacity",
     "ICON.DRAGONS_HOARD": "Dragon's Hoard",
     "ICON.FORGE": "forge points",
@@ -475,8 +475,7 @@
     "BUTTON.ABILITIES": "Abilities",
     "BUTTON.ABILITIES_AVAILABLE": "{count} available",
     "BUTTON.UNDO_TURN": "Undo turn",
-    "BUTTON.END_TURN": "End turn",
-    "PYRE": "Pyre health"
+    "BUTTON.END_TURN": "End turn"
   },
   "events": {
     "COMBAT.DEPLOYMENT": "Deployment phase.",
