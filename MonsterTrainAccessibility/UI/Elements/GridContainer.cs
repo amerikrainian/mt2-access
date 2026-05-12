@@ -142,12 +142,12 @@ namespace MonsterTrainAccessibility.UI.Elements
                 else
                 {
                     int delta = pos.y - current.y;
-                    if (pos.x != current.x || delta * dy <= 0)
+                    if (delta * dy <= 0 || (AnnouncePosition && pos.x != current.x))
                     {
                         continue;
                     }
                     primaryDistance = Mathf.Abs(delta);
-                    secondaryDistance = 0;
+                    secondaryDistance = AnnouncePosition ? 0 : Mathf.Abs(pos.x - current.x);
                 }
 
                 if (primaryDistance < bestPrimaryDistance ||

@@ -29,6 +29,7 @@ namespace MonsterTrainAccessibility.UI.Screens
         public DeckScreen(global::DeckScreen screen)
         {
             _screen = screen;
+            ClaimGridMovementActions();
         }
 
         public override void OnPush()

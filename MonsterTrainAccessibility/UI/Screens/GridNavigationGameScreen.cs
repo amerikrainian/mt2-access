@@ -52,6 +52,14 @@ namespace MonsterTrainAccessibility.UI.Screens
 
         protected virtual bool ShouldFocusFirstOnPush() => true;
 
+        protected void ClaimGridMovementActions()
+        {
+            ClaimAction("ui_up");
+            ClaimAction("ui_down");
+            ClaimAction("ui_left");
+            ClaimAction("ui_right");
+        }
+
         protected virtual string BuildSignature()
         {
             return CountActiveTargets(RootElement).ToString(System.Globalization.CultureInfo.InvariantCulture);
