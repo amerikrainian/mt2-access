@@ -84,6 +84,10 @@ namespace MonsterTrainAccessibility.Patches
                     return "ui_up";
                 case global::InputManager.Controls.Down:
                     return "ui_down";
+                case global::InputManager.Controls.ScrollUp:
+                    return "ui_scroll_up";
+                case global::InputManager.Controls.ScrollDown:
+                    return "ui_scroll_down";
                 case global::InputManager.Controls.Left:
                     return "ui_left";
                 case global::InputManager.Controls.Right:
@@ -104,7 +108,11 @@ namespace MonsterTrainAccessibility.Patches
 
         private static bool IsDispatchableButtonAction(InputAction action)
         {
-            return action?.Key == "ui_accept" || action?.Key == "ui_select" || action?.Key == "ui_cancel";
+            return action?.Key == "ui_accept" ||
+                action?.Key == "ui_select" ||
+                action?.Key == "ui_cancel" ||
+                action?.Key == "ui_scroll_up" ||
+                action?.Key == "ui_scroll_down";
         }
     }
 }

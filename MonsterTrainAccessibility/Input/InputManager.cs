@@ -201,6 +201,8 @@ namespace MonsterTrainAccessibility.Input
         {
             AddAction("ui_up", new Message("input.navigate_up"));
             AddAction("ui_down", new Message("input.navigate_down"));
+            AddAction("ui_scroll_up", new Message("input.scroll_up"));
+            AddAction("ui_scroll_down", new Message("input.scroll_down"));
             AddAction("ui_left", new Message("input.navigate_left"));
             AddAction("ui_right", new Message("input.navigate_right"));
             AddAction("ui_select", new Message("input.select"));

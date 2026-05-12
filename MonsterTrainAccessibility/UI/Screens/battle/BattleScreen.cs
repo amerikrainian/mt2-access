@@ -81,6 +81,8 @@ namespace MonsterTrainAccessibility.UI.Screens
             _roomNavigation = new BattleRoomNavigation(this);
             ClaimAction("ui_up");
             ClaimAction("ui_down");
+            ClaimAction("ui_scroll_up");
+            ClaimAction("ui_scroll_down");
             ClaimAction("ui_left");
             ClaimAction("ui_right");
             ClaimAction("ui_accept");
@@ -277,8 +279,10 @@ namespace MonsterTrainAccessibility.UI.Screens
                 case "ui_right":
                     return MoveHorizontal(1);
                 case "ui_up":
+                case "ui_scroll_up":
                     return MoveVertical(1);
                 case "ui_down":
+                case "ui_scroll_down":
                     return MoveVertical(-1);
                 case "ui_accept":
                 case "ui_select":
@@ -435,6 +439,8 @@ namespace MonsterTrainAccessibility.UI.Screens
                 case "ui_right":
                 case "ui_up":
                 case "ui_down":
+                case "ui_scroll_up":
+                case "ui_scroll_down":
                 case "ui_accept":
                 case "ui_select":
                     return true;
@@ -451,6 +457,8 @@ namespace MonsterTrainAccessibility.UI.Screens
                 case "ui_right":
                 case "ui_up":
                 case "ui_down":
+                case "ui_scroll_up":
+                case "ui_scroll_down":
                     return true;
                 default:
                     return false;
@@ -1394,8 +1402,10 @@ namespace MonsterTrainAccessibility.UI.Screens
                 case "ui_right":
                     return true;
                 case "ui_up":
+                case "ui_scroll_up":
                     return MoveTargetingVertical(1);
                 case "ui_down":
+                case "ui_scroll_down":
                     return MoveTargetingVertical(-1);
                 case "ui_accept":
                 case "ui_select":
