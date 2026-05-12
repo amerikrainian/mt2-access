@@ -86,9 +86,9 @@ namespace MonsterTrainAccessibility.UI.Screens
             global::RunSetupClassLevelInfoUI mainInfo = Get<global::RunSetupClassLevelInfoUI>(_screen, MainClassInfoField);
             global::RunSetupClassLevelInfoUI subInfo = Get<global::RunSetupClassLevelInfoUI>(_screen, SubClassInfoField);
 
-            AddClanSummary(root, Get<GameUISelectableButton>(_screen, MainClassButtonField), mainInfo, "ScreenRunSetup_MainClassTitle", "ScreenClassSelection_ClassLabel");
+            AddClanSummary(root, Get<GameUISelectableButton>(_screen, MainClassButtonField), mainInfo, saveManager, "ScreenRunSetup_MainClassTitle", "ScreenClassSelection_ClassLabel");
             AddChampionButton(root, Get<GameUISelectableButton>(_screen, MainClassSwapChampionButtonField), mainInfo, saveManager, () => SwapChampionLabel(mainInfo, "RUN_SETUP.SWAP_MAIN_CHAMPION"));
-            AddClanSummary(root, Get<GameUISelectableButton>(_screen, SubClassButtonField), subInfo, "ScreenRunSetup_SubclassTitle", "ScreenClassSelection_SubclassLabel");
+            AddClanSummary(root, Get<GameUISelectableButton>(_screen, SubClassButtonField), subInfo, saveManager, "ScreenRunSetup_SubclassTitle", "ScreenClassSelection_SubclassLabel");
             AddChampionButton(root, Get<GameUISelectableButton>(_screen, SubClassSwapChampionButtonField), subInfo, saveManager, () => SwapChampionLabel(subInfo, "RUN_SETUP.SWAP_ALLIED_CHAMPION"));
             AddPyreHeartSummary(root, Get<GameUISelectableButton>(_screen, PyreHeartButtonField), Get<global::PyreHeartInfoUI>(_screen, PyreHeartInfoField));
             AddDifficultyTier(root, Get<GameUISelectableButton>(_screen, DifficultyTierButtonField), Get<global::DifficultyTierInfoUI>(_screen, DifficultyTierInfoField), allGameData);
@@ -224,14 +224,14 @@ namespace MonsterTrainAccessibility.UI.Screens
             Register(button.gameObject, element);
         }
 
-        private void AddClanSummary(ListContainer root, GameUISelectableButton button, global::RunSetupClassLevelInfoUI info, params string[] labelTerms)
+        private void AddClanSummary(ListContainer root, GameUISelectableButton button, global::RunSetupClassLevelInfoUI info, SaveManager saveManager, params string[] labelTerms)
         {
             if (button == null)
             {
                 return;
             }
 
-            ProxyRunSetupClanSummary element = new ProxyRunSetupClanSummary(button, info, labelTerms);
+            ProxyRunSetupClanSummary element = new ProxyRunSetupClanSummary(button, info, saveManager, labelTerms);
             root.Add(element);
             Register(button.gameObject, element);
         }

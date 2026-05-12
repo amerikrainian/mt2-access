@@ -67,7 +67,7 @@ namespace MonsterTrainAccessibility.UI.Elements
             List<Message> parts = new List<Message>
             {
                 Message.FromText(clan.GetDescription()),
-                Message.Localized("ui", "RUN_SETUP.CLAN_LEVEL", new { level = _saveManager?.GetClassLevelInMetagame(clan.GetID()) ?? 0 })
+                ProxyRunSetupClanSummary.ClanLevelProgress(clan, _saveManager, _saveManager?.GetClassLevelInMetagame(clan.GetID()) ?? 0)
             };
 
             if (data.isLocked)

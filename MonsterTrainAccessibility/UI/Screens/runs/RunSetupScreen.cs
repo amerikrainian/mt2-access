@@ -119,6 +119,7 @@ namespace MonsterTrainAccessibility.UI.Screens
 
             AddClanSummary(root, Get<GameUISelectableButton>(_screen, MainClassButtonField),
                 mainInfo,
+                saveManager,
                 "ScreenRunSetup_MainClassTitle",
                 "ScreenClassSelection_ClassLabel");
             AddChampionButton(root, Get<GameUISelectableButton>(_screen, MainClassSwapChampionButtonField), mainInfo, saveManager, () => SwapChampionLabel(
@@ -126,6 +127,7 @@ namespace MonsterTrainAccessibility.UI.Screens
                 "RUN_SETUP.SWAP_MAIN_CHAMPION"));
             AddClanSummary(root, Get<GameUISelectableButton>(_screen, SubClassButtonField),
                 subInfo,
+                saveManager,
                 "ScreenRunSetup_SubclassTitle",
                 "ScreenClassSelection_SubclassLabel");
             AddChampionButton(root, Get<GameUISelectableButton>(_screen, SubClassSwapChampionButtonField), subInfo, saveManager, () => SwapChampionLabel(
@@ -293,14 +295,14 @@ namespace MonsterTrainAccessibility.UI.Screens
             Register(button.gameObject, element);
         }
 
-        private void AddClanSummary(ListContainer root, GameUISelectableButton button, global::RunSetupClassLevelInfoUI info, params string[] labelTerms)
+        private void AddClanSummary(ListContainer root, GameUISelectableButton button, global::RunSetupClassLevelInfoUI info, SaveManager saveManager, params string[] labelTerms)
         {
             if (button == null)
             {
                 return;
             }
 
-            ProxyRunSetupClanSummary element = new ProxyRunSetupClanSummary(button, info, labelTerms);
+            ProxyRunSetupClanSummary element = new ProxyRunSetupClanSummary(button, info, saveManager, labelTerms);
             root.Add(element);
             Register(button.gameObject, element);
         }

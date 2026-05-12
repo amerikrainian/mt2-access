@@ -14,9 +14,10 @@ namespace MonsterTrainAccessibility.UI.Elements
 
         private readonly GameUISelectableButton _button;
         private readonly global::RunSetupClassLevelInfoUI _info;
+        private readonly SaveManager _saveManager;
         private readonly string[] _labelTerms;
 
-        public ProxyRunSetupClanSummary(GameUISelectableButton button, global::RunSetupClassLevelInfoUI info, params string[] labelTerms)
+        public ProxyRunSetupClanSummary(GameUISelectableButton button, global::RunSetupClassLevelInfoUI info, SaveManager saveManager, params string[] labelTerms)
             : base(
                 button != null ? button.gameObject : null,
                 typeKey: "button",
@@ -24,6 +25,7 @@ namespace MonsterTrainAccessibility.UI.Elements
         {
             _button = button;
             _info = info;
+            _saveManager = saveManager;
             _labelTerms = labelTerms;
         }
 
@@ -47,10 +49,45 @@ namespace MonsterTrainAccessibility.UI.Elements
             List<Message> parts = new List<Message>
             {
                 Message.FromText(_info.IsMainClass ? clan.GetDescription() : clan.GetSubclassDescription()),
-                Message.Localized("ui", "RUN_SETUP.CLAN_LEVEL", new { level = _info.Level })
+                ClanLevelProgress(clan, _saveManager, _info.Level)
             };
             parts.RemoveAll(part => part == null);
             return parts.Count > 0 ? Message.JoinLines(parts) : null;
+        }
+
+        internal static Message ClanLevelProgress(ClassData clan, SaveManager saveManager, int fallbackLevel)
+        {
+            if (clan == null)
+            {
+                return null;
+            }
+
+            int level = fallbackLevel;
+            int xp = 0;
+            BalanceData balanceData = saveManager?.GetBalanceData();
+            if (saveManager != null)
+            {
+                level = saveManager.GetClassLevelInMetagame(clan.GetID());
+                xp = saveManager.GetClassXP(clan.GetID());
+            }
+
+            if (balanceData == null)
+            {
+                return Message.Localized("ui", "RUN_SETUP.CLAN_LEVEL", new { level });
+            }
+
+            balanceData.ApplyClassXP(ref level, ref xp);
+            if (!balanceData.HasNextClassLevel(level))
+            {
+                return Message.Localized("ui", "RUN_SETUP.CLAN_LEVEL_MAX", new { level });
+            }
+
+            int total = balanceData.GetXPRequiredForNextClassLevel(level);
+            string format = AccessibilityText.LocalizeTerm("TextFormat_Divide");
+            string xpText = !string.IsNullOrWhiteSpace(format)
+                ? string.Format(format, LocalizationUtil.FormatNumber(xp), LocalizationUtil.FormatNumber(total))
+                : LocalizationUtil.FormatNumber(xp) + "/" + LocalizationUtil.FormatNumber(total);
+            return Message.Localized("ui", "RUN_SETUP.CLAN_LEVEL_XP", new { level, xp = xpText });
         }
 
         private string ResolveClanName()
