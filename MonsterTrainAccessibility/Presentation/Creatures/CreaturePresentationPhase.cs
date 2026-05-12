@@ -42,13 +42,8 @@ namespace MonsterTrainAccessibility.Presentation.Creatures
                 builder.AddSection(
                     SectionKind.Tooltip,
                     MessageList.TooltipTitle(tooltip),
-                    null,
-                    key + ":title");
-                builder.AddSection(
-                    SectionKind.Tooltip,
-                    null,
                     Message.FromText(tooltip.body),
-                    key + ":body");
+                    key);
             }
         }
 
