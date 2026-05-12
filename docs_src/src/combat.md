@@ -99,3 +99,16 @@ Navigation in targeting mode works exactly as it does elsewhere: left/right arro
 Cards play by similar rules. When you summon a unit, you'll be asked to pick a spawn point on the floor. Slot 1 is always the frontmost (right in the enemies' faces), and the numbers count back from there, with the highest slot being whatever's furthest from the fray (cozy, well-defended, lovely view of the action). Same navigation, same Enter to commit.
 
 One thing to keep in mind: most monsters can only swing at things on their own floor, so don't waste your breath courting a target two floors up. The game will politely refuse, and your unit will sit there judging you.
+
+### Reading Spawn Points
+
+As you scroll through spawn points, you'll often hear something like *"spawn point 2, spear steward."* Do not panic on the spear steward's behalf; you are not about to overwrite them. The convention is that the named unit is whoever currently occupies that slot, and committing the spawn places your new arrival *in front of* them. That unit, and anyone ahead of them, will politely shuffle one step back to make room for the newcomer. Empty slots, having no current resident to name, simply announce themselves by number.
+
+A worked example. Suppose you already have two spear stewards on the floor, at points 1 and 2, and you're about to summon a fresh shield steward. Reading the line left-to-right (back to front, as established):
+
+- **Spawn at point 1** (currently a spear steward): the shield slips into the frontmost slot, both spears shuffle back a step. Line becomes spear -> spear -> shield.
+- **Spawn at point 2** (also a spear steward): the shield wedges in between; the rearward spear gets bumped one further back. Line becomes spear -> shield -> spear.
+- **Spawn at point 3** (empty, so no name announced): the shield settles into the back, and nobody has to move. Line becomes shield -> spear -> spear.
+
+Same unit, same floor, three entirely different roles in the choreography. Pick accordingly.
+
