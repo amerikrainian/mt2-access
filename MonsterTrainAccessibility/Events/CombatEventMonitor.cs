@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System;
 using MonsterTrainAccessibility.Core;
 using MonsterTrainAccessibility.Localization;
 using ShinyShoe;
@@ -16,8 +17,11 @@ namespace MonsterTrainAccessibility.Events
         private readonly HeroManager _heroManager;
         private readonly CharacterVitalsSignalTracker _vitalsTracker;
         private readonly HashSet<CharacterState> _announcedDeaths = new HashSet<CharacterState>();
+        private readonly HashSet<string> _announcedRelicTriggers = new HashSet<string>();
+        private readonly HashSet<string> _announcedCardModifierRelicTriggers = new HashSet<string>();
         private int _lastTurn = -1;
         private int _lastTurnModifier;
+        private CombatManager.Phase _lastPhase;
         private bool _started;
 
         public CombatEventMonitor(AllGameManagers managers, CharacterVitalsSignalTracker vitalsTracker)
@@ -86,6 +90,8 @@ namespace MonsterTrainAccessibility.Events
             _monsterManager?.RemoveCharactersNotification(this);
             _heroManager?.RemoveCharactersNotification(this);
             _announcedDeaths.Clear();
+            _announcedRelicTriggers.Clear();
+            _announcedCardModifierRelicTriggers.Clear();
         }
 
         public IEnumerator CharacterAdded(CharacterState character, CardState fromCard)
@@ -149,11 +155,18 @@ namespace MonsterTrainAccessibility.Events
 
             _lastTurn = turnCounter;
             _lastTurnModifier = turnModifier;
+            _announcedRelicTriggers.Clear();
             EventDispatcher.Enqueue(new TurnEvent(turnCounter + turnModifier, totalWaves, isLoopingScenario));
         }
 
         private void OnCombatPhaseChanged(CombatManager.Phase phase)
         {
+            if (_lastPhase != phase)
+            {
+                _lastPhase = phase;
+                _announcedRelicTriggers.Clear();
+            }
+
             switch (phase)
             {
                 case CombatManager.Phase.MonsterTurn:
@@ -230,7 +243,58 @@ namespace MonsterTrainAccessibility.Events
 
         private void OnRelicTriggered(RelicState relic, IRelicEffect effect)
         {
+            if (ReplayAccessibilityState.IsSuppressed)
+            {
+                Log.Info("[AccessibilityMod] Skipped artifact trigger during replay suppression: " + RelicTriggerDebugLabel(relic, effect));
+                return;
+            }
+
+            if (effect is ICardModifierRelicEffect)
+            {
+                string cardModifierKey = RelicEffectKey(relic, effect);
+                if (_announcedCardModifierRelicTriggers.Add(cardModifierKey))
+                {
+                    Log.Info("[AccessibilityMod] Skipped passive card modifier artifact trigger: " + RelicTriggerDebugLabel(relic, effect));
+                }
+                else
+                {
+                    Log.Info("[AccessibilityMod] Suppressed duplicate passive card modifier artifact trigger: " + RelicTriggerDebugLabel(relic, effect));
+                }
+                return;
+            }
+
+            string key = RelicTriggerKey(relic, effect);
+            if (!_announcedRelicTriggers.Add(key))
+            {
+                Log.Info("[AccessibilityMod] Suppressed duplicate artifact trigger: " + RelicTriggerDebugLabel(relic, effect));
+                return;
+            }
+
+            Log.Info("[AccessibilityMod] Queued artifact trigger: " + RelicTriggerDebugLabel(relic, effect));
             EventDispatcher.Enqueue(new RelicTriggeredEvent(relic));
+        }
+
+        private static string RelicEffectKey(RelicState relic, IRelicEffect effect)
+        {
+            string relicId = relic?.GetRelicDataID() ?? string.Empty;
+            string effectType = effect?.GetType().FullName ?? string.Empty;
+            return relicId + "|" + effectType;
+        }
+
+        private string RelicTriggerKey(RelicState relic, IRelicEffect effect)
+        {
+            CombatManager.Phase phase = _combatManager != null ? _combatManager.GetCombatPhase() : _lastPhase;
+            return RelicEffectKey(relic, effect) + "|" + phase + "|" + _lastTurn + "|" + _lastTurnModifier;
+        }
+
+        private string RelicTriggerDebugLabel(RelicState relic, IRelicEffect effect)
+        {
+            Message name = Message.RawCleaned(relic?.GetName());
+            string relicName = name?.Resolve() ?? "<unknown>";
+            string relicId = relic?.GetRelicDataID() ?? "<unknown>";
+            string effectType = effect?.GetType().Name ?? "<unknown>";
+            CombatManager.Phase phase = _combatManager != null ? _combatManager.GetCombatPhase() : _lastPhase;
+            return relicName + " (" + relicId + "), effect " + effectType + ", phase " + phase + ", turn " + _lastTurn;
         }
     }
 }
