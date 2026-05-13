@@ -1,4 +1,5 @@
 using MonsterTrainAccessibility.Localization;
+using System;
 using System.Reflection;
 using HarmonyLib;
 using ShinyShoe;
@@ -15,11 +16,11 @@ namespace MonsterTrainAccessibility.UI.Elements
         private readonly Dropdown _unityDropdown;
         private readonly GameUISelectableDropdown _gameDropdown;
 
-        public ProxyDropdown(GameObject target)
+        public ProxyDropdown(GameObject target, Func<Message> label = null)
             : base(
                 target: target,
                 typeKey: "dropdown",
-                label: null,
+                label: label,
                 status: null)
         {
             _tmpDropdown = target != null ? target.GetComponent<TMP_Dropdown>() : null;

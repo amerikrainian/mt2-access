@@ -49,11 +49,10 @@ namespace MonsterTrainAccessibility.UI.Screens
 
             SelectableSliderHelper slider = Get<SelectableSliderHelper>(control, VolumeSliderField);
             GameUISelectableButton muteButton = Get<GameUISelectableButton>(control, VolumeMuteButtonField);
-            string label = ProxySettingsButton.FindLabelInSettingsEntry(control);
 
             if (slider != null)
             {
-                RegisterSettingsSlider(slider, container, label);
+                RegisterSettingsSlider(slider, container, () => ProxySettingsButton.FindLabelInSettingsEntry(control));
             }
 
             if (muteButton != null)
@@ -81,21 +80,19 @@ namespace MonsterTrainAccessibility.UI.Screens
                 return;
             }
 
-            RegisterSettingsSlider(slider, container, ProxySettingsButton.FindLabelInSettingsEntry(control));
+            RegisterSettingsSlider(slider, container, () => ProxySettingsButton.FindLabelInSettingsEntry(control));
         }
 
-        protected void RegisterSettingsSlider(SelectableSliderHelper slider, ListContainer container, string label = null)
+        protected void RegisterSettingsSlider(SelectableSliderHelper slider, ListContainer container, Func<string> label = null)
         {
             if (slider == null)
             {
                 return;
             }
 
-            SliderElement element = new SliderElement(slider)
-            {
-                HasOverrideLabel = true,
-                OverrideLabel = label ?? ProxySettingsButton.FindLabelInSettingsEntry(slider)
-            };
+            SliderElement element = new SliderElement(
+                slider,
+                () => Message.RawCleaned(label != null ? label() : ProxySettingsButton.FindLabelInSettingsEntry(slider)));
             AddSettingsElement(container, slider.gameObject, element);
         }
 
@@ -106,11 +103,9 @@ namespace MonsterTrainAccessibility.UI.Screens
                 return;
             }
 
-            ProxyDropdown element = new ProxyDropdown(dropdown.gameObject)
-            {
-                HasOverrideLabel = true,
-                OverrideLabel = ProxySettingsButton.FindLabelInSettingsEntry(dropdown)
-            };
+            ProxyDropdown element = new ProxyDropdown(
+                dropdown.gameObject,
+                () => Message.RawCleaned(ProxySettingsButton.FindLabelInSettingsEntry(dropdown)));
             AddSettingsElement(container, dropdown.gameObject, element);
             RegisterSettingsDropdownEntries(dropdown, container);
             ConnectSettingsDropdown(dropdown);
@@ -123,11 +118,9 @@ namespace MonsterTrainAccessibility.UI.Screens
                 return;
             }
 
-            ToggleElement element = new ToggleElement(toggle)
-            {
-                HasOverrideLabel = true,
-                OverrideLabel = ProxySettingsButton.FindLabelInSettingsEntry(toggle)
-            };
+            ToggleElement element = new ToggleElement(
+                toggle,
+                () => Message.RawCleaned(ProxySettingsButton.FindLabelInSettingsEntry(toggle)));
             AddSettingsElement(container, toggle.gameObject, element);
         }
 

@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Reflection;
 using HarmonyLib;
+using MonsterTrainAccessibility.Core;
 using MonsterTrainAccessibility.UI.Elements;
 using ShinyShoe;
 using UnityEngine;
@@ -43,6 +44,8 @@ namespace MonsterTrainAccessibility.UI.Screens
 
         private readonly global::SettingsScreen _screen;
         private bool _lastSettingsDialogActive;
+        private string _lastLanguageCode;
+        private int _refreshNavigationAfterLanguageChangeFrame = -1;
 
         public SettingsScreen(global::SettingsScreen screen)
         {
@@ -52,6 +55,7 @@ namespace MonsterTrainAccessibility.UI.Screens
         public override void OnPush()
         {
             base.OnPush();
+            _lastLanguageCode = CurrentLanguageCode();
             SyncChildScreen();
         }
 
@@ -64,8 +68,75 @@ namespace MonsterTrainAccessibility.UI.Screens
                 global::SettingsDialog dialog = Get<global::SettingsDialog>(_screen, SettingsDialogField);
                 if (dialog != null)
                 {
+                    ScheduleLanguageNavigationRefreshIfNeeded();
+                    RefreshNavigationAfterLanguageChangeIfDue(dialog);
                     WireTabNavigation(dialog);
                 }
+            }
+        }
+
+        private void ScheduleLanguageNavigationRefreshIfNeeded()
+        {
+            string currentLanguageCode = CurrentLanguageCode();
+            if (string.Equals(currentLanguageCode, _lastLanguageCode, System.StringComparison.Ordinal))
+            {
+                return;
+            }
+
+            _lastLanguageCode = currentLanguageCode;
+            _refreshNavigationAfterLanguageChangeFrame = Time.frameCount + 1;
+        }
+
+        private void RefreshNavigationAfterLanguageChangeIfDue(global::SettingsDialog dialog)
+        {
+            if (_refreshNavigationAfterLanguageChangeFrame < 0 ||
+                Time.frameCount < _refreshNavigationAfterLanguageChangeFrame)
+            {
+                return;
+            }
+
+            _refreshNavigationAfterLanguageChangeFrame = -1;
+            RefreshActiveTabNavigation(dialog);
+            WireTabNavigation(dialog);
+            ReselectLanguageDropdown(dialog);
+            UIManager.ForceReannounceCurrentFocus();
+        }
+
+        private static string CurrentLanguageCode()
+        {
+            return global::LocalizationUtil.CurrentLanguageCode ?? string.Empty;
+        }
+
+        private void RefreshActiveTabNavigation(global::SettingsDialog dialog)
+        {
+            List<global::SettingsTab> tabs = Get<List<global::SettingsTab>>(dialog, TabsField);
+            if (tabs == null)
+            {
+                return;
+            }
+
+            for (int i = 0; i < tabs.Count; i++)
+            {
+                global::SettingsTab tab = tabs[i];
+                if (tab?.SectionRoot != null && tab.SectionRoot.activeInHierarchy)
+                {
+                    tab.SetActivated(true);
+                    return;
+                }
+            }
+        }
+
+        private static void ReselectLanguageDropdown(global::SettingsDialog dialog)
+        {
+            GameUISelectableDropdown languageDropdown = Get<GameUISelectableDropdown>(dialog, LanguageDropdownField);
+            if (languageDropdown == null || !languageDropdown.gameObject.activeInHierarchy)
+            {
+                return;
+            }
+
+            if (global::InputManager.Inst?.currentInputModeUsesNavigation == true)
+            {
+                global::InputManager.Inst.SelectGameUIComponent(languageDropdown, allowClearingSelection: false, reselect: true);
             }
         }
 
