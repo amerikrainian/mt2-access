@@ -12,17 +12,19 @@ namespace MonsterTrainAccessibility.UI.Elements
         private readonly SoulInfoUI _item;
         private readonly IGameUIComponent _selectable;
 
-        public ProxySoulInfoItem(SoulInfoUI item, IGameUIComponent selectable)
+        public ProxySoulInfoItem(SoulInfoUI item, IGameUIComponent selectable, string typeKey = "button")
             : base(
-                selectable,
-                typeKey: "button",
+                target: selectable?.component != null ? selectable.component.gameObject : item?.gameObject,
+                typeKey: typeKey,
                 label: null)
         {
             _item = item;
             _selectable = selectable;
         }
 
-        public override bool IsVisible => _selectable?.component != null && _selectable.component.gameObject.activeInHierarchy;
+        public override bool IsVisible =>
+            (_selectable?.component != null && _selectable.component.gameObject.activeInHierarchy) ||
+            (_item != null && _item.gameObject.activeInHierarchy);
         public override Message GetLabel() => Message.FromText(SoulData()?.GetName());
 
         public override Message GetTooltip()

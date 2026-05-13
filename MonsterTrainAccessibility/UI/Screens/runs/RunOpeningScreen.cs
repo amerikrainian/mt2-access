@@ -44,7 +44,7 @@ namespace MonsterTrainAccessibility.UI.Screens
             ListContainer root = new ListContainer
             {
                 AnnounceName = false,
-                AnnouncePosition = true,
+                AnnouncePosition = false,
                 NavigationAxis = NavigationAxis.Vertical
             };
             RootElement = root;
@@ -217,6 +217,11 @@ namespace MonsterTrainAccessibility.UI.Screens
                 return;
             }
 
+            ListContainer soulGroup = new ListContainer(Message.Localized("ui", "HUD.SOULS").Resolve(), NavigationAxis.Horizontal)
+            {
+                AnnouncePosition = true
+            };
+
             for (int i = 0; i < souls.Count; i++)
             {
                 global::SoulInfoUI soul = souls[i];
@@ -225,8 +230,15 @@ namespace MonsterTrainAccessibility.UI.Screens
                     continue;
                 }
 
-                GameObject target = soul.SelectableUI?.component?.gameObject ?? soul.gameObject;
-                AddTarget(root, target, new LabeledButton(target, () => Message.FromText(soul.GetSoulData()?.GetName())));
+                IGameUIComponent selectable = soul.SelectableUI;
+                ProxySoulInfoItem element = new ProxySoulInfoItem(soul, selectable, typeKey: null);
+                soulGroup.Add(element);
+                Register(element, soul.gameObject, selectable?.component?.gameObject);
+            }
+
+            if (soulGroup.Children.Count > 0)
+            {
+                root.Add(soulGroup);
             }
         }
 

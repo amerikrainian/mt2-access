@@ -122,9 +122,7 @@ namespace MonsterTrainAccessibility.UI.Screens
             AddClasses();
             AddCovenantOrDifficulty();
             AddDistance();
-            HashSet<string> bossTargetsSeen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            AddBossTargets(Get<List<global::BossTargetUI>>(_hud, BossTargetUisField), bossTargetsSeen);
-            AddBossTargets(Get<List<global::BossTargetUI>>(_hud, SoulSaviorBossTargetUisField), bossTargetsSeen);
+            AddBossTargetGroup();
             AddLunaCoven();
             AddBattleTurnCounter();
             AddTrainStats();
@@ -239,9 +237,25 @@ namespace MonsterTrainAccessibility.UI.Screens
             }
         }
 
-        private void AddBossTargets(List<global::BossTargetUI> targets, HashSet<string> seenTitles)
+        private void AddBossTargetGroup()
         {
-            if (targets == null)
+            ListContainer bosses = new ListContainer(Message.Localized("ui", "RUN_OPENING.BOSSES").Resolve(), NavigationAxis.Horizontal)
+            {
+                AnnouncePosition = false
+            };
+            HashSet<string> seenTitles = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            AddBossTargets(bosses, Get<List<global::BossTargetUI>>(_hud, BossTargetUisField), seenTitles);
+            AddBossTargets(bosses, Get<List<global::BossTargetUI>>(_hud, SoulSaviorBossTargetUisField), seenTitles);
+
+            if (bosses.Children.Count > 0)
+            {
+                _root.Add(bosses);
+            }
+        }
+
+        private void AddBossTargets(ListContainer bosses, List<global::BossTargetUI> targets, HashSet<string> seenTitles)
+        {
+            if (bosses == null || targets == null)
             {
                 return;
             }
@@ -260,7 +274,9 @@ namespace MonsterTrainAccessibility.UI.Screens
                     continue;
                 }
 
-                AddElement(new ProxyBossTarget(target, currentOnly: false), target.gameObject);
+                ProxyBossTarget element = new ProxyBossTarget(target, currentOnly: false);
+                bosses.Add(element);
+                Register(target.gameObject, element);
             }
         }
 

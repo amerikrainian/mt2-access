@@ -91,8 +91,12 @@ namespace MonsterTrainAccessibility.UI.Screens
             }
 
             int buttonRow = count == 0 ? 0 : (count + columns - 1) / columns;
-            AddButton(_screen.GetConfirmButton(), 0, buttonRow);
-            AddButton(_screen.GetCloseButton(), 1, buttonRow);
+            int buttonColumn = 0;
+            if (!IsSoulEquipMode(out _))
+            {
+                AddButton(_screen.GetConfirmButton(), buttonColumn++, buttonRow);
+            }
+            AddButton(_screen.GetCloseButton(), buttonColumn, buttonRow);
         }
 
         public override bool ShouldRestoreNavigationFocus()
@@ -175,9 +179,25 @@ namespace MonsterTrainAccessibility.UI.Screens
                 return;
             }
 
-            LabeledButton element = new LabeledButton(button, () => Message.FromText(AccessibleScreenText.ReadButtonLabel(button)));
+            LabeledButton element = new LabeledButton(button, () => DeckButtonLabel(button));
             Grid.Add(element, x, y);
             RegisterElement(element, button.gameObject);
+        }
+
+        private Message DeckButtonLabel(GameUISelectableButton button)
+        {
+            string label = AccessibleScreenText.ReadButtonLabel(button);
+            if (!string.IsNullOrWhiteSpace(Message.Clean(label)))
+            {
+                return Message.FromText(label);
+            }
+
+            if (button == _screen.GetCloseButton() && IsSoulEquipMode(out _))
+            {
+                return Message.Localized("ui", "DIALOGUE.SKIP");
+            }
+
+            return null;
         }
 
         private bool HasStableNativeDefaultSelectable()
