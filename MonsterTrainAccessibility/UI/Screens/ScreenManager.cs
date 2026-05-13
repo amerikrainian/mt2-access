@@ -339,6 +339,16 @@ namespace MonsterTrainAccessibility.UI.Screens
             return changed;
         }
 
+        internal static bool FocusFirstHudSoul(global::Hud hud)
+        {
+            if (_hudNavigationScreen == null || hud == null || !_hudNavigationScreen.IsForHud(hud))
+            {
+                return false;
+            }
+
+            return _hudNavigationScreen.FocusFirstSoul();
+        }
+
         public static void HandleUIScreenStateChanged(global::UIScreen screen, bool active)
         {
             SyncState.HandleUIScreenStateChanged(screen, active);

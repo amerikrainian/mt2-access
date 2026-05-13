@@ -53,6 +53,7 @@ namespace MonsterTrainAccessibility.UI.Screens
             AnnouncePosition = false,
             NavigationAxis = NavigationAxis.Vertical
         };
+        private ListContainer _soulGroup;
         private string _signature;
 
         public HudNavigationScreen(global::Hud hud)
@@ -62,6 +63,11 @@ namespace MonsterTrainAccessibility.UI.Screens
             ClaimAction("buffer_next_item");
             ClaimAction("buffer_prev");
             ClaimAction("buffer_next");
+        }
+
+        internal bool IsForHud(global::Hud hud)
+        {
+            return ReferenceEquals(_hud, hud);
         }
 
         public override void OnPush()
@@ -344,6 +350,7 @@ namespace MonsterTrainAccessibility.UI.Screens
 
         private void AddSoulEquip()
         {
+            _soulGroup = null;
             global::SoulEquipUI souls = Get<global::SoulEquipUI>(_hud, SoulEquipUIField);
             if (souls == null)
             {
@@ -358,6 +365,7 @@ namespace MonsterTrainAccessibility.UI.Screens
             }
 
             ListContainer group = new ListContainer(Message.Localized("ui", "HUD.SOULS").Resolve(), NavigationAxis.Horizontal);
+            _soulGroup = group;
             for (int i = 0; i < soulItems.Count; i++)
             {
                 global::SoulHudItemUI soulItem = soulItems[i];
@@ -368,13 +376,26 @@ namespace MonsterTrainAccessibility.UI.Screens
 
                 ProxySoulHudItem element = new ProxySoulHudItem(soulItem);
                 group.Add(element);
-                Register(element, soulItem.gameObject, soulItem.GetSoulItemButton()?.gameObject);
+                GameUISelectableButton button = soulItem.GetSoulItemButton();
+                Register(element, soulItem.gameObject, button?.gameObject, button?.component != null ? button.component.gameObject : null);
             }
 
             if (group.Children.Count > 0)
             {
                 _root.Add(group);
             }
+        }
+
+        internal bool FocusFirstSoul()
+        {
+            if (_soulGroup == null || _soulGroup.Children.Count == 0 || !_soulGroup.IsVisible)
+            {
+                return false;
+            }
+
+            _root.SetFocusTo(_soulGroup);
+            _soulGroup.FocusFirst();
+            return true;
         }
 
         private void AddDragonsHoard()
