@@ -22,7 +22,7 @@ namespace MonsterTrainAccessibility
     {
         public const string GUID = "com.accessibility.monstertrain";
         public const string NAME = "Monster Train Accessibility";
-        public const string VERSION = "0.1.3";
+        public const string VERSION = "0.1.4";
 
         private Harmony _harmony;
         private AccessibleParamsManager _accessibleParamsManager;
