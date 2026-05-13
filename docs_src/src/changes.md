@@ -1,5 +1,10 @@
 # Change Log
 
+## 0.1.5
+
+- The mod should respect user's selected language now and not require an explicit language switch
+- Added revised Chinese localization by QgSama
+
 ## 0.1.4
 
 - The game has been machine-translated into all the languages it supports. Contributions with improvements on that front are welcome.
