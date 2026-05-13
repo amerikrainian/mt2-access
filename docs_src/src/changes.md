@@ -1,5 +1,16 @@
 # Change Log
 
+## 0.1.6
+
+- In soul savior, pressing `m` while having the HUD open puts you onto your first soul. An odd choice of key, but you can rebind this if you wish (although do note that this is a native game action).
+- In the HUD screen, bosses are now collapsed to a horizontal row as opposed to participating in vertical navigation.
+- By popular demand/confusion, artifacts read out their primary effects without having to go to the buffer to see them. They do not, however, describe their tooltips, so if you want to see what something like `quick` does you still have to look in the respective buffer.
+- Souls now go through the presentation buffers during run preview in case you forgot and want to also remind yourself of their info.
+- The skip button is now labeled when equipping souls. I wasn't aware that was an option even. No idea why you'd want to do that, but now you can.
+- We no longer register the transient confirm button on soul equip screen, so no more weird vertical cycling in the first column (I don't think people even use confirm since souls equip upon selecting a card).
+- The HUD screen is now treated as, well, an actual screen. The game doesn't do that but hopefully we do now, so pressing tab should work anywhere the game allows it to (previously it was a custom opt-in. Seemed like a great idea at the time. It wasn't).
+- Slightly rearranged soul savior region selection menu so that region modifier is now its own item rather than being lumped in with rewards.
+
 ## 0.1.5
 
 - The mod should respect user's selected language now and not require an explicit language switch
