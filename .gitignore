@@ -8,3 +8,4 @@ game/
 *.zip
 *.exe
 installer/target/
+third_party/

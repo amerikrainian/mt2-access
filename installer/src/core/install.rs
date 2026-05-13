@@ -12,7 +12,7 @@ use serde::{Deserialize, Serialize};
 
 use super::paths::{
     appdata_mod_dir, install_manifest_file, is_bootstrap_path, is_mod_owned_path, normalized,
-    should_skip_zip_entry, version_file, INSTALLER_USER_AGENT,
+    should_skip_zip_entry, version_file, BEPINEX_BOOTSTRAP_URL, INSTALLER_USER_AGENT,
 };
 
 #[derive(Default, Deserialize, Serialize)]
@@ -58,6 +58,28 @@ pub fn download_and_extract(
     game_path: &Path,
     progress: impl Fn(u32),
 ) -> Result<(), String> {
+    let buffer = download_to_memory(url, progress)?;
+    extract_zip(&buffer, game_path)?;
+    ensure_bepinex(game_path)
+}
+
+pub fn install_from_file(zip_path: &Path, game_path: &Path) -> Result<(), String> {
+    let data = fs::read(zip_path).map_err(|e| format!("Failed to read zip: {}", e))?;
+    extract_zip(&data, game_path)?;
+    ensure_bepinex(game_path)
+}
+
+pub fn ensure_bepinex(game_path: &Path) -> Result<(), String> {
+    if game_path.join("BepInEx/core/BepInEx.dll").exists() {
+        return Ok(());
+    }
+
+    let data = download_to_memory(BEPINEX_BOOTSTRAP_URL, |_| {})
+        .map_err(|e| format!("Failed to download BepInEx bootstrap: {}", e))?;
+    extract_zip(&data, game_path)
+}
+
+fn download_to_memory(url: &str, progress: impl Fn(u32)) -> Result<Vec<u8>, String> {
     let client = reqwest::blocking::Client::builder()
         .user_agent(INSTALLER_USER_AGENT)
         .timeout(std::time::Duration::from_secs(120))
@@ -94,12 +116,7 @@ pub fn download_and_extract(
         }
     }
 
-    extract_zip(&buffer, game_path)
-}
-
-pub fn install_from_file(zip_path: &Path, game_path: &Path) -> Result<(), String> {
-    let data = fs::read(zip_path).map_err(|e| format!("Failed to read zip: {}", e))?;
-    extract_zip(&data, game_path)
+    Ok(buffer)
 }
 
 pub fn extract_zip(data: &[u8], dest: &Path) -> Result<(), String> {
@@ -172,9 +189,45 @@ fn normalize_path(path: &Path) -> String {
 mod tests {
     use super::*;
     use std::io::Write;
+    use std::sync::{Mutex, OnceLock};
+
+    fn manifest_test_lock() -> &'static Mutex<()> {
+        static LOCK: OnceLock<Mutex<()>> = OnceLock::new();
+        LOCK.get_or_init(|| Mutex::new(()))
+    }
+
+    struct ManifestBackup {
+        original: Option<Vec<u8>>,
+    }
+
+    impl ManifestBackup {
+        fn hide() -> Self {
+            let path = install_manifest_file();
+            let original = fs::read(&path).ok();
+            let _ = fs::remove_file(&path);
+            Self { original }
+        }
+    }
+
+    impl Drop for ManifestBackup {
+        fn drop(&mut self) {
+            let path = install_manifest_file();
+            if let Some(parent) = path.parent() {
+                let _ = fs::create_dir_all(parent);
+            }
+
+            if let Some(original) = self.original.take() {
+                let _ = fs::write(path, original);
+            } else {
+                let _ = fs::remove_file(path);
+            }
+        }
+    }
 
     #[test]
     fn extract_zip_creates_mod_files() {
+        let _lock = manifest_test_lock().lock().unwrap();
+        let _manifest_backup = ManifestBackup::hide();
         let dir = tempfile::tempdir().unwrap();
         let mut zip_buf = Vec::new();
         {
@@ -197,6 +250,8 @@ mod tests {
 
     #[test]
     fn extract_zip_skips_existing_bootstrap_file() {
+        let _lock = manifest_test_lock().lock().unwrap();
+        let _manifest_backup = ManifestBackup::hide();
         let dir = tempfile::tempdir().unwrap();
         fs::write(dir.path().join("winhttp.dll"), "existing").unwrap();
 

@@ -22,6 +22,10 @@
     <GameLocalizationPath>$(GamePluginsPath)Localization\Strings\</GameLocalizationPath>
     <ReleaseRootPath>release\</ReleaseRootPath>
     <PrismNativePath>prism\native\win-x64\prism.dll</PrismNativePath>
+    <BepInExBootstrapVersion>5.4.23.4</BepInExBootstrapVersion>
+    <BepInExBootstrapUrl>https://github.com/BepInEx/BepInEx/releases/download/v$(BepInExBootstrapVersion)/BepInEx_win_x64_$(BepInExBootstrapVersion).zip</BepInExBootstrapUrl>
+    <BepInExBootstrapPath>$(BaseIntermediateOutputPath)BepInEx_win_x64_$(BepInExBootstrapVersion)</BepInExBootstrapPath>
+    <BepInExBootstrapZip>$(BaseIntermediateOutputPath)BepInEx_win_x64_$(BepInExBootstrapVersion).zip</BepInExBootstrapZip>
     <InstallerDir>$(MSBuildProjectDirectory)\installer</InstallerDir>
     <InstallerExe>$(InstallerDir)\target\release\monster-train-accessibility-installer.exe</InstallerExe>
     <InstallerOutputExe>$(MSBuildProjectDirectory)\MonsterTrainAccessibilityInstaller.exe</InstallerOutputExe>
@@ -36,14 +40,20 @@
              Exclude="MonsterTrainAccessibility\bin\**;MonsterTrainAccessibility\obj\**" />
   </ItemGroup>
 
-  <!-- BepInEx References (from game folder) -->
+  <Target Name="EnsureBepInExBootstrap" BeforeTargets="PrepareForBuild"
+          Condition="!Exists('$(BepInExBootstrapPath)\BepInEx\core\BepInEx.dll')">
+    <MakeDir Directories="$(BaseIntermediateOutputPath)" />
+    <Exec Command="powershell -NoProfile -ExecutionPolicy Bypass -Command &quot;$ErrorActionPreference = 'Stop'; Invoke-WebRequest -Uri '$(BepInExBootstrapUrl)' -OutFile '$(BepInExBootstrapZip)'; if (Test-Path -LiteralPath '$(BepInExBootstrapPath)') { Remove-Item -LiteralPath '$(BepInExBootstrapPath)' -Recurse -Force }; Expand-Archive -LiteralPath '$(BepInExBootstrapZip)' -DestinationPath '$(BepInExBootstrapPath)' -Force&quot;" />
+  </Target>
+
+  <!-- BepInEx References (downloaded to obj so clean game installs can still build/release). -->
   <ItemGroup>
     <Reference Include="BepInEx">
-      <HintPath>$(MonsterTrainPath)\BepInEx\core\BepInEx.dll</HintPath>
+      <HintPath>$(BepInExBootstrapPath)\BepInEx\core\BepInEx.dll</HintPath>
       <Private>false</Private>
     </Reference>
     <Reference Include="0Harmony">
-      <HintPath>$(MonsterTrainPath)\BepInEx\core\0Harmony.dll</HintPath>
+      <HintPath>$(BepInExBootstrapPath)\BepInEx\core\0Harmony.dll</HintPath>
       <Private>false</Private>
     </Reference>
   </ItemGroup>
@@ -138,6 +148,22 @@
           SkipUnchangedFiles="true"
           Condition="Exists('%(LocalizationFiles.Identity)')" />
     <Message Text="Copied $(AssemblyName).dll to $(GamePluginsPath)" Importance="high" />
+  </Target>
+
+  <!-- Copy BepInEx into release and the local game folder. Fresh game installs do not have this. -->
+  <Target Name="CopyBepInExBootstrap" AfterTargets="Build">
+    <ItemGroup>
+      <BepInExBootstrapFiles Include="$(BepInExBootstrapPath)\**\*.*" />
+    </ItemGroup>
+    <Copy SourceFiles="@(BepInExBootstrapFiles)"
+          DestinationFiles="@(BepInExBootstrapFiles->'$(ReleaseRootPath)%(RecursiveDir)%(Filename)%(Extension)')"
+          SkipUnchangedFiles="true"
+          Condition="Exists('%(BepInExBootstrapFiles.Identity)')" />
+    <Copy SourceFiles="@(BepInExBootstrapFiles)"
+          DestinationFiles="@(BepInExBootstrapFiles->'$(MonsterTrainPath)\%(RecursiveDir)%(Filename)%(Extension)')"
+          SkipUnchangedFiles="true"
+          Condition="Exists('$(MonsterTrainPath)\MonsterTrain2.exe') and Exists('%(BepInExBootstrapFiles.Identity)')" />
+    <Message Text="Copied BepInEx bootstrap files to release\ and $(MonsterTrainPath)\" Importance="high" />
   </Target>
 
   <!-- Copy prism.dll (native screen reader bridge) to the game root so the OS loader finds it. -->

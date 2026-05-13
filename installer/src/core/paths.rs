@@ -11,6 +11,8 @@ pub const GITHUB_RELEASES_URL: &str =
     "https://api.github.com/repos/amerikrainian/mt2-access/releases";
 pub const GAME_DIR_NAME: &str = "Monster Train 2";
 pub const INSTALLER_USER_AGENT: &str = "MonsterTrainAccessibilityInstaller";
+pub const BEPINEX_BOOTSTRAP_URL: &str =
+    "https://github.com/BepInEx/BepInEx/releases/download/v5.4.23.4/BepInEx_win_x64_5.4.23.4.zip";
 
 pub const MOD_DLL: &str = "BepInEx/plugins/MonsterTrainAccessibility.dll";
 
@@ -27,7 +29,7 @@ pub const MOD_OWNED_PATHS: &[&str] = &[
     "BepInEx/plugins/System.Threading.Tasks.Extensions.dll",
 ];
 
-pub const MOD_OWNED_PREFIXES: &[&str] = &["BepInEx/plugins/Localization/"];
+pub const MOD_OWNED_PREFIXES: &[&str] = &["BepInEx/plugins/Localization/", "BepInEx/core/"];
 
 pub const SKIP_ZIP_PREFIXES: &[&str] = &["BepInEx/cache/"];
 
@@ -139,7 +141,7 @@ mod tests {
         assert!(is_mod_owned_path(
             "BepInEx/plugins/Localization/strings/en.json"
         ));
-        assert!(!is_mod_owned_path("BepInEx/core/BepInEx.dll"));
+        assert!(is_mod_owned_path("BepInEx/core/BepInEx.dll"));
     }
 
     #[test]
