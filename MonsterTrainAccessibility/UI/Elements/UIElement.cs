@@ -58,21 +58,20 @@ namespace MonsterTrainAccessibility.UI.Elements
 
         public Message GetFocusMessage()
         {
-            List<Message> parts = new List<Message>();
-
             Message label = GetLabel();
-            if (label != null)
-            {
-                parts.Add(label);
-            }
-
             Message typePart = BuildTypePart();
-            if (typePart != null)
+
+            if (label == null)
             {
-                parts.Add(typePart);
+                return typePart ?? Message.Empty;
             }
 
-            return parts.Count > 0 ? Message.Join(", ", parts) : Message.Empty;
+            if (typePart == null)
+            {
+                return label;
+            }
+
+            return Message.Join(" ", label, typePart);
         }
 
         public string GetFocusString() => GetFocusMessage().Resolve();
