@@ -14,7 +14,6 @@ namespace MonsterTrainAccessibility.UI.Screens
         };
 
         private string _signature;
-        private HudNavigationScreen _hudNavigationScreen;
 
         public override void OnPush()
         {
@@ -52,30 +51,6 @@ namespace MonsterTrainAccessibility.UI.Screens
                     UIManager.SuppressNextFocusAnnouncementIfTextMatches(newAnnouncement);
                 }
             }
-        }
-
-        protected bool SyncHudNavigation()
-        {
-            global::Hud hud = Core.GameManagers.GetScreenManager()?.GetScreen(global::ScreenName.Hud) as global::Hud;
-            bool active = hud != null && hud.IsHudNavigationEnabled();
-            if (active)
-            {
-                if (_hudNavigationScreen == null || _hudNavigationScreen.Parent == null)
-                {
-                    _hudNavigationScreen = new HudNavigationScreen(hud);
-                    PushChild(_hudNavigationScreen);
-                }
-
-                return true;
-            }
-
-            if (_hudNavigationScreen != null && _hudNavigationScreen.Parent != null)
-            {
-                RemoveChild(_hudNavigationScreen);
-            }
-
-            _hudNavigationScreen = null;
-            return false;
         }
 
         protected override void BuildRegistry()

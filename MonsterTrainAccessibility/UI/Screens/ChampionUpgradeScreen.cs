@@ -22,16 +22,6 @@ namespace MonsterTrainAccessibility.UI.Screens
             _screen = screen;
         }
 
-        public override void OnUpdate()
-        {
-            if (SyncHudNavigation())
-            {
-                return;
-            }
-
-            base.OnUpdate();
-        }
-
         protected override void PopulateList()
         {
             List<UpgradeCardChoiceItem> items = Get<List<UpgradeCardChoiceItem>>(_screen, UpgradeChoiceItemsField);

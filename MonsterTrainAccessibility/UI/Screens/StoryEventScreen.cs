@@ -43,11 +43,6 @@ namespace MonsterTrainAccessibility.UI.Screens
 
         public override void OnUpdate()
         {
-            if (SyncHudNavigation())
-            {
-                return;
-            }
-
             base.OnUpdate();
             SyncTransientSelection();
             AnnounceContentIfChanged();

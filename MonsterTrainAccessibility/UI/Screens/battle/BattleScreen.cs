@@ -70,7 +70,6 @@ namespace MonsterTrainAccessibility.UI.Screens
         private UIElement _unitAbilityCardElement;
         private UIElement _roomAbilityCardElement;
         private ListContainer _victoryRoot;
-        private HudNavigationScreen _hudNavigationScreen;
         private bool _hasHandSelectionLayer;
         private bool _initialFocusApplied;
         private int _lastEnabledSelectedRoom = -1;
@@ -173,11 +172,6 @@ namespace MonsterTrainAccessibility.UI.Screens
 
         public override void OnUpdate()
         {
-            if (SyncHudNavigation())
-            {
-                return;
-            }
-
             if (ReplayAccessibilityState.IsSuppressed)
             {
                 ClearFocusWhileBattleIsNotReady();
@@ -360,30 +354,6 @@ namespace MonsterTrainAccessibility.UI.Screens
             }
 
             return base.BlocksGameInput(action);
-        }
-
-        private bool SyncHudNavigation()
-        {
-            global::Hud hud = Hud;
-            bool active = hud != null && hud.IsHudNavigationEnabled();
-            if (active)
-            {
-                if (_hudNavigationScreen == null || _hudNavigationScreen.Parent == null)
-                {
-                    _hudNavigationScreen = new HudNavigationScreen(hud);
-                    PushChild(_hudNavigationScreen);
-                }
-
-                return true;
-            }
-
-            if (_hudNavigationScreen != null && _hudNavigationScreen.Parent != null)
-            {
-                RemoveChild(_hudNavigationScreen);
-            }
-
-            _hudNavigationScreen = null;
-            return false;
         }
 
         private bool IsRoomAbilitySubmit(InputAction action)

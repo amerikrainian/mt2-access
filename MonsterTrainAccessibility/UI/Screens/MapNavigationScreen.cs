@@ -18,7 +18,6 @@ namespace MonsterTrainAccessibility.UI.Screens
         private readonly global::MapScreen _screen;
         private MapHandler _handler;
         private TreeMapViewer _viewer;
-        private HudNavigationScreen _hudNavigationScreen;
         private readonly Dictionary<MapNode, ProxyMapPoint> _elementsByNode = new Dictionary<MapNode, ProxyMapPoint>();
         private MapNode _choicePrefixNode;
         private bool _allowFocusAnnouncements;
@@ -58,7 +57,6 @@ namespace MonsterTrainAccessibility.UI.Screens
 
         public override void OnUpdate()
         {
-            SyncHudNavigation();
             if (_viewer == null)
             {
                 Rebuild();
@@ -454,28 +452,6 @@ namespace MonsterTrainAccessibility.UI.Screens
 
             global::MapSection section = sections[index];
             return section != null && section.Scrolling;
-        }
-
-        private void SyncHudNavigation()
-        {
-            global::Hud hud = GameManagers.GetScreenManager()?.GetScreen(global::ScreenName.Hud) as global::Hud;
-            bool active = hud != null && hud.IsHudNavigationEnabled();
-            if (active)
-            {
-                if (_hudNavigationScreen == null || _hudNavigationScreen.Parent == null)
-                {
-                    _hudNavigationScreen = new HudNavigationScreen(hud);
-                    PushChild(_hudNavigationScreen);
-                }
-                return;
-            }
-
-            if (_hudNavigationScreen != null && _hudNavigationScreen.Parent != null)
-            {
-                RemoveChild(_hudNavigationScreen);
-            }
-
-            _hudNavigationScreen = null;
         }
     }
 }

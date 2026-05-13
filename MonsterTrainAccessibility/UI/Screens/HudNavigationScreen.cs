@@ -74,7 +74,7 @@ namespace MonsterTrainAccessibility.UI.Screens
         {
             if (_hud == null || !_hud.IsHudNavigationEnabled())
             {
-                Parent?.RemoveChild(this);
+                ScreenManager.RemoveFromTree(this);
                 return;
             }
 

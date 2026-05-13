@@ -98,9 +98,9 @@ namespace MonsterTrainAccessibility.UI.Screens
             global::RegionSelectionRewardDisplay mutatorDisplay =
                 Get<global::RegionSelectionRewardDisplay>(_screen, MutatorRewardDisplayField);
             ProxyRegionMutatorReward mutatorElement = new ProxyRegionMutatorReward(mutatorDisplay, MutatorForSelectedRegion);
-            rewards.Add(mutatorElement);
-            Register(mutatorDisplay?.RewardSelectable?.gameObject, mutatorElement);
             root.Add(rewards);
+            root.Add(mutatorElement);
+            Register(mutatorDisplay?.RewardSelectable?.gameObject, mutatorElement);
 
             GameUISelectableButton continueButton = Get<GameUISelectableButton>(_screen, ContinueButtonField);
             GameObjectElement continueElement = new GameObjectElement(

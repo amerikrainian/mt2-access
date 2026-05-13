@@ -15,6 +15,7 @@ namespace MonsterTrainAccessibility.UI.Screens
     {
         private static readonly List<Screen> Screens = new List<Screen>();
         private static readonly GameScreenSynchronizer SyncState = new GameScreenSynchronizer();
+        private static HudNavigationScreen _hudNavigationScreen;
 
         public static Screen CurrentScreen
         {
@@ -41,6 +42,7 @@ namespace MonsterTrainAccessibility.UI.Screens
         {
             StartupAnnouncement.Reset();
             SyncState.Shutdown();
+            _hudNavigationScreen = null;
             while (Screens.Count > 0)
             {
                 Screen screen = Screens[Screens.Count - 1];
@@ -332,7 +334,9 @@ namespace MonsterTrainAccessibility.UI.Screens
 
         public static bool Sync()
         {
-            return SyncState.Sync();
+            bool changed = SyncState.Sync();
+            changed |= SyncHudNavigation();
+            return changed;
         }
 
         public static void HandleUIScreenStateChanged(global::UIScreen screen, bool active)
@@ -360,6 +364,107 @@ namespace MonsterTrainAccessibility.UI.Screens
             {
                 screen.Parent.RemoveChild(screen);
             }
+        }
+
+        private static bool SyncHudNavigation()
+        {
+            global::ScreenManager gameScreenManager = GameManagers.GetScreenManager();
+            global::Hud hud = gameScreenManager?.GetScreen(global::ScreenName.Hud) as global::Hud;
+            bool active = hud != null &&
+                hud.IsHudNavigationEnabled() &&
+                IsHudNavigationEligible(gameScreenManager);
+
+            if (active)
+            {
+                if (_hudNavigationScreen != null && IsScreenInTree(_hudNavigationScreen))
+                {
+                    if (Screens.Count > 0 && ReferenceEquals(Screens[Screens.Count - 1], _hudNavigationScreen))
+                    {
+                        return false;
+                    }
+
+                    TryRemove(_hudNavigationScreen);
+                    _hudNavigationScreen = null;
+                }
+
+                _hudNavigationScreen = new HudNavigationScreen(hud);
+                PushScreen(_hudNavigationScreen);
+                return true;
+            }
+
+            if (_hudNavigationScreen != null)
+            {
+                TryRemove(_hudNavigationScreen);
+                _hudNavigationScreen = null;
+                return true;
+            }
+
+            return false;
+        }
+
+        private static bool IsHudNavigationEligible(global::ScreenManager gameScreenManager)
+        {
+            if (gameScreenManager == null)
+            {
+                return false;
+            }
+
+            if (gameScreenManager.GetTopScreen(ignoreDialog: false) == global::ScreenName.Dialog)
+            {
+                return false;
+            }
+
+            switch (gameScreenManager.GetTopScreen(ignoreDialog: true))
+            {
+                case global::ScreenName.Game:
+                case global::ScreenName.BattleIntro:
+                case global::ScreenName.Map:
+                case global::ScreenName.SoulSaviorMap:
+                case global::ScreenName.Merchant:
+                case global::ScreenName.StoryEvent:
+                case global::ScreenName.ChampionUpgrade:
+                case global::ScreenName.Draft:
+                case global::ScreenName.RelicChoice:
+                case global::ScreenName.Elixir:
+                case global::ScreenName.SoulChoice:
+                case global::ScreenName.EndlessMutatorDraft:
+                case global::ScreenName.Reward:
+                case global::ScreenName.RegionSelection:
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
+        private static bool IsScreenInTree(Screen target)
+        {
+            if (target == null)
+            {
+                return false;
+            }
+
+            for (int i = 0; i < Screens.Count; i++)
+            {
+                if (IsScreenInTree(Screens[i], target))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private static bool IsScreenInTree(Screen current, Screen target)
+        {
+            for (Screen screen = current; screen != null; screen = screen.ActiveChild)
+            {
+                if (ReferenceEquals(screen, target))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         private static IEnumerable<Screen> WalkTreeDeepestFirst(Screen screen)
