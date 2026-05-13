@@ -16,6 +16,7 @@ namespace MonsterTrainAccessibility.Localization
         private readonly Dictionary<string, Dictionary<string, string>> _tables = new Dictionary<string, Dictionary<string, string>>(StringComparer.OrdinalIgnoreCase);
         private readonly HashSet<string> _missingKeys = new HashSet<string>(StringComparer.Ordinal);
         private string _currentLanguageCode = DefaultLanguageCode;
+        private static bool _loggedGameLanguageLookupFailure;
 
         public static LocalizationManager Instance { get; private set; }
 
@@ -27,7 +28,8 @@ namespace MonsterTrainAccessibility.Localization
             }
 
             Instance = new LocalizationManager();
-            Instance.ReloadInternal(DefaultLanguageCode);
+            Instance.ReloadInternal(GetGameLanguageCode());
+            Message.ResetSpriteLabels();
             return Instance;
         }
 
@@ -85,6 +87,7 @@ namespace MonsterTrainAccessibility.Localization
             }
 
             global::MonsterTrainAccessibility.Speech.TextFilter.Reload();
+            Log.Info("[AccessibilityMod] Localization loaded for language " + _currentLanguageCode);
         }
 
         private string GetInternal(string key)
@@ -190,6 +193,24 @@ namespace MonsterTrainAccessibility.Localization
             string normalized = NormalizeLanguageCode(languageCode);
             int separator = normalized.IndexOf('-');
             return separator > 0 ? normalized.Substring(0, separator) : normalized;
+        }
+
+        private static string GetGameLanguageCode()
+        {
+            try
+            {
+                return global::LocalizationUtil.CurrentLanguageCode;
+            }
+            catch (Exception ex)
+            {
+                if (!_loggedGameLanguageLookupFailure)
+                {
+                    _loggedGameLanguageLookupFailure = true;
+                    Log.Info("[AccessibilityMod] Game language unavailable during localization sync; keeping current localization until it is available: " + ex);
+                }
+
+                return null;
+            }
         }
     }
 }
