@@ -20,7 +20,7 @@ namespace MonsterTrainAccessibility.UI.Elements
         }
 
         public override bool IsVisible => _relic != null && _relic.gameObject.activeInHierarchy;
-        public override Message GetLabel() => ProxyRelicInfo.Label(_relic);
+        public override Message GetLabel() => ProxyRelicInfo.FocusSummary(_relic);
         public override Message GetTooltip() => ProxyRelicInfo.Tooltip(_relic);
 
         internal override string HandleBuffers(BufferManager buffers)

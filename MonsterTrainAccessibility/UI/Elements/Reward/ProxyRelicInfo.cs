@@ -43,7 +43,7 @@ namespace MonsterTrainAccessibility.UI.Elements
         public RelicState State => _state;
         public bool IncludeDynamicInfoForModel => _includeDynamicInfo;
         public override bool IsVisible => _state != null || (_relic != null && _relic.gameObject.activeInHierarchy);
-        public override Message GetLabel() => _state != null ? Message.FromText(_state.GetName()) : Label(_relic);
+        public override Message GetLabel() => _state != null ? FocusSummary(_state, _includeDynamicInfo) : FocusSummary(_relic);
         public override Message GetTooltip() => _state != null ? Tooltip(_state, _includeDynamicInfo) : Tooltip(_relic);
 
         internal override string HandleBuffers(BufferManager buffers)
@@ -62,11 +62,11 @@ namespace MonsterTrainAccessibility.UI.Elements
 
             if (_state != null)
             {
-                buffer.Bind(RelicPresentationSource.FromState(_state, _includeDynamicInfo, beforeLabel));
+                buffer.Bind(RelicPresentationSource.FromState(_state, _includeDynamicInfo), beforeLabel);
             }
             else
             {
-                buffer.Bind(RelicPresentationSource.FromProvider(_relic, beforeLabel));
+                buffer.Bind(RelicPresentationSource.FromProvider(_relic), beforeLabel);
             }
             buffers.EnableBuffer("relic", true);
             return "relic";
@@ -77,6 +77,16 @@ namespace MonsterTrainAccessibility.UI.Elements
         public static Message Label(global::RelicTooltipProvider relic)
         {
             return Message.FromText(LabelText(relic));
+        }
+
+        public static Message FocusSummary(global::RelicTooltipProvider relic)
+        {
+            return relic != null ? FocusSummary(BuildContent(relic)) : null;
+        }
+
+        public static Message FocusSummary(global::RelicState state, bool includeDynamicInfo)
+        {
+            return state != null ? FocusSummary(BuildContent(state, includeDynamicInfo)) : null;
         }
 
         public static Message Tooltip(global::RelicTooltipProvider relic)
@@ -311,6 +321,19 @@ namespace MonsterTrainAccessibility.UI.Elements
         {
             RelicInfoUI info = relic as RelicInfoUI;
             return info != null && (bool)RelicInfoIncludeDynamicInfoField.GetValue(info);
+        }
+
+        private static Message FocusSummary(RelicContent content)
+        {
+            if (content == null)
+            {
+                return null;
+            }
+
+            List<Message> parts = new List<Message>();
+            MessageList.Add(parts, Message.FromText(content.Name));
+            MessageList.Add(parts, content.Description);
+            return parts.Count > 0 ? Message.JoinLines(parts) : null;
         }
 
         private static void AddTooltips(List<Message> parts, List<TooltipContent> tooltips, string relicName, string relicDescription, bool bodyFirst)

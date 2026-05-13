@@ -118,6 +118,17 @@ namespace MonsterTrainAccessibility.UI.Elements
                     : Message.Join(", ", title, merchantStatus);
             }
 
+            if (inner is ProxyRelicInfo relic)
+            {
+                Message title = relic.State != null
+                    ? Message.FromText(relic.State.GetName())
+                    : ProxyRelicInfo.Label(relic.Relic);
+                Message remainder = LabelRemainder(innerLabel, title);
+                return remainder != null
+                    ? Message.Join(", ", title, merchantStatus, remainder)
+                    : Message.Join(", ", title, merchantStatus);
+            }
+
             return Message.Join(", ", innerLabel, merchantStatus);
         }
 
