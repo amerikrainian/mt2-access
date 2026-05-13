@@ -6,3 +6,5 @@ game/
 
 # Build artifacts
 *.zip
+*.exe
+installer/target/

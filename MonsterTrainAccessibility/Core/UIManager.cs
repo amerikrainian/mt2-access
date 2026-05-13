@@ -3,6 +3,7 @@ using MonsterTrainAccessibility.Buffers;
 using MonsterTrainAccessibility.Localization;
 using MonsterTrainAccessibility.Events;
 using MonsterTrainAccessibility.Speech;
+using MonsterTrainAccessibility.Updates;
 using MonsterTrainAccessibility.UI;
 using MonsterTrainAccessibility.UI.Elements;
 using MonsterTrainAccessibility.UI.Screens;
@@ -195,6 +196,7 @@ namespace MonsterTrainAccessibility.Core
             }
 
             ModScreenManager.CurrentScreen?.OnUpdate();
+            StartupAnnouncement.Update();
             _resourceEventMonitor.Update();
             EventDispatcher.Flush();
 

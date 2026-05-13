@@ -12,10 +12,11 @@ mdbook build docs_src
 
 echo "=== Creating release zip ==="
 rm -f MonsterTrainAccessibility.zip
-powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "\$zip = Join-Path (Get-Location) 'MonsterTrainAccessibility.zip'; Push-Location release; Compress-Archive -LiteralPath @('BepInEx', '.doorstop_version', 'doorstop_config.ini', 'prism.dll', 'winhttp.dll') -DestinationPath \$zip -CompressionLevel Optimal; Pop-Location"
+powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "\$ErrorActionPreference = 'Stop'; \$zip = Join-Path (Get-Location) 'MonsterTrainAccessibility.zip'; Push-Location release; try { Compress-Archive -LiteralPath @('BepInEx', '.doorstop_version', 'doorstop_config.ini', 'prism.dll', 'winhttp.dll') -DestinationPath \$zip -CompressionLevel Optimal } finally { Pop-Location }"
 
 echo "=== Adding docs to release zip ==="
 python scripts/add_docs_to_release.py
 
 echo "=== Done ==="
 echo "Release zip: MonsterTrainAccessibility.zip"
+echo "Installer: MonsterTrainAccessibilityInstaller.exe"

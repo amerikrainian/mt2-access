@@ -1,7 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <Configuration Condition="'$(Configuration)' == ''">Release</Configuration>
     <TargetFramework>netstandard2.1</TargetFramework>
     <AssemblyName>MonsterTrainAccessibility</AssemblyName>
     <RootNamespace>MonsterTrainAccessibility</RootNamespace>
@@ -23,6 +22,13 @@
     <GameLocalizationPath>$(GamePluginsPath)Localization\Strings\</GameLocalizationPath>
     <ReleaseRootPath>release\</ReleaseRootPath>
     <PrismNativePath>prism\native\win-x64\prism.dll</PrismNativePath>
+    <InstallerDir>$(MSBuildProjectDirectory)\installer</InstallerDir>
+    <InstallerExe>$(InstallerDir)\target\release\monster-train-accessibility-installer.exe</InstallerExe>
+    <InstallerOutputExe>$(MSBuildProjectDirectory)\MonsterTrainAccessibilityInstaller.exe</InstallerOutputExe>
+    <VsNinjaDir Condition="Exists('C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\Ninja\ninja.exe')">C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\Ninja</VsNinjaDir>
+    <VsNinjaDir Condition="'$(VsNinjaDir)' == '' and Exists('C:\Program Files\Microsoft Visual Studio\2022\Professional\Common7\IDE\CommonExtensions\Microsoft\CMake\Ninja\ninja.exe')">C:\Program Files\Microsoft Visual Studio\2022\Professional\Common7\IDE\CommonExtensions\Microsoft\CMake\Ninja</VsNinjaDir>
+    <VsNinjaDir Condition="'$(VsNinjaDir)' == '' and Exists('C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\IDE\CommonExtensions\Microsoft\CMake\Ninja\ninja.exe')">C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\IDE\CommonExtensions\Microsoft\CMake\Ninja</VsNinjaDir>
+    <VsNinjaDir Condition="'$(VsNinjaDir)' == '' and Exists('C:\Program Files\Microsoft Visual Studio\2022\BuildTools\Common7\IDE\CommonExtensions\Microsoft\CMake\Ninja\ninja.exe')">C:\Program Files\Microsoft Visual Studio\2022\BuildTools\Common7\IDE\CommonExtensions\Microsoft\CMake\Ninja</VsNinjaDir>
   </PropertyGroup>
 
   <ItemGroup>
@@ -144,6 +150,33 @@
           SkipUnchangedFiles="true"
           Condition="Exists('$(MonsterTrainPath)\MonsterTrain2.exe') and Exists('$(PrismNativePath)')" />
     <Message Text="Copied prism.dll to release\ and $(MonsterTrainPath)\" Importance="high" />
+  </Target>
+
+  <!-- Copy static bootstrap files needed by the release zip. -->
+  <Target Name="CopyReleaseBootstrapFiles" AfterTargets="Build">
+    <ItemGroup>
+      <ReleaseBootstrapFiles Include=".doorstop_version" />
+      <ReleaseBootstrapFiles Include="doorstop_config.ini" />
+      <ReleaseBootstrapFiles Include="winhttp.dll" />
+    </ItemGroup>
+    <Copy SourceFiles="@(ReleaseBootstrapFiles)"
+          DestinationFolder="$(ReleaseRootPath)"
+          SkipUnchangedFiles="true"
+          Condition="Exists('%(ReleaseBootstrapFiles.Identity)')" />
+  </Target>
+
+  <!-- Build the Rust installer in Release builds. Mirrors the SayTheSpire2 installer build wiring. -->
+  <Target Name="BuildInstaller" AfterTargets="Build" Condition="'$(Configuration)' == 'Release' and Exists('$(InstallerDir)\Cargo.toml')">
+    <Exec Command="set &quot;PATH=$(VsNinjaDir);%PATH%&quot; &amp;&amp; cargo build --release"
+          WorkingDirectory="$(InstallerDir)"
+          Condition="'$(VsNinjaDir)' != ''" />
+    <Exec Command="cargo build --release"
+          WorkingDirectory="$(InstallerDir)"
+          Condition="'$(VsNinjaDir)' == ''" />
+    <Error Text="Installer build failed: $(InstallerExe) not found" Condition="!Exists('$(InstallerExe)')" />
+    <Copy SourceFiles="$(InstallerExe)"
+          DestinationFiles="$(InstallerOutputExe)" />
+    <Message Text="Installer copied to $(InstallerOutputExe)" Importance="high" />
   </Target>
 
 </Project>

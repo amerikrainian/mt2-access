@@ -7,6 +7,7 @@ using MonsterTrainAccessibility.Input;
 using MonsterTrainAccessibility.Localization;
 using MonsterTrainAccessibility.Patches;
 using MonsterTrainAccessibility.Speech;
+using MonsterTrainAccessibility.Updates;
 using MonsterTrainAccessibility.UI.Elements;
 using MonsterTrainAccessibility.UI.Screens;
 using ModInputManager = MonsterTrainAccessibility.Input.InputManager;
@@ -21,7 +22,7 @@ namespace MonsterTrainAccessibility
     {
         public const string GUID = "com.accessibility.monstertrain";
         public const string NAME = "Monster Train Accessibility";
-        public const string VERSION = "1.0.0";
+        public const string VERSION = "0.1.3";
 
         private Harmony _harmony;
         private AccessibleParamsManager _accessibleParamsManager;
@@ -34,7 +35,9 @@ namespace MonsterTrainAccessibility
                 Log.Source = Logger;
                 Log.Info($"{NAME} {VERSION} loading");
 
+                InstallerState.WriteInstalledVersion(VERSION);
                 Settings.Initialize(Config);
+                UpdateSettings.Register(Config);
                 LocalizationManager.Initialize();
                 EventRegistry.Initialize(Config);
                 ElementSettingsRegistry.Initialize(Config);
@@ -46,6 +49,10 @@ namespace MonsterTrainAccessibility
                 ScreenRegistration.RegisterAll();
                 ModInputManager.Initialize();
                 InputBindingSettings.Register(Config);
+                if (UpdateSettings.CheckUpdatesOnLaunch?.Value == true)
+                {
+                    UpdateChecker.Run();
+                }
 
                 _harmony = new Harmony(GUID);
                 RegisterPatches();

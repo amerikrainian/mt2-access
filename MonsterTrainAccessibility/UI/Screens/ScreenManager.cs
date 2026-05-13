@@ -5,6 +5,7 @@ using HarmonyLib;
 using MonsterTrainAccessibility.Buffers;
 using MonsterTrainAccessibility.Core;
 using MonsterTrainAccessibility.Input;
+using MonsterTrainAccessibility.Updates;
 using MonsterTrainAccessibility.UI.Elements;
 using UnityEngine;
 
@@ -38,6 +39,7 @@ namespace MonsterTrainAccessibility.UI.Screens
 
         public static void Shutdown()
         {
+            StartupAnnouncement.Reset();
             SyncState.Shutdown();
             while (Screens.Count > 0)
             {

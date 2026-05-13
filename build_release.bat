@@ -12,7 +12,7 @@ mdbook build docs_src
 if errorlevel 1 goto :fail
 
 echo === Creating release zip ===
-powershell -NoProfile -ExecutionPolicy Bypass -Command "$zip = Join-Path (Get-Location) 'MonsterTrainAccessibility.zip'; if (Test-Path -LiteralPath $zip) { Remove-Item -LiteralPath $zip -Force }; Push-Location release; Compress-Archive -LiteralPath @('BepInEx', '.doorstop_version', 'doorstop_config.ini', 'prism.dll', 'winhttp.dll') -DestinationPath $zip -CompressionLevel Optimal; Pop-Location"
+powershell -NoProfile -ExecutionPolicy Bypass -Command "$ErrorActionPreference = 'Stop'; $zip = Join-Path (Get-Location) 'MonsterTrainAccessibility.zip'; if (Test-Path -LiteralPath $zip) { Remove-Item -LiteralPath $zip -Force }; Push-Location release; try { Compress-Archive -LiteralPath @('BepInEx', '.doorstop_version', 'doorstop_config.ini', 'prism.dll', 'winhttp.dll') -DestinationPath $zip -CompressionLevel Optimal } finally { Pop-Location }"
 if errorlevel 1 goto :fail
 
 echo === Adding docs to release zip ===
@@ -21,6 +21,7 @@ if errorlevel 1 goto :fail
 
 echo === Done ===
 echo Release zip: MonsterTrainAccessibility.zip
+echo Installer: MonsterTrainAccessibilityInstaller.exe
 popd
 exit /b 0
 
