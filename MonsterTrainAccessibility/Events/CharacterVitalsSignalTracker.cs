@@ -192,9 +192,7 @@ namespace MonsterTrainAccessibility.Events
 
                 EventDispatcher.Enqueue(new CharacterDamagedEvent(
                     pending.Character,
-                    damage,
-                    pending.NewHp,
-                    pending.Character != null ? pending.Character.GetMaxHP() : 0));
+                    damage));
                 return;
             }
         }

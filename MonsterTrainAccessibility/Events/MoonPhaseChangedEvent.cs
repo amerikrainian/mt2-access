@@ -14,10 +14,7 @@ namespace MonsterTrainAccessibility.Events
 
         public override Message GetMessage()
         {
-            return Message.Localized("events", "COMBAT.MOON_PHASE_CHANGED", new
-            {
-                phase = Message.FromText(_phase.LocalizedName())?.Resolve()
-            });
+            return Message.FromText(_phase.LocalizedName());
         }
     }
 }

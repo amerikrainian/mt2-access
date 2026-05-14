@@ -40,12 +40,12 @@ namespace MonsterTrainAccessibility.Events
 
             if (delta > 0)
             {
-                return Message.Localized("events", "STATUS.INCREASED", new { character = _characterName, status = status.Resolve(), amount = delta, total = _newCount });
+                return Message.Localized("events", "STATUS.INCREASED", new { character = _characterName, status = status.Resolve(), amount = delta });
             }
 
             if (delta < 0)
             {
-                return Message.Localized("events", "STATUS.DECREASED", new { character = _characterName, status = status.Resolve(), amount = -delta, total = _newCount });
+                return Message.Localized("events", "STATUS.DECREASED", new { character = _characterName, status = status.Resolve(), amount = -delta });
             }
 
             return null;

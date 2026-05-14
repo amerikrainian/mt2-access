@@ -19,12 +19,12 @@ namespace MonsterTrainAccessibility.Events
             int delta = _newGold - _oldGold;
             if (delta > 0)
             {
-                return Message.Localized("events", "RESOURCE.GOLD_GAINED", new { amount = delta, total = _newGold });
+                return Message.Localized("events", "RESOURCE.GOLD_GAINED", new { amount = delta });
             }
 
             if (delta < 0)
             {
-                return Message.Localized("events", "RESOURCE.GOLD_LOST", new { amount = -delta, total = _newGold });
+                return Message.Localized("events", "RESOURCE.GOLD_LOST", new { amount = -delta });
             }
 
             return null;

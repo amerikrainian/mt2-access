@@ -54,7 +54,6 @@ namespace MonsterTrainAccessibility.Events
             _combatManager?.characterRemovedSignal.AddListener(OnCombatCharacterRemoved);
             Log.Info("[AccessibilityMod] CombatEventMonitor subscribed to CombatManager.characterRemovedSignal.");
 
-            _cardManager?.cardPlayedSignal.AddListener(OnCardPlayed);
             _cardManager?.deckShuffledSignal.AddListener(OnDeckShuffled);
 
             _playerManager?.energyChangedSignal.AddListener(OnEnergyChanged);
@@ -89,7 +88,6 @@ namespace MonsterTrainAccessibility.Events
             _combatManager?.characterRemovedSignal.RemoveListener(OnCombatCharacterRemoved);
             Log.Info("[AccessibilityMod] CombatEventMonitor unsubscribed from CombatManager.characterRemovedSignal.");
 
-            _cardManager?.cardPlayedSignal.RemoveListener(OnCardPlayed);
             _cardManager?.deckShuffledSignal.RemoveListener(OnDeckShuffled);
 
             _playerManager?.energyChangedSignal.RemoveListener(OnEnergyChanged);
@@ -229,11 +227,6 @@ namespace MonsterTrainAccessibility.Events
                 Message.RawCleaned(character?.GetName())?.Resolve());
         }
 
-        private void OnCardPlayed(CardState card)
-        {
-            EventDispatcher.Enqueue(new CardPlayedEvent(card));
-        }
-
         private void OnDeckShuffled(bool initialShuffle)
         {
             if (!initialShuffle)
@@ -261,7 +254,7 @@ namespace MonsterTrainAccessibility.Events
 
         private void OnPyreHpChanged(SaveManager.PyreHPChangedSignalData data)
         {
-            EventDispatcher.Enqueue(new PyreHpEvent(data.prevHP, data.newHP, data.totalHP));
+            EventDispatcher.Enqueue(new PyreHpEvent(data.prevHP, data.newHP));
         }
 
         private void OnRelicTriggered(RelicState relic, IRelicEffect effect)
