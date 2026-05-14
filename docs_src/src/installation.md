@@ -1,5 +1,18 @@
 # Installation
 
+## Installer
+
+The recommended install path is the installer. Download `MonsterTrainAccessibilityInstaller.exe` from the
+[latest releases page](https://github.com/amerikrainian/mt2-access/releases/latest), run it, and choose your Monster Train 2 game folder when prompted.
+
+The default Steam path on Windows, which the installer assumes to be the case, is:
+
+```text
+C:\Program Files (x86)\Steam\steamapps\common\Monster Train 2
+```
+
+After installation, launch Monster Train 2. If installation worked, the mod should initialize when the game starts and begin speaking UI focus.
+
 ## Manual Installation
 
 1. Download the latest `MonsterTrainAccessibility.zip` release.
@@ -17,15 +30,14 @@ If installation worked, the mod should initialize when the game starts and begin
 
 ## Updating
 
-To update, extract the latest release zip over the existing game folder and replace files when prompted.
+To update, either launch the installer and hit update or, if doing a manual install extract the latest release zip over the existing game folder and replace files when prompted.
 
 ## Uninstalling
 
-To remove the mod, delete these from the game folder:
+The installer has an uninstall option, but if you'd like to manually remove the mod, remove the following from the game's directory.
 
 - `winhttp.dll`
 - `doorstop_config.ini`
 - `.doorstop_version`
 - `prism.dll`
 - the Monster Train Accessibility files under `BepInEx\plugins`
-

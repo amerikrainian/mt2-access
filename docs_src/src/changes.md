@@ -1,5 +1,11 @@
 # Change Log
 
+## 0.1.7
+
+- Floors now read their effects (if any) alongside capacity when requested with `b`, defaulting to name only when just being scrolled over (Matrheine).
+- We now announce changes in moon phases as an event (Matrheine). You could previously see it if you go to the top panel above the floor with your pyre, but hopefully it's faster now.
+- The train depot screen now reads, although from my investigation its... quite bare. I'm happy to be corrected, however.
+
 ## 0.1.6
 
 - In soul savior, pressing `m` while having the HUD open puts you onto your first soul. An odd choice of key, but you can rebind this if you wish (although do note that this is a native game action).
