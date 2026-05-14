@@ -22,6 +22,8 @@ namespace MonsterTrainAccessibility.Events
         private int _lastTurn = -1;
         private int _lastTurnModifier;
         private CombatManager.Phase _lastPhase;
+        private PlayerManager.MoonPhase _lastMoonPhase;
+        private bool _hasLastMoonPhase;
         private bool _started;
 
         public CombatEventMonitor(AllGameManagers managers, CharacterVitalsSignalTracker vitalsTracker)
@@ -56,6 +58,13 @@ namespace MonsterTrainAccessibility.Events
             _cardManager?.deckShuffledSignal.AddListener(OnDeckShuffled);
 
             _playerManager?.energyChangedSignal.AddListener(OnEnergyChanged);
+            _playerManager?.moonPhaseChangedSignal.AddListener(OnMoonPhaseChanged);
+            if (_playerManager != null)
+            {
+                _lastMoonPhase = _playerManager.CurrentMoonPhase;
+                _hasLastMoonPhase = true;
+            }
+
             _saveManager?.pyreHPChangedSignal.AddListener(OnPyreHpChanged);
             RelicManager.RelicTriggered.AddListener(OnRelicTriggered);
 
@@ -84,6 +93,7 @@ namespace MonsterTrainAccessibility.Events
             _cardManager?.deckShuffledSignal.RemoveListener(OnDeckShuffled);
 
             _playerManager?.energyChangedSignal.RemoveListener(OnEnergyChanged);
+            _playerManager?.moonPhaseChangedSignal.RemoveListener(OnMoonPhaseChanged);
             _saveManager?.pyreHPChangedSignal.RemoveListener(OnPyreHpChanged);
             RelicManager.RelicTriggered.RemoveListener(OnRelicTriggered);
 
@@ -92,6 +102,7 @@ namespace MonsterTrainAccessibility.Events
             _announcedDeaths.Clear();
             _announcedRelicTriggers.Clear();
             _announcedCardModifierRelicTriggers.Clear();
+            _hasLastMoonPhase = false;
         }
 
         public IEnumerator CharacterAdded(CharacterState character, CardState fromCard)
@@ -234,6 +245,18 @@ namespace MonsterTrainAccessibility.Events
         private void OnEnergyChanged(int energy)
         {
             EventDispatcher.Enqueue(new EnergyChangedEvent(energy));
+        }
+
+        private void OnMoonPhaseChanged(PlayerManager.MoonPhase phase)
+        {
+            if (_hasLastMoonPhase && _lastMoonPhase == phase)
+            {
+                return;
+            }
+
+            _lastMoonPhase = phase;
+            _hasLastMoonPhase = true;
+            EventDispatcher.Enqueue(new MoonPhaseChangedEvent(phase));
         }
 
         private void OnPyreHpChanged(SaveManager.PyreHPChangedSignalData data)
