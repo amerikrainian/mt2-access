@@ -10,6 +10,7 @@ using MonsterTrainAccessibility.Input;
 using MonsterTrainAccessibility.Localization;
 using MonsterTrainAccessibility.Speech;
 using MonsterTrainAccessibility.UI.Elements;
+using MonsterTrainAccessibility.Util;
 using ShinyShoe;
 using TMPro;
 using UnityEngine;
@@ -517,7 +518,7 @@ namespace MonsterTrainAccessibility.UI.Screens
             RoomState room = TryGetCurrentFloorRoom();
             if (room != null)
             {
-                SpeechManager.Output(GetFloorCapacityEchoLabel(room));
+                SpeechManager.Output(GetFloorCapacityEchoDetails(room));
             }
 
             return true;
@@ -536,7 +537,7 @@ namespace MonsterTrainAccessibility.UI.Screens
             for (int roomIndex = 0; roomIndex < roomCount; roomIndex++)
             {
                 RoomState room = roomManager.GetRoom(roomIndex);
-                Message summary = GetFloorCapacityEchoLabel(room);
+                Message summary = GetFloorCapacityEchoDetails(room);
                 if (summary == null)
                 {
                     continue;
@@ -2121,6 +2122,7 @@ namespace MonsterTrainAccessibility.UI.Screens
                     .Append(capacity.max)
                     .Append('|');
 
+                AppendRoomAttachmentSignature(sb, room);
                 AppendRoomAbilitySignature(sb, room);
 
                 List<CharacterState> characters = new List<CharacterState>();
@@ -2131,6 +2133,22 @@ namespace MonsterTrainAccessibility.UI.Screens
                     CharacterState character = characters[i];
                     sb.Append(character.GetInstanceID()).Append('|');
                 }
+            }
+        }
+
+        private static void AppendRoomAttachmentSignature(StringBuilder sb, RoomState room)
+        {
+            List<TrainRoomAttachmentState> attachments = VisibleRoomAttachments(room);
+            for (int i = 0; i < attachments.Count; i++)
+            {
+                TrainRoomAttachmentState attachment = attachments[i];
+                sb.Append("roomAttachment=")
+                    .Append(attachment?.Guid)
+                    .Append(':')
+                    .Append(attachment?.CardState?.GetID())
+                    .Append(':')
+                    .Append(attachment?.CurrentAbilityCooldown)
+                    .Append('|');
             }
         }
 
@@ -2249,9 +2267,11 @@ namespace MonsterTrainAccessibility.UI.Screens
         {
             Message floor = Message.Localized("combat", "FLOOR", new { floor = roomIndex + 1 });
             Message capacity = GetFloorCapacityLabel(room);
-            return capacity != null
-                ? Message.Join(", ", floor, capacity).Resolve()
-                : floor.Resolve();
+            List<Message> parts = new List<Message>();
+            MessageList.Add(parts, floor);
+            MessageList.Add(parts, capacity);
+            AddRoomAttachmentNames(parts, room);
+            return Message.Join(", ", parts).Resolve();
         }
 
         private static Message GetFloorCapacityLabel(RoomState room)
@@ -2281,6 +2301,212 @@ namespace MonsterTrainAccessibility.UI.Screens
                 echoes,
                 totalEchoes = room.GetMaxCorruption()
             });
+        }
+
+        private static Message GetFloorCapacityEchoDetails(RoomState room)
+        {
+            Message capacity = GetFloorCapacityEchoLabel(room);
+            if (capacity == null)
+            {
+                return null;
+            }
+
+            List<Message> parts = new List<Message>();
+            MessageList.Add(parts, capacity);
+            AddRoomAttachmentDetails(parts, room);
+            return Message.Join(". ", parts);
+        }
+
+        private static void AddRoomAttachmentNames(List<Message> parts, RoomState room)
+        {
+            List<TrainRoomAttachmentState> attachments = VisibleRoomAttachments(room);
+            for (int i = 0; i < attachments.Count; i++)
+            {
+                MessageList.Add(parts, RoomAttachmentName(attachments[i]));
+            }
+        }
+
+        private static void AddRoomAttachmentDetails(List<Message> parts, RoomState room)
+        {
+            List<TrainRoomAttachmentState> attachments = VisibleRoomAttachments(room);
+            for (int i = 0; i < attachments.Count; i++)
+            {
+                AddRoomAttachmentDetails(parts, attachments[i]);
+            }
+        }
+
+        private static void AddRoomAttachmentDetails(List<Message> parts, TrainRoomAttachmentState attachment)
+        {
+            if (attachment == null)
+            {
+                return;
+            }
+
+            Message title = RoomAttachmentName(attachment);
+            List<Message> details = new List<Message>();
+            string generatedCardText = AttachmentGeneratedCardText(attachment.CardState);
+            AddAttachmentRoomAbility(details, attachment);
+            bool addedUpgradeText = AddAttachmentUpgradeText(details, attachment, generatedCardText);
+            if (!addedUpgradeText)
+            {
+                MessageList.Add(details, Message.FromText(generatedCardText));
+            }
+
+            AddAttachmentAdditionalTooltips(details, attachment.AdditionalTooltipDatas);
+
+            if (details.Count == 0)
+            {
+                MessageList.Add(parts, title);
+                return;
+            }
+
+            MessageList.Add(parts, Message.Join(": ", title, Message.Join(". ", details)));
+        }
+
+        private static string AttachmentGeneratedCardText(CardState card)
+        {
+            if (card == null)
+            {
+                return string.Empty;
+            }
+
+            string generatedText = string.Empty;
+            card.GenerateCardBodyText(out generatedText);
+            return CardTextHelper.ScrubUpgradeHighlights(generatedText);
+        }
+
+        private static void AddAttachmentRoomAbility(List<Message> parts, TrainRoomAttachmentState attachment)
+        {
+            CardState ability = ProxyRoomAbility.ResolveAbilityCard(attachment);
+            if (ability == null)
+            {
+                return;
+            }
+
+            Message title = Message.FromText(ability.GetTitle());
+            Message summary = ProxyCombatCard.AccessibilitySummary(ability);
+            MessageList.Add(parts, summary != null ? Message.Join(": ", title, summary) : title);
+        }
+
+        private static bool AddAttachmentUpgradeText(
+            List<Message> parts,
+            TrainRoomAttachmentState attachment,
+            string generatedCardText)
+        {
+            if (attachment == null)
+            {
+                return false;
+            }
+
+            bool addedPrimaryText = false;
+            List<CardUpgradeData> upgradeDatas = new List<CardUpgradeData>();
+            foreach (var upgradeState in attachment.UpgradeStates)
+            {
+                CardUpgradeData upgradeData = upgradeState.Item2;
+                if (upgradeData == null)
+                {
+                    continue;
+                }
+
+                CardData roomAbilityUpgrade = upgradeData.GetRoomAbilityUpgrade();
+                if (roomAbilityUpgrade == null)
+                {
+                    string bodyText = Message.ShouldAdd(generatedCardText)
+                        ? generatedCardText
+                        : CardTextHelper.ScrubUpgradeHighlights(
+                            LocalizeKey(
+                                upgradeData.GetUpgradeDescriptionKey(),
+                                new CardEffectLocalizationContext(upgradeData)));
+
+                    Message body = Message.FromText(bodyText);
+                    if (body != null)
+                    {
+                        MessageList.Add(parts, body);
+                        addedPrimaryText = true;
+                    }
+                    else
+                    {
+                        MessageList.Add(parts, Message.FromText(LocalizeKey(upgradeData.GetUpgradeTitleKey())));
+                        addedPrimaryText = true;
+                    }
+                }
+
+                upgradeDatas.Add(upgradeData);
+            }
+
+            foreach (TooltipContent tooltip in CardTooltipHelper.GenerateTooltipContentForInternalUpgrades(upgradeDatas))
+            {
+                MessageList.Add(parts, MessageList.Tooltip(tooltip));
+            }
+
+            return addedPrimaryText;
+        }
+
+        private static void AddAttachmentAdditionalTooltips(List<Message> parts, AdditionalTooltipData[] tooltips)
+        {
+            if (tooltips == null)
+            {
+                return;
+            }
+
+            for (int i = 0; i < tooltips.Length; i++)
+            {
+                AdditionalTooltipData tooltip = tooltips[i];
+                if (tooltip == null || tooltip.hideInTrainRoomUI)
+                {
+                    continue;
+                }
+
+                Message title = Message.FromText(LocalizeKey(tooltip.titleKey));
+                Message body = Message.FromText(LocalizeKey(tooltip.descriptionKey));
+                MessageList.Add(parts, body != null ? Message.Join(": ", title, body) : title);
+            }
+        }
+
+        private static Message RoomAttachmentName(TrainRoomAttachmentState attachment)
+        {
+            Message name = Message.FromText(attachment?.CardState?.GetTitle());
+            if (name != null)
+            {
+                return name;
+            }
+
+            if (attachment == null)
+            {
+                return null;
+            }
+
+            foreach (var upgradeState in attachment.UpgradeStates)
+            {
+                Message title = Message.FromText(LocalizeKey(upgradeState.Item2?.GetUpgradeTitleKey()));
+                if (title != null)
+                {
+                    return title;
+                }
+            }
+
+            return null;
+        }
+
+        private static List<TrainRoomAttachmentState> VisibleRoomAttachments(RoomState room)
+        {
+            List<TrainRoomAttachmentState> attachments = new List<TrainRoomAttachmentState>();
+            room?.TryGetTrainRoomAttachments(room.Attachments, isHidden: false, attachments);
+            return attachments;
+        }
+
+        private static string LocalizeKey(string key)
+        {
+            return !string.IsNullOrWhiteSpace(key) && key.HasTranslation()
+                ? AccessibilityText.LocalizeTerm(key)
+                : string.Empty;
+        }
+
+        private static string LocalizeKey(string key, CardEffectLocalizationContext context)
+        {
+            return !string.IsNullOrWhiteSpace(key) && key.HasTranslation()
+                ? AccessibilityLocalizationScope.Run(() => key.Localize(context))
+                : string.Empty;
         }
 
         private void AddFloorTarget(BattleLayer layer, int roomIndex, BattleRoomNavigation roomNavigation)
