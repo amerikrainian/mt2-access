@@ -90,13 +90,12 @@ namespace MonsterTrainAccessibility.UI.Screens
                 count++;
             }
 
-            int buttonRow = count == 0 ? 0 : (count + columns - 1) / columns;
-            int buttonColumn = 0;
-            if (!IsSoulEquipMode(out _))
+            if (IsSoulEquipMode(out _))
             {
-                AddButton(_screen.GetConfirmButton(), buttonColumn++, buttonRow);
+                int buttonRow = count / columns;
+                int buttonColumn = count % columns;
+                AddButton(_screen.GetCloseButton(), ref buttonColumn, ref buttonRow, columns);
             }
-            AddButton(_screen.GetCloseButton(), buttonColumn, buttonRow);
         }
 
         public override bool ShouldRestoreNavigationFocus()
@@ -172,16 +171,23 @@ namespace MonsterTrainAccessibility.UI.Screens
             return 4;
         }
 
-        private void AddButton(GameUISelectableButton button, int x, int y)
+        private void AddButton(GameUISelectableButton button, ref int x, ref int y, int columns)
         {
             if (button == null)
             {
                 return;
             }
 
+            if (x >= columns)
+            {
+                x = 0;
+                y++;
+            }
+
             LabeledButton element = new LabeledButton(button, () => DeckButtonLabel(button));
             Grid.Add(element, x, y);
             RegisterElement(element, button.gameObject);
+            x++;
         }
 
         private Message DeckButtonLabel(GameUISelectableButton button)
