@@ -22,7 +22,9 @@ namespace MonsterTrainAccessibility.Events
                 return null;
             }
 
-            return Message.Localized("events", "CHARACTER.DAMAGED", new { character = _characterName, amount = _amount });
+            return _amount == 1
+                ? Message.Localized("events", "CHARACTER.DAMAGED_ONE", new { character = _characterName })
+                : Message.Localized("events", "CHARACTER.DAMAGED", new { character = _characterName, amount = _amount });
         }
     }
 }

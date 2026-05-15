@@ -28,16 +28,6 @@ namespace MonsterTrainAccessibility.Events
             }
 
             int delta = _newCount - _oldCount;
-            if (_oldCount <= 0 && _newCount > 0)
-            {
-                return Message.Localized("events", "STATUS.GAINED", new { character = _characterName, status = status.Resolve(), amount = _newCount });
-            }
-
-            if (_newCount <= 0 && _oldCount > 0)
-            {
-                return Message.Localized("events", "STATUS.REMOVED", new { character = _characterName, status = status.Resolve() });
-            }
-
             if (delta > 0)
             {
                 return Message.Localized("events", "STATUS.INCREASED", new { character = _characterName, status = status.Resolve(), amount = delta });

@@ -22,12 +22,17 @@ namespace MonsterTrainAccessibility.Events
             int delta = _newHp - _oldHp;
             if (delta < 0)
             {
-                return Message.Localized("events", "CHARACTER.DAMAGED", new { character = _characterName, amount = -delta });
+                int amount = -delta;
+                return amount == 1
+                    ? Message.Localized("events", "CHARACTER.DAMAGED_ONE", new { character = _characterName })
+                    : Message.Localized("events", "CHARACTER.DAMAGED", new { character = _characterName, amount });
             }
 
             if (delta > 0)
             {
-                return Message.Localized("events", "CHARACTER.HEALED", new { character = _characterName, amount = delta });
+                return delta == 1
+                    ? Message.Localized("events", "CHARACTER.HEALED_ONE", new { character = _characterName })
+                    : Message.Localized("events", "CHARACTER.HEALED", new { character = _characterName, amount = delta });
             }
 
             return null;

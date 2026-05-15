@@ -501,15 +501,15 @@
     "CHARACTER.SPAWNED": "{character} erschienen, Ebene {floor}.",
     "CHARACTER.MOVED": "{character} zu Ebene {newFloor}.",
     "CHARACTER.REMOVED": "{character} hat den Kampf verlassen.",
-    "STATUS.GAINED": "{character} erhielt {status} {amount}.",
     "CHARACTER.DAMAGED": "{character} erlitt {amount} Schaden.",
+    "CHARACTER.DAMAGED_ONE": "{character} erlitt Schaden.",
     "CHARACTER.HEALED": "{character} heilte {amount}.",
-    "STATUS.REMOVED": "{character} verlor {status}.",
+    "CHARACTER.HEALED_ONE": "{character} heilte.",
     "ABILITY.AVAILABLE": "{character}-Fähigkeit bereit.",
     "STATUS.INCREASED": "{character} {status} +{amount}.",
     "STATUS.DECREASED": "{character} {status} -{amount}.",
     "ABILITY.UNAVAILABLE": "{character}-Fähigkeit nicht verfügbar.",
-    "RELIC.TRIGGERED": "{relic} ausgel\u00f6st."
+    "RELIC.TRIGGERED": "{relic} ausgelöst."
   },
   "map_nav": {
     "NAV.CHOICE": "Auswahl",

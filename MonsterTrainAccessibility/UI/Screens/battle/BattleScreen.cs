@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Reflection;
 using System.Text;
 using HarmonyLib;
+using MonsterTrainAccessibility.Audio;
 using MonsterTrainAccessibility.Events;
 using MonsterTrainAccessibility.Core;
 using MonsterTrainAccessibility.Input;
@@ -637,10 +638,40 @@ namespace MonsterTrainAccessibility.UI.Screens
                 currentVisible = 0;
             }
 
+            int unclampedNextVisible = currentVisible + direction;
+            if (IsFloorLayer(_layerIndex) && (unclampedNextVisible < 0 || unclampedNextVisible >= layer.VisibleCount))
+            {
+                return true;
+            }
+
             int nextVisible = (currentVisible + direction + layer.VisibleCount) % layer.VisibleCount;
+            UIElement previous = CurrentElement;
             layer.FocusIndex = layer.GetIndexForVisibleOrdinal(nextVisible);
             FocusCurrent();
+            PlayCreatureBoundaryBeep(previous, CurrentElement);
             return true;
+        }
+
+        private bool IsFloorLayer(int layerIndex)
+        {
+            return layerIndex >= FirstFloorLayerIndex && layerIndex <= LastFloorLayerIndex;
+        }
+
+        private static void PlayCreatureBoundaryBeep(UIElement previous, UIElement next)
+        {
+            ProxyCombatCreature previousCreature = previous as ProxyCombatCreature;
+            ProxyCombatCreature nextCreature = next as ProxyCombatCreature;
+            if (previousCreature == null || nextCreature == null)
+            {
+                return;
+            }
+
+            Team.Type previousTeam = previousCreature.Character.GetTeamType();
+            Team.Type nextTeam = nextCreature.Character.GetTeamType();
+            if (previousTeam != nextTeam)
+            {
+                BoundaryBeepPlayer.Play(nextTeam == Team.Type.Monsters);
+            }
         }
 
         private bool MoveVertical(int direction)
