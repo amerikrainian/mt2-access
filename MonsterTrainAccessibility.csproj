@@ -72,6 +72,10 @@
       <HintPath>$(MonsterTrainPath)\MonsterTrain2_Data\Managed\UnityEngine.UI.dll</HintPath>
       <Private>false</Private>
     </Reference>
+    <Reference Include="UnityEngine.AudioModule">
+      <HintPath>$(MonsterTrainPath)\MonsterTrain2_Data\Managed\UnityEngine.AudioModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
     <Reference Include="UnityEngine.IMGUIModule">
       <HintPath>$(MonsterTrainPath)\MonsterTrain2_Data\Managed\UnityEngine.IMGUIModule.dll</HintPath>
       <Private>false</Private>
