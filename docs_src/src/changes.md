@@ -1,5 +1,10 @@
 # Change Log
 
+## 0.1.8
+
+- Events are now less verbose (Camlorn), e.g.: gold +10 without including total.
+- Multiple people asked to disable wrapping in creature lists. It has been done. Additionally, an auditory beep plays whenever you cross from allies to enemies and vice versa.
+
 ## 0.1.7
 
 - Floors now read their effects (if any) alongside capacity when requested with `b`, defaulting to name only when just being scrolled over (Matrheine).
