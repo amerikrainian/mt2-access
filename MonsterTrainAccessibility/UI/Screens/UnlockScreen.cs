@@ -30,8 +30,18 @@ namespace MonsterTrainAccessibility.UI.Screens
 
         public override bool ShouldRestoreNavigationFocus() => false;
 
+        public override bool ShouldAnnounceFocus(UIElement element)
+        {
+            return CurrentItem() != null && base.ShouldAnnounceFocus(element);
+        }
+
         protected override void PopulateList()
         {
+            if (CurrentItem() == null)
+            {
+                return;
+            }
+
             TMP_Text header = Get<TMP_Text>(_screen, HeaderLabelField);
             if (header != null)
             {
