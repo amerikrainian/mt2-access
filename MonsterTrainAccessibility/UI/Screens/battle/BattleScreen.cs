@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Reflection;
 using System.Text;
 using HarmonyLib;
+using MonsterTrainAccessibility.Buffers;
 using MonsterTrainAccessibility.Audio;
 using MonsterTrainAccessibility.Events;
 using MonsterTrainAccessibility.Core;
@@ -135,6 +136,7 @@ namespace MonsterTrainAccessibility.UI.Screens
         public override void OnPush()
         {
             base.OnPush();
+            BufferManager.Instance.GetBuffer("monster_quotes")?.Clear();
             _vitalsTracker = new CharacterVitalsSignalTracker(AllGameManagers.Instance);
             _vitalsTracker.Start();
             _vitalsTracker.Prime();
@@ -291,6 +293,11 @@ namespace MonsterTrainAccessibility.UI.Screens
         public override bool ShouldAcceptGameSelection()
         {
             return !ReplayAccessibilityState.IsSuppressed;
+        }
+
+        public override void ConfigurePersistentBuffers(HashSet<string> keys)
+        {
+            keys?.Add("monster_quotes");
         }
 
         public override bool ShouldRestoreNavigationFocus()

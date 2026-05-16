@@ -64,11 +64,11 @@ namespace MonsterTrainAccessibility.Events
 
                 if (shouldBuffer)
                 {
-                    LineBuffer events = BufferManager.Instance.GetBuffer("events");
-                    if (events != null)
+                    LineBuffer buffer = BufferManager.Instance.GetBuffer(evt.BufferKey);
+                    if (buffer != null)
                     {
-                        events.Add(message);
-                        BufferManager.Instance.EnableBuffer("events", true);
+                        buffer.Add(message);
+                        BufferManager.Instance.EnableBuffer(buffer.Key, true);
                     }
                 }
 

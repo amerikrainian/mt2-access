@@ -285,6 +285,7 @@
     "STATES.LOCKED": "已鎖定",
     "BUFFERS.UI": "UI",
     "BUFFERS.EVENTS": "事件",
+    "BUFFERS.MONSTER_QUOTES": "????",
     "BUFFERS.CARD": "卡牌",
     "BUFFERS.CREATURE": "生物",
     "BUFFERS.COMPENDIUM_ENEMY": "生物",

@@ -40,6 +40,7 @@ namespace MonsterTrainAccessibility.Buffers
             _position = -1;
             Add(new LineBuffer("ui"));
             Add(new EventHistoryBuffer("events"));
+            Add(new EventHistoryBuffer("monster_quotes"));
             Add(new PresentationBuffer<CardState>("card", PhaseRegistry.Cards));
             Add(new PresentationBuffer<CharacterState>("creature", PhaseRegistry.Creatures));
             Add(new PresentationBuffer<CompendiumEnemyPresentationSource>("compendium_enemy", PhaseRegistry.CompendiumEnemies));

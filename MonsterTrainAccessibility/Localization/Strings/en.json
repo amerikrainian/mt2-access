@@ -286,6 +286,7 @@
     "STATES.LOCKED": "locked",
     "BUFFERS.UI": "UI",
     "BUFFERS.EVENTS": "Events",
+    "BUFFERS.MONSTER_QUOTES": "Monster quotes",
     "BUFFERS.CARD": "Card",
     "BUFFERS.CREATURE": "Creature",
     "BUFFERS.COMPENDIUM_ENEMY": "Creature",

@@ -22,6 +22,8 @@ namespace MonsterTrainAccessibility.Events
             _quote = Message.FromText(quote)?.Resolve();
         }
 
+        public override string BufferKey => "monster_quotes";
+
         public override Message GetMessage()
         {
             if (string.IsNullOrWhiteSpace(_characterName) || string.IsNullOrWhiteSpace(_quote))

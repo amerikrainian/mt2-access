@@ -285,6 +285,7 @@
     "STATES.LOCKED": "заблокировано",
     "BUFFERS.UI": "Интерфейс",
     "BUFFERS.EVENTS": "События",
+    "BUFFERS.MONSTER_QUOTES": "??????? ????????",
     "BUFFERS.CARD": "Карта",
     "BUFFERS.CREATURE": "Существо",
     "BUFFERS.COMPENDIUM_ENEMY": "Существо",

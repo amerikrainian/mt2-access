@@ -11,6 +11,8 @@ namespace MonsterTrainAccessibility.Events
 
         public EventSource Source { get; }
 
+        public virtual string BufferKey => "events";
+
         public abstract Message GetMessage();
 
         public virtual bool ShouldAnnounce()

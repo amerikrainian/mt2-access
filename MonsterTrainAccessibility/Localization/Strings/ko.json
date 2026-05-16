@@ -285,6 +285,7 @@
     "STATES.LOCKED": "잠김",
     "BUFFERS.UI": "UI",
     "BUFFERS.EVENTS": "이벤트",
+    "BUFFERS.MONSTER_QUOTES": "??? ??",
     "BUFFERS.CARD": "카드",
     "BUFFERS.CREATURE": "생물",
     "BUFFERS.COMPENDIUM_ENEMY": "생물",
