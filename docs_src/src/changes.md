@@ -1,5 +1,11 @@
 # Change Log
 
+## 0.1.9
+
+- We now pick up character chatter with all the related events turned off by default so as to reduce spam. They do, however, go into the new monster quotes buffer so you can review them at your leisure (Boing).
+- We now clear any focus one has on room abilities. This should hopefully fix the rare cases of room abilities activating instead of cards (Boing).
+- Try and suppress the transient unlock screen briefly shown even when you don't have anything new unlocked. This should get rid of announcements like new clan unlocked (Boing).
+
 ## 0.1.8
 
 - Events are now less verbose (Camlorn), e.g.: gold +10 without including total.
