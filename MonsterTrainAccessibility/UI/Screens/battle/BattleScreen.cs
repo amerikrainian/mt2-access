@@ -1077,6 +1077,7 @@ namespace MonsterTrainAccessibility.UI.Screens
                 return true;
             }
 
+            ClearAbilityFocusForHandCardSubmit();
             PrepareHandCardFocus(card);
             if (card.PrepareForNativeSubmit())
             {
@@ -1084,6 +1085,19 @@ namespace MonsterTrainAccessibility.UI.Screens
             }
 
             return true;
+        }
+
+        private void ClearAbilityFocusForHandCardSubmit()
+        {
+            try
+            {
+                UnitAbilitySelectionBehavior?.UnFocusCard(true);
+                RoomAbilitySelectionBehavior?.UnFocusCard(true);
+            }
+            catch (Exception ex)
+            {
+                Core.Log.Info("[AccessibilityMod] Failed to clear ability focus for hand card submit: " + ex);
+            }
         }
 
         internal void PrepareTargetingForNativeSubmit(global::HandUI handUI)
