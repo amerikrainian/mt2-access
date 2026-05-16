@@ -163,6 +163,7 @@
     "EVENT_SETTINGS.BASIC": "기본 이벤트",
     "EVENT_SETTINGS.CARD_DECK_SHUFFLED": "덱 섞임",
     "EVENT_SETTINGS.CHARACTER_ABILITY": "유닛 능력 사용 가능",
+    "EVENT_SETTINGS.CHARACTER_CHATTER": "?? ??",
     "EVENT_SETTINGS.CHARACTER_DAMAGE": "유닛 피해",
     "EVENT_SETTINGS.CHARACTER_DIED": "유닛 사망",
     "EVENT_SETTINGS.CHARACTER_HP": "유닛 체력 변화",
@@ -509,7 +510,13 @@
     "STATUS.INCREASED": "{character} {status} +{amount}.",
     "STATUS.DECREASED": "{character} {status} -{amount}.",
     "ABILITY.UNAVAILABLE": "{character} 능력 사용 불가.",
-    "RELIC.TRIGGERED": "{relic} 발동."
+    "RELIC.TRIGGERED": "{relic} 발동.",
+    "CHATTER.WITH_REASON": "{character} {reason}, \"{quote}\"",
+    "CHATTER.NO_REASON": "{character} \"{quote}\"",
+    "CHATTER.REASON.SUMMONED": "???",
+    "CHATTER.REASON.ATTACKING": "?? ?",
+    "CHATTER.REASON.SLAY": "??",
+    "CHATTER.REASON.IDLE": "??"
   },
   "map_nav": {
     "NAV.CHOICE": "선택지",

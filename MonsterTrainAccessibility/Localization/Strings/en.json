@@ -163,6 +163,7 @@
     "EVENT_SETTINGS.BASIC": "Basic events",
     "EVENT_SETTINGS.CARD_DECK_SHUFFLED": "Deck shuffled",
     "EVENT_SETTINGS.CHARACTER_ABILITY": "Unit ability availability",
+    "EVENT_SETTINGS.CHARACTER_CHATTER": "Unit chatter",
     "EVENT_SETTINGS.CHARACTER_DAMAGE": "Unit damage",
     "EVENT_SETTINGS.CHARACTER_DIED": "Unit death",
     "EVENT_SETTINGS.CHARACTER_HP": "Unit health changes",
@@ -510,7 +511,13 @@
     "STATUS.DECREASED": "{character} {status} -{amount}.",
     "ABILITY.AVAILABLE": "{character} ability ready.",
     "ABILITY.UNAVAILABLE": "{character} ability unavailable.",
-    "RELIC.TRIGGERED": "{relic} triggered."
+    "RELIC.TRIGGERED": "{relic} triggered.",
+    "CHATTER.WITH_REASON": "{character} {reason}, \"{quote}\"",
+    "CHATTER.NO_REASON": "{character} \"{quote}\"",
+    "CHATTER.REASON.SUMMONED": "summoned",
+    "CHATTER.REASON.ATTACKING": "attacking",
+    "CHATTER.REASON.SLAY": "slay",
+    "CHATTER.REASON.IDLE": "idle"
   },
   "map_nav": {
     "NAV.CHOICE": "choice",

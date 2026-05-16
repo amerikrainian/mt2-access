@@ -163,6 +163,7 @@
     "EVENT_SETTINGS.BASIC": "基本イベント",
     "EVENT_SETTINGS.CARD_DECK_SHUFFLED": "デッキシャッフル",
     "EVENT_SETTINGS.CHARACTER_ABILITY": "ユニット能力の使用可否",
+    "EVENT_SETTINGS.CHARACTER_CHATTER": "????????",
     "EVENT_SETTINGS.CHARACTER_DAMAGE": "ユニットダメージ",
     "EVENT_SETTINGS.CHARACTER_DIED": "ユニット死亡",
     "EVENT_SETTINGS.CHARACTER_HP": "ユニット体力変化",
@@ -509,7 +510,13 @@
     "STATUS.INCREASED": "{character} {status} +{amount}。",
     "STATUS.DECREASED": "{character} {status} -{amount}。",
     "ABILITY.UNAVAILABLE": "{character}の能力は利用不可。",
-    "RELIC.TRIGGERED": "{relic}発動。"
+    "RELIC.TRIGGERED": "{relic}発動。",
+    "CHATTER.WITH_REASON": "{character} {reason}, \"{quote}\"",
+    "CHATTER.NO_REASON": "{character} \"{quote}\"",
+    "CHATTER.REASON.SUMMONED": "??",
+    "CHATTER.REASON.ATTACKING": "???",
+    "CHATTER.REASON.SLAY": "??",
+    "CHATTER.REASON.IDLE": "??"
   },
   "map_nav": {
     "NAV.CHOICE": "選択肢",

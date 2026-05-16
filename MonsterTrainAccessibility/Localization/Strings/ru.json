@@ -163,6 +163,7 @@
     "EVENT_SETTINGS.BASIC": "Основные события",
     "EVENT_SETTINGS.CARD_DECK_SHUFFLED": "Колода перемешана",
     "EVENT_SETTINGS.CHARACTER_ABILITY": "Доступность способности существа",
+    "EVENT_SETTINGS.CHARACTER_CHATTER": "??????? ???????",
     "EVENT_SETTINGS.CHARACTER_DAMAGE": "Урон существу",
     "EVENT_SETTINGS.CHARACTER_DIED": "Гибель существа",
     "EVENT_SETTINGS.CHARACTER_HP": "Изменения здоровья существа",
@@ -509,7 +510,13 @@
     "STATUS.INCREASED": "{character} {status} +{amount}.",
     "STATUS.DECREASED": "{character} {status} -{amount}.",
     "ABILITY.UNAVAILABLE": "Способность {character} недоступна.",
-    "RELIC.TRIGGERED": "{relic} сработал."
+    "RELIC.TRIGGERED": "{relic} сработал.",
+    "CHATTER.WITH_REASON": "{character} {reason}, \"{quote}\"",
+    "CHATTER.NO_REASON": "{character} \"{quote}\"",
+    "CHATTER.REASON.SUMMONED": "????????",
+    "CHATTER.REASON.ATTACKING": "???????",
+    "CHATTER.REASON.SLAY": "????????",
+    "CHATTER.REASON.IDLE": "???????????"
   },
   "map_nav": {
     "NAV.CHOICE": "выбор",

@@ -163,6 +163,7 @@
     "EVENT_SETTINGS.BASIC": "Événements de base",
     "EVENT_SETTINGS.CARD_DECK_SHUFFLED": "Deck mélangé",
     "EVENT_SETTINGS.CHARACTER_ABILITY": "Disponibilité des capacités d'unité",
+    "EVENT_SETTINGS.CHARACTER_CHATTER": "R?pliques d'unit?",
     "EVENT_SETTINGS.CHARACTER_DAMAGE": "Dégâts des unités",
     "EVENT_SETTINGS.CHARACTER_DIED": "Mort des unités",
     "EVENT_SETTINGS.CHARACTER_HP": "Changements de santé des unités",
@@ -509,7 +510,13 @@
     "STATUS.INCREASED": "{character} {status} +{amount}.",
     "STATUS.DECREASED": "{character} {status} -{amount}.",
     "ABILITY.UNAVAILABLE": "Capacité de {character} indisponible.",
-    "RELIC.TRIGGERED": "{relic} déclenché."
+    "RELIC.TRIGGERED": "{relic} déclenché.",
+    "CHATTER.WITH_REASON": "{character} {reason}, \"{quote}\"",
+    "CHATTER.NO_REASON": "{character} \"{quote}\"",
+    "CHATTER.REASON.SUMMONED": "invoqu?",
+    "CHATTER.REASON.ATTACKING": "attaque",
+    "CHATTER.REASON.SLAY": "?limination",
+    "CHATTER.REASON.IDLE": "inactif"
   },
   "map_nav": {
     "NAV.CHOICE": "choix",

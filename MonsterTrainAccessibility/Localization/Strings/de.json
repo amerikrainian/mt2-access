@@ -163,6 +163,7 @@
     "EVENT_SETTINGS.BASIC": "Grundereignisse",
     "EVENT_SETTINGS.CARD_DECK_SHUFFLED": "Deck gemischt",
     "EVENT_SETTINGS.CHARACTER_ABILITY": "Verfügbarkeit von Einheitenfähigkeiten",
+    "EVENT_SETTINGS.CHARACTER_CHATTER": "Einheitenkommentare",
     "EVENT_SETTINGS.CHARACTER_DAMAGE": "Einheitenschaden",
     "EVENT_SETTINGS.CHARACTER_DIED": "Einheitentod",
     "EVENT_SETTINGS.CHARACTER_HP": "Änderungen an Einheitenleben",
@@ -509,7 +510,13 @@
     "STATUS.INCREASED": "{character} {status} +{amount}.",
     "STATUS.DECREASED": "{character} {status} -{amount}.",
     "ABILITY.UNAVAILABLE": "{character}-Fähigkeit nicht verfügbar.",
-    "RELIC.TRIGGERED": "{relic} ausgelöst."
+    "RELIC.TRIGGERED": "{relic} ausgelöst.",
+    "CHATTER.WITH_REASON": "{character} {reason}, \"{quote}\"",
+    "CHATTER.NO_REASON": "{character} \"{quote}\"",
+    "CHATTER.REASON.SUMMONED": "beschworen",
+    "CHATTER.REASON.ATTACKING": "greift an",
+    "CHATTER.REASON.SLAY": "t?tet",
+    "CHATTER.REASON.IDLE": "inaktiv"
   },
   "map_nav": {
     "NAV.CHOICE": "Auswahl",

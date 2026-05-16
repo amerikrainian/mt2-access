@@ -163,6 +163,7 @@
     "EVENT_SETTINGS.BASIC": "Eventos básicos",
     "EVENT_SETTINGS.CARD_DECK_SHUFFLED": "Baralho embaralhado",
     "EVENT_SETTINGS.CHARACTER_ABILITY": "Disponibilidade de habilidade de unidade",
+    "EVENT_SETTINGS.CHARACTER_CHATTER": "Falas de unidade",
     "EVENT_SETTINGS.CHARACTER_DAMAGE": "Dano de unidade",
     "EVENT_SETTINGS.CHARACTER_DIED": "Morte de unidade",
     "EVENT_SETTINGS.CHARACTER_HP": "Mudanças de vida de unidade",
@@ -509,7 +510,13 @@
     "STATUS.INCREASED": "{character} {status} +{amount}.",
     "STATUS.DECREASED": "{character} {status} -{amount}.",
     "ABILITY.UNAVAILABLE": "Habilidade de {character} indisponível.",
-    "RELIC.TRIGGERED": "{relic} acionado."
+    "RELIC.TRIGGERED": "{relic} acionado.",
+    "CHATTER.WITH_REASON": "{character} {reason}, \"{quote}\"",
+    "CHATTER.NO_REASON": "{character} \"{quote}\"",
+    "CHATTER.REASON.SUMMONED": "invocado",
+    "CHATTER.REASON.ATTACKING": "atacando",
+    "CHATTER.REASON.SLAY": "abate",
+    "CHATTER.REASON.IDLE": "ocioso"
   },
   "map_nav": {
     "NAV.CHOICE": "escolha",

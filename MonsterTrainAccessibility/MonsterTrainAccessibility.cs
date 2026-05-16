@@ -267,6 +267,34 @@ namespace MonsterTrainAccessibility
                 postfix: new HarmonyMethod(typeof(CompendiumChecklistHooks), nameof(CompendiumChecklistHooks.UnlockScreen_GetFeatureUnlockItems_Postfix)),
                 argTypes: new[] { typeof(global::AllGameData), typeof(System.Collections.Generic.List<global::MetagameSaveData.UnlockedFeatureData>) });
 
+            HarmonyHelper.PatchIfFound(
+                _harmony,
+                typeof(global::Chatter),
+                "DisplayChatter",
+                prefix: new HarmonyMethod(typeof(ChatterHooks), nameof(ChatterHooks.Chatter_DisplayChatter_Prefix)),
+                postfix: new HarmonyMethod(typeof(ChatterHooks), nameof(ChatterHooks.Chatter_DisplayChatter_Postfix)),
+                argTypes: new[]
+                {
+                    typeof(global::ChatterExpressionType),
+                    typeof(global::CharacterState),
+                    typeof(float),
+                    typeof(global::CharacterTriggerData.Trigger)
+                });
+
+            HarmonyHelper.PatchIfFound(
+                _harmony,
+                typeof(global::ChatterExpression),
+                "Express",
+                prefix: new HarmonyMethod(typeof(ChatterHooks), nameof(ChatterHooks.ChatterExpression_Express_Prefix)),
+                argTypes: new[]
+                {
+                    typeof(global::Chatter),
+                    typeof(global::ChatterExpressionType),
+                    typeof(global::CharacterState),
+                    typeof(float),
+                    typeof(string)
+                });
+
         }
 
         private void OnApplicationQuit()

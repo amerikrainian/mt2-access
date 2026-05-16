@@ -163,6 +163,7 @@
     "EVENT_SETTINGS.BASIC": "基本事件",
     "EVENT_SETTINGS.CARD_DECK_SHUFFLED": "牌組洗牌",
     "EVENT_SETTINGS.CHARACTER_ABILITY": "單位能力可用性",
+    "EVENT_SETTINGS.CHARACTER_CHATTER": "????",
     "EVENT_SETTINGS.CHARACTER_DAMAGE": "單位傷害",
     "EVENT_SETTINGS.CHARACTER_DIED": "單位死亡",
     "EVENT_SETTINGS.CHARACTER_HP": "單位生命值變化",
@@ -509,7 +510,13 @@
     "STATUS.INCREASED": "{character} {status} +{amount}。",
     "STATUS.DECREASED": "{character} {status} -{amount}。",
     "ABILITY.UNAVAILABLE": "{character} 能力無法使用。",
-    "RELIC.TRIGGERED": "{relic} 觸發。"
+    "RELIC.TRIGGERED": "{relic} 觸發。",
+    "CHATTER.WITH_REASON": "{character} {reason}??{quote}?",
+    "CHATTER.NO_REASON": "{character}?{quote}?",
+    "CHATTER.REASON.SUMMONED": "??",
+    "CHATTER.REASON.ATTACKING": "??",
+    "CHATTER.REASON.SLAY": "??",
+    "CHATTER.REASON.IDLE": "??"
   },
   "map_nav": {
     "NAV.CHOICE": "選擇",
