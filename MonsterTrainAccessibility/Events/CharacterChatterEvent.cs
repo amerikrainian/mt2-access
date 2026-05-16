@@ -2,23 +2,20 @@ using MonsterTrainAccessibility.Localization;
 
 namespace MonsterTrainAccessibility.Events
 {
-    [EventSettings("character.chatter", defaultAnnounce: false, HasSourceFilter = true)]
-    internal sealed class CharacterChatterEvent : GameEvent
+    internal abstract class CharacterChatterEvent : GameEvent
     {
         private readonly string _characterName;
         private readonly string _reason;
         private readonly string _quote;
 
-        public CharacterChatterEvent(
+        protected CharacterChatterEvent(
             CharacterState character,
-            ChatterExpressionType expressionType,
-            bool hasTrigger,
-            CharacterTriggerData.Trigger trigger,
+            Message reason,
             string quote)
             : base(EventSource.FromCharacter(character))
         {
             _characterName = Message.RawCleaned(character?.GetName())?.Resolve();
-            _reason = ResolveReason(expressionType, hasTrigger, trigger);
+            _reason = reason?.Resolve();
             _quote = Message.FromText(quote)?.Resolve();
         }
 
@@ -36,32 +33,76 @@ namespace MonsterTrainAccessibility.Events
                 : Message.Localized("events", "CHATTER.WITH_REASON", new { character = _characterName, reason = _reason, quote = _quote });
         }
 
-        private static string ResolveReason(
+        public static GameEvent Create(
+            CharacterState character,
             ChatterExpressionType expressionType,
             bool hasTrigger,
-            CharacterTriggerData.Trigger trigger)
+            CharacterTriggerData.Trigger trigger,
+            string quote)
         {
-            Message reason = null;
             switch (expressionType)
             {
                 case ChatterExpressionType.CharacterAdded:
-                    reason = Message.Localized("events", "CHATTER.REASON.SUMMONED");
-                    break;
+                    return new CharacterSummonedChatterEvent(character, quote);
                 case ChatterExpressionType.CharacterAttacking:
-                    reason = Message.Localized("events", "CHATTER.REASON.ATTACKING");
-                    break;
+                    return new CharacterAttackingChatterEvent(character, quote);
                 case ChatterExpressionType.CharacterSlayed:
-                    reason = Message.Localized("events", "CHATTER.REASON.SLAY");
-                    break;
+                    return new CharacterSlayChatterEvent(character, quote);
                 case ChatterExpressionType.CharacterIdle:
-                    reason = Message.Localized("events", "CHATTER.REASON.IDLE");
-                    break;
+                    return new CharacterIdleChatterEvent(character, quote);
                 case ChatterExpressionType.CharacterTrigger:
-                    reason = hasTrigger ? GameLocStrings.CharacterTriggerName(trigger) : null;
-                    break;
+                    return new CharacterTriggerChatterEvent(
+                        character,
+                        hasTrigger ? GameLocStrings.CharacterTriggerName(trigger) : null,
+                        quote);
+                default:
+                    return null;
             }
+        }
+    }
 
-            return reason?.Resolve();
+    [EventSettings("character.chatter.summoned", defaultAnnounce: false, HasSourceFilter = true)]
+    internal sealed class CharacterSummonedChatterEvent : CharacterChatterEvent
+    {
+        public CharacterSummonedChatterEvent(CharacterState character, string quote)
+            : base(character, Message.Localized("events", "CHATTER.REASON.SUMMONED"), quote)
+        {
+        }
+    }
+
+    [EventSettings("character.chatter.attacking", defaultAnnounce: false, HasSourceFilter = true)]
+    internal sealed class CharacterAttackingChatterEvent : CharacterChatterEvent
+    {
+        public CharacterAttackingChatterEvent(CharacterState character, string quote)
+            : base(character, Message.Localized("events", "CHATTER.REASON.ATTACKING"), quote)
+        {
+        }
+    }
+
+    [EventSettings("character.chatter.slay", defaultAnnounce: false, HasSourceFilter = true)]
+    internal sealed class CharacterSlayChatterEvent : CharacterChatterEvent
+    {
+        public CharacterSlayChatterEvent(CharacterState character, string quote)
+            : base(character, Message.Localized("events", "CHATTER.REASON.SLAY"), quote)
+        {
+        }
+    }
+
+    [EventSettings("character.chatter.idle", defaultAnnounce: false, HasSourceFilter = true)]
+    internal sealed class CharacterIdleChatterEvent : CharacterChatterEvent
+    {
+        public CharacterIdleChatterEvent(CharacterState character, string quote)
+            : base(character, Message.Localized("events", "CHATTER.REASON.IDLE"), quote)
+        {
+        }
+    }
+
+    [EventSettings("character.chatter.trigger", defaultAnnounce: false, HasSourceFilter = true)]
+    internal sealed class CharacterTriggerChatterEvent : CharacterChatterEvent
+    {
+        public CharacterTriggerChatterEvent(CharacterState character, Message reason, string quote)
+            : base(character, reason, quote)
+        {
         }
     }
 }

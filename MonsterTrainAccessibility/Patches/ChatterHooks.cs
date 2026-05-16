@@ -47,7 +47,7 @@ namespace MonsterTrainAccessibility.Patches
                     ? context.Trigger
                     : CharacterTriggerData.Trigger.OnDeath;
 
-                EventDispatcher.Enqueue(new CharacterChatterEvent(
+                EventDispatcher.Enqueue(CharacterChatterEvent.Create(
                     character,
                     expressionType,
                     hasTrigger,
