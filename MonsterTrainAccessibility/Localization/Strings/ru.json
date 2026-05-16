@@ -493,7 +493,7 @@
     "COMBAT.NO_MORE_ENEMIES": "Враги уничтожены.",
     "CARD.DECK_SHUFFLED": "Колода перемешана.",
     "RESOURCE.EMBER": "Ember {amount}.",
-    "RESOURCE.FORGE_POINTS": "Очки кузницы {amount}.",
+    "RESOURCE.FORGE_POINTS": "??????? {amount}.",
     "RESOURCE.GOLD_GAINED": "Золото +{amount}.",
     "RESOURCE.GOLD_LOST": "Золото -{amount}.",
     "PYRE.ARMOR": "Броня Pyre {amount}.",

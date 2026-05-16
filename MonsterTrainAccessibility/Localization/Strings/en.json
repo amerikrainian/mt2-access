@@ -494,7 +494,7 @@
     "COMBAT.NO_MORE_ENEMIES": "Enemies cleared.",
     "CARD.DECK_SHUFFLED": "Deck shuffled.",
     "RESOURCE.EMBER": "Ember {amount}.",
-    "RESOURCE.FORGE_POINTS": "Forge points {amount}.",
+    "RESOURCE.FORGE_POINTS": "Forge {amount}.",
     "RESOURCE.GOLD_GAINED": "Gold +{amount}.",
     "RESOURCE.GOLD_LOST": "Gold -{amount}.",
     "PYRE.DAMAGED": "Pyre -{amount} health.",

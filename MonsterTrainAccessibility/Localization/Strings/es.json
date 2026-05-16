@@ -493,7 +493,7 @@
     "COMBAT.NO_MORE_ENEMIES": "Enemigos eliminados.",
     "CARD.DECK_SHUFFLED": "Mazo barajado.",
     "RESOURCE.EMBER": "Ember {amount}.",
-    "RESOURCE.FORGE_POINTS": "Puntos de forja {amount}.",
+    "RESOURCE.FORGE_POINTS": "Forja {amount}.",
     "RESOURCE.GOLD_GAINED": "Oro +{amount}.",
     "RESOURCE.GOLD_LOST": "Oro -{amount}.",
     "PYRE.ARMOR": "Armadura de la Pyre {amount}.",

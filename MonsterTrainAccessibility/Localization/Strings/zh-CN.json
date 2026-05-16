@@ -493,7 +493,7 @@
     "COMBAT.NO_MORE_ENEMIES": "敌人已清除。",
     "CARD.DECK_SHUFFLED": "牌库已洗牌。",
     "RESOURCE.EMBER": "余烬 {amount}。",
-    "RESOURCE.FORGE_POINTS": "锻造点 {amount}。",
+    "RESOURCE.FORGE_POINTS": "?? {amount}?",
     "RESOURCE.GOLD_GAINED": "金币 +{amount}。",
     "RESOURCE.GOLD_LOST": "金币 -{amount}。",
     "PYRE.ARMOR": "薪火护甲 {amount}。",

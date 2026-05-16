@@ -493,7 +493,7 @@
     "COMBAT.NO_MORE_ENEMIES": "敵を一掃。",
     "CARD.DECK_SHUFFLED": "デッキをシャッフル。",
     "RESOURCE.EMBER": "Ember {amount}。",
-    "RESOURCE.FORGE_POINTS": "フォージポイント{amount}。",
+    "RESOURCE.FORGE_POINTS": "????{amount}?",
     "RESOURCE.GOLD_GAINED": "ゴールド +{amount}。",
     "RESOURCE.GOLD_LOST": "ゴールド -{amount}。",
     "PYRE.ARMOR": "Pyreアーマー{amount}。",

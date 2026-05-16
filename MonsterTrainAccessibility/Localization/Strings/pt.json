@@ -493,7 +493,7 @@
     "COMBAT.NO_MORE_ENEMIES": "Inimigos eliminados.",
     "CARD.DECK_SHUFFLED": "Baralho embaralhado.",
     "RESOURCE.EMBER": "Brasa {amount}.",
-    "RESOURCE.FORGE_POINTS": "Pontos de forja {amount}.",
+    "RESOURCE.FORGE_POINTS": "Forja {amount}.",
     "RESOURCE.GOLD_GAINED": "Ouro +{amount}.",
     "RESOURCE.GOLD_LOST": "Ouro -{amount}.",
     "PYRE.ARMOR": "Armadura da Pyre {amount}.",

@@ -493,7 +493,7 @@
     "COMBAT.NO_MORE_ENEMIES": "Feinde besiegt.",
     "CARD.DECK_SHUFFLED": "Deck gemischt.",
     "RESOURCE.EMBER": "Ember {amount}.",
-    "RESOURCE.FORGE_POINTS": "Schmiedepunkte {amount}.",
+    "RESOURCE.FORGE_POINTS": "Schmiede {amount}.",
     "RESOURCE.GOLD_GAINED": "Gold +{amount}.",
     "RESOURCE.GOLD_LOST": "Gold -{amount}.",
     "PYRE.ARMOR": "Pyre-Rüstung {amount}.",

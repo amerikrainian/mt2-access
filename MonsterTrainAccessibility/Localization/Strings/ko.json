@@ -493,7 +493,7 @@
     "COMBAT.NO_MORE_ENEMIES": "적 처치 완료.",
     "CARD.DECK_SHUFFLED": "덱 섞임.",
     "RESOURCE.EMBER": "엠버 {amount}.",
-    "RESOURCE.FORGE_POINTS": "제련 포인트 {amount}.",
+    "RESOURCE.FORGE_POINTS": "?? {amount}.",
     "RESOURCE.GOLD_GAINED": "골드 +{amount}.",
     "RESOURCE.GOLD_LOST": "골드 -{amount}.",
     "PYRE.ARMOR": "Pyre 방어도 {amount}.",

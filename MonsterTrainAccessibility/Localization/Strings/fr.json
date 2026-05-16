@@ -493,7 +493,7 @@
     "COMBAT.NO_MORE_ENEMIES": "Ennemis éliminés.",
     "CARD.DECK_SHUFFLED": "Deck mélangé.",
     "RESOURCE.EMBER": "Braise {amount}.",
-    "RESOURCE.FORGE_POINTS": "Points de forge {amount}.",
+    "RESOURCE.FORGE_POINTS": "Forge {amount}.",
     "RESOURCE.GOLD_GAINED": "Or +{amount}.",
     "RESOURCE.GOLD_LOST": "Or -{amount}.",
     "PYRE.ARMOR": "Armure de la Pyre {amount}.",
