@@ -1,5 +1,10 @@
 # Change Log
 
+## 0.2.0
+
+- Fixed a bug where your focus would be stuck after opening settings on rewards screen. You could have gotten yourself unstuck by hitting tab, but you don't have to anymore (QgSama). Silly Unity focus restore.
+- Updated existing Chinese translation (QgSama)
+
 ## 0.1.9
 
 - We now pick up character chatter with all the related events turned off by default so as to reduce spam. They do, however, go into the new monster quotes buffer so you can review them at your leisure (Boing).
