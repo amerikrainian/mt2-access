@@ -24,7 +24,6 @@ namespace MonsterTrainAccessibility.UI.Screens
         private static readonly FieldInfo SoulRerollButtonLabelField = AccessTools.Field(typeof(global::SoulDraftScreen), "rerollButtonLabel")!;
         private static readonly FieldInfo ElixirHideButtonField = AccessTools.Field(typeof(global::ElixirDraftScreen), "hideButton")!;
         private static readonly FieldInfo ElixirShowButtonField = AccessTools.Field(typeof(global::ElixirDraftScreen), "showButton")!;
-        private static readonly FieldInfo RelicInstructionsLabelField = AccessTools.Field(typeof(global::RelicDraftScreen), "instructionsLabel")!;
         private static readonly MethodInfo DoesSkipCostPyreHealthFromRelicEffectMethod = AccessTools.Method(typeof(global::DraftScreenBase), "DoesSkipCostPyreHealthFromRelicEffect")!;
         private static readonly MethodInfo GetPyreHealthCostForSkippingFromRelicEffectMethod = AccessTools.Method(typeof(global::DraftScreenBase), "GetPyreHealthCostForSkippingFromRelicEffect")!;
         private static readonly MethodInfo GetGoldForSkippingMethod = AccessTools.Method(typeof(global::DraftScreenBase), "GetGoldForSkipping")!;
@@ -43,13 +42,9 @@ namespace MonsterTrainAccessibility.UI.Screens
             int count = 0;
 
             TMP_Text header = Get<TMP_Text>(_screen, HeaderLabelField);
-            if (header != null)
-            {
-                ProxyDraftText heading = new ProxyDraftText(header);
-                Grid.Add(heading, 0, 0);
-                RegisterElement(heading, header.gameObject);
-                count++;
-            }
+            string headerText = AccessibleScreenText.Text(header)?.Resolve();
+            Grid.ContainerLabel = Message.ShouldAdd(headerText) ? headerText : null;
+            Grid.AnnounceName = Grid.ContainerLabel != null;
 
             List<IDraftableUI> items = Get<List<IDraftableUI>>(_screen, DraftItemsField);
             if (items != null)
@@ -57,18 +52,6 @@ namespace MonsterTrainAccessibility.UI.Screens
                 for (int i = 0; i < items.Count; i++)
                 {
                     AddDraftItem(items[i], count % columns, count / columns);
-                    count++;
-                }
-            }
-
-            if (_screen is global::RelicDraftScreen)
-            {
-                TMP_Text instructions = Get<TMP_Text>(_screen, RelicInstructionsLabelField);
-                if (instructions != null)
-                {
-                    ProxyDraftText instructionElement = new ProxyDraftText(instructions);
-                    Grid.Add(instructionElement, count % columns, count / columns);
-                    RegisterElement(instructionElement, instructions.gameObject);
                     count++;
                 }
             }
