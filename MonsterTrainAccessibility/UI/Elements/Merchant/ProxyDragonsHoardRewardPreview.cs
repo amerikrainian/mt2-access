@@ -3,6 +3,7 @@ using MonsterTrainAccessibility.Buffers;
 using MonsterTrainAccessibility.Localization;
 using MonsterTrainAccessibility.Presentation;
 using MonsterTrainAccessibility.Presentation.Rewards;
+using MonsterTrainAccessibility.Presentation.Verbosity;
 using MonsterTrainAccessibility.Util;
 
 namespace MonsterTrainAccessibility.UI.Elements
@@ -37,7 +38,8 @@ namespace MonsterTrainAccessibility.UI.Elements
 
             uiBuffer.Clear();
             List<Message> parts = new List<Message>(PresentationRenderer.BufferLines(
-                PhaseRegistry.Rewards.Build(new RewardPresentationSource(_rewardData, _reward?.Tooltips))));
+                PhaseRegistry.Rewards.Build(new RewardPresentationSource(_rewardData, _reward?.Tooltips)),
+                VerbosityRegistry.ForSource<RewardPresentationSource>()));
             if (parts.Count == 0)
             {
                 MessageList.Add(parts, _tooltip);

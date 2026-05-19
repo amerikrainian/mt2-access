@@ -13,7 +13,7 @@ namespace MonsterTrainAccessibility.UI.Elements
 
     public class ListContainer : Container, INavigationActionHandler, INavigationTargetElement, IActivatableElement
     {
-        private int _focusIndex = -1;
+        private UIElement _focusedChild;
 
         public ListContainer()
         {
@@ -29,10 +29,9 @@ namespace MonsterTrainAccessibility.UI.Elements
 
         public NavigationAxis NavigationAxis { get; set; }
 
-        public UIElement FocusedChild =>
-            _focusIndex >= 0 && _focusIndex < Children.Count ? Children[_focusIndex] : null;
+        public UIElement FocusedChild => IndexOf(_focusedChild) >= 0 ? _focusedChild : null;
 
-        public int FocusIndex => _focusIndex;
+        public int FocusIndex => IndexOf(_focusedChild);
 
         public override bool IsVisible
         {
@@ -189,7 +188,13 @@ namespace MonsterTrainAccessibility.UI.Elements
                 return false;
             }
 
-            int index = _focusIndex;
+            int index = FocusIndex;
+            if (index < 0)
+            {
+                FocusFirst();
+                return true;
+            }
+
             while (true)
             {
                 index += direction;
@@ -266,12 +271,13 @@ namespace MonsterTrainAccessibility.UI.Elements
 
         private bool EnsureFocusedChild()
         {
-            if (FocusedChild != null && FocusedChild.IsVisible)
+            int focusedIndex = FocusIndex;
+            if (focusedIndex >= 0 && _focusedChild.IsVisible)
             {
                 return true;
             }
 
-            int start = _focusIndex;
+            int start = focusedIndex;
             if (start >= 0)
             {
                 for (int offset = 1; offset < Children.Count; offset++)
@@ -317,13 +323,13 @@ namespace MonsterTrainAccessibility.UI.Elements
 
         private void SetFocus(int index, bool selectForNavigation)
         {
-            if (_focusIndex >= 0 && _focusIndex < Children.Count && Children[_focusIndex].IsFocused)
+            if (_focusedChild != null && _focusedChild.IsFocused)
             {
-                Children[_focusIndex].Unfocus();
+                _focusedChild.Unfocus();
             }
 
-            _focusIndex = index;
             UIElement child = Children[index];
+            _focusedChild = child;
             if (!child.IsFocused)
             {
                 child.Focus();

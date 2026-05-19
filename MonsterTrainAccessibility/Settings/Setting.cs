@@ -12,5 +12,6 @@ namespace MonsterTrainAccessibility.ModSettings
 
         public string Key { get; }
         public Message Label { get; }
+        public int SortPriority { get; set; } = int.MaxValue;
     }
 }

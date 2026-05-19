@@ -1,6 +1,7 @@
 using MonsterTrainAccessibility.Buffers;
 using MonsterTrainAccessibility.Presentation;
 using MonsterTrainAccessibility.Presentation.Compendium;
+using MonsterTrainAccessibility.Presentation.Verbosity;
 using MonsterTrainAccessibility.UI.Screens;
 using MonsterTrainAccessibility.Localization;
 using MonsterTrainAccessibility.UI.Elements;
@@ -26,7 +27,9 @@ namespace MonsterTrainAccessibility.UI.Elements.Compendium
 
         public override Message GetTooltip()
         {
-            return PresentationRenderer.FocusTooltip(Presentation());
+            return PresentationRenderer.FocusTooltip(
+                Presentation(),
+                VerbosityRegistry.ForSource<CompendiumEnemyPresentationSource>());
         }
 
         public override Message GetExtrasString()

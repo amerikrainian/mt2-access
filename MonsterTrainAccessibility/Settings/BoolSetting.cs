@@ -26,5 +26,10 @@ namespace MonsterTrainAccessibility.ModSettings
         }
 
         public bool DefaultValue => (bool)_entry.DefaultValue;
+
+        public void ResetToDefault()
+        {
+            Value = DefaultValue;
+        }
     }
 }

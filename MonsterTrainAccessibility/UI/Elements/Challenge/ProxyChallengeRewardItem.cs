@@ -4,6 +4,7 @@ using HarmonyLib;
 using MonsterTrainAccessibility.Localization;
 using MonsterTrainAccessibility.Presentation;
 using MonsterTrainAccessibility.Presentation.Progression;
+using MonsterTrainAccessibility.Presentation.Verbosity;
 using MonsterTrainAccessibility.UI;
 using TMPro;
 using UnityEngine;
@@ -52,7 +53,8 @@ namespace MonsterTrainAccessibility.UI.Elements
             }
 
             return PresentationRenderer.FocusTooltip(
-                PhaseRegistry.ProgressionObjectives.Build(new ProgressionObjectivePresentationSource(objective)));
+                PhaseRegistry.ProgressionObjectives.Build(new ProgressionObjectivePresentationSource(objective)),
+                VerbosityRegistry.ForSource<ProgressionObjectivePresentationSource>());
         }
 
         private static T Get<T>(object owner, FieldInfo field) where T : class

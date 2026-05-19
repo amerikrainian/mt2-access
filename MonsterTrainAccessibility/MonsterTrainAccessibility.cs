@@ -5,6 +5,7 @@ using MonsterTrainAccessibility.Core;
 using MonsterTrainAccessibility.Events;
 using MonsterTrainAccessibility.Input;
 using MonsterTrainAccessibility.Localization;
+using MonsterTrainAccessibility.ModSettings;
 using MonsterTrainAccessibility.Patches;
 using MonsterTrainAccessibility.Speech;
 using MonsterTrainAccessibility.Updates;
@@ -41,6 +42,7 @@ namespace MonsterTrainAccessibility
                 LocalizationManager.Initialize();
                 EventRegistry.Initialize(Config);
                 ElementSettingsRegistry.Initialize(Config);
+                VerbositySettings.Register(Config);
                 RegisterAccessibilityParamsManager();
                 BufferManager.Instance.RegisterDefaults();
                 SpeechManager.Initialize();

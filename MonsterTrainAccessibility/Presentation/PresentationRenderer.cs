@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using MonsterTrainAccessibility.Localization;
+using MonsterTrainAccessibility.Presentation.Verbosity;
 
 namespace MonsterTrainAccessibility.Presentation
 {
@@ -10,29 +11,54 @@ namespace MonsterTrainAccessibility.Presentation
             return presentation?.Title;
         }
 
-        public static Message FocusSummary(Presentation presentation)
+        public static Message FocusSummary(Presentation presentation, VerbosityProfile profile = null)
         {
             if (presentation == null)
             {
                 return null;
             }
 
+            profile = profile ?? VerbosityProfile.Default;
             List<Message> parts = new List<Message>();
-            Add(parts, presentation.Title);
-            Add(parts, presentation.Subtitle);
-            Add(parts, presentation.Cost);
-            AddRange(parts, presentation.Stats);
-            Add(parts, presentation.Description);
+            IReadOnlyList<VerbositySlotEntry> entries = profile.Entries;
+            for (int i = 0; i < entries.Count; i++)
+            {
+                VerbositySlotEntry entry = entries[i];
+                if (!entry.Enabled)
+                {
+                    continue;
+                }
+
+                switch (entry.Slot)
+                {
+                    case PresentationSlot.Title:
+                        Add(parts, presentation.Title);
+                        break;
+                    case PresentationSlot.Subtitle:
+                        Add(parts, presentation.Subtitle);
+                        break;
+                    case PresentationSlot.Cost:
+                        Add(parts, presentation.Cost);
+                        break;
+                    case PresentationSlot.Stats:
+                        AddRange(parts, presentation.Stats);
+                        break;
+                    case PresentationSlot.Description:
+                        Add(parts, presentation.Description);
+                        break;
+                }
+            }
+
             return parts.Count > 0 ? Message.Join(", ", parts) : null;
         }
 
-        public static Message FocusTooltip(Presentation presentation)
+        public static Message FocusTooltip(Presentation presentation, VerbosityProfile profile = null)
         {
-            IReadOnlyList<Message> lines = BufferLines(presentation);
+            IReadOnlyList<Message> lines = BufferLines(presentation, profile);
             return lines.Count > 0 ? Message.JoinLines(lines) : null;
         }
 
-        public static IReadOnlyList<Message> BufferLines(Presentation presentation)
+        public static IReadOnlyList<Message> BufferLines(Presentation presentation, VerbosityProfile profile = null)
         {
             List<Message> lines = new List<Message>();
             if (presentation == null)
@@ -40,56 +66,89 @@ namespace MonsterTrainAccessibility.Presentation
                 return lines;
             }
 
-            Add(lines, presentation.Title);
-            Add(lines, presentation.Subtitle);
-            Add(lines, presentation.Cost);
-            AddRange(lines, presentation.Stats);
-            Add(lines, presentation.Description);
-
-            List<PresentationSection> ordered = new List<PresentationSection>(presentation.Sections);
-            ordered.Sort(CompareSections);
-            for (int i = 0; i < ordered.Count; i++)
+            profile = profile ?? VerbosityProfile.Default;
+            IReadOnlyList<VerbositySlotEntry> entries = profile.Entries;
+            for (int i = 0; i < entries.Count; i++)
             {
-                AddSection(lines, ordered[i]);
+                VerbositySlotEntry entry = entries[i];
+                if (!entry.Enabled)
+                {
+                    continue;
+                }
+
+                switch (entry.Slot)
+                {
+                    case PresentationSlot.Title:
+                        Add(lines, presentation.Title);
+                        break;
+                    case PresentationSlot.Subtitle:
+                        Add(lines, presentation.Subtitle);
+                        break;
+                    case PresentationSlot.Cost:
+                        Add(lines, presentation.Cost);
+                        break;
+                    case PresentationSlot.Stats:
+                        AddRange(lines, presentation.Stats);
+                        break;
+                    case PresentationSlot.Description:
+                        Add(lines, presentation.Description);
+                        break;
+                    default:
+                        AddSectionsForSlot(lines, presentation, entry.Slot, profile);
+                        break;
+                }
             }
 
             return lines;
         }
 
-        private static int CompareSections(PresentationSection left, PresentationSection right)
+        private static void AddSectionsForSlot(
+            List<Message> lines,
+            Presentation presentation,
+            PresentationSlot slot,
+            VerbosityProfile profile)
         {
-            int priority = SectionPriority(left).CompareTo(SectionPriority(right));
-            return priority != 0 ? priority : SectionOrder(left).CompareTo(SectionOrder(right));
-        }
-
-        private static int SectionOrder(PresentationSection section)
-        {
-            return section != null ? section.Order : int.MaxValue;
-        }
-
-        private static int SectionPriority(PresentationSection section)
-        {
-            if (section == null)
+            SectionKind? kind = SlotToSectionKind(slot);
+            if (kind == null)
             {
-                return int.MaxValue;
+                return;
             }
 
-            switch (section.Kind)
+            List<PresentationSection> sections = new List<PresentationSection>();
+            for (int i = 0; i < presentation.Sections.Count; i++)
             {
-                case SectionKind.Intent: return 10;
-                case SectionKind.DynamicInfo: return 20;
-                case SectionKind.Upgrade: return 30;
-                case SectionKind.Trigger: return 40;
-                case SectionKind.Status: return 50;
-                case SectionKind.Context: return 55;
-                case SectionKind.Tooltip: return 60;
-                case SectionKind.NestedPresentation: return 70;
-                case SectionKind.Annotation: return 80;
-                default: return 100;
+                PresentationSection section = presentation.Sections[i];
+                if (section != null && section.Kind == kind.Value)
+                {
+                    sections.Add(section);
+                }
+            }
+
+            sections.Sort((left, right) => left.Order.CompareTo(right.Order));
+            for (int i = 0; i < sections.Count; i++)
+            {
+                AddSection(lines, sections[i], profile);
             }
         }
 
-        private static void AddSection(List<Message> lines, PresentationSection section)
+        private static SectionKind? SlotToSectionKind(PresentationSlot slot)
+        {
+            switch (slot)
+            {
+                case PresentationSlot.Intent: return SectionKind.Intent;
+                case PresentationSlot.DynamicInfo: return SectionKind.DynamicInfo;
+                case PresentationSlot.Upgrade: return SectionKind.Upgrade;
+                case PresentationSlot.Trigger: return SectionKind.Trigger;
+                case PresentationSlot.Status: return SectionKind.Status;
+                case PresentationSlot.Context: return SectionKind.Context;
+                case PresentationSlot.Tooltip: return SectionKind.Tooltip;
+                case PresentationSlot.NestedPresentation: return SectionKind.NestedPresentation;
+                case PresentationSlot.Annotation: return SectionKind.Annotation;
+                default: return null;
+            }
+        }
+
+        private static void AddSection(List<Message> lines, PresentationSection section, VerbosityProfile profile)
         {
             if (section == null)
             {
@@ -99,7 +158,7 @@ namespace MonsterTrainAccessibility.Presentation
             if (section.NestedPresentation != null)
             {
                 Add(lines, section.Title);
-                AddRange(lines, BufferLines(section.NestedPresentation));
+                AddRange(lines, BufferLines(section.NestedPresentation, profile));
             }
             else if (section.Title != null && section.Body != null)
             {
@@ -113,7 +172,7 @@ namespace MonsterTrainAccessibility.Presentation
 
             for (int i = 0; i < section.Children.Count; i++)
             {
-                AddSection(lines, section.Children[i]);
+                AddSection(lines, section.Children[i], profile);
             }
         }
 

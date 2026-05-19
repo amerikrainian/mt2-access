@@ -3,6 +3,7 @@ using System.Text;
 using MonsterTrainAccessibility.Localization;
 using MonsterTrainAccessibility.Presentation;
 using MonsterTrainAccessibility.Presentation.Progression;
+using MonsterTrainAccessibility.Presentation.Verbosity;
 using MonsterTrainAccessibility.UI.Screens;
 
 namespace MonsterTrainAccessibility.UI.Elements
@@ -19,7 +20,9 @@ namespace MonsterTrainAccessibility.UI.Elements
         public override bool IsVisible => IsObjectiveVisible(_objective) && ProxyGameOverText.HasMessage(GetLabel());
         public override Message GetLabel()
         {
-            return PresentationRenderer.FocusSummary(BuildPresentation());
+            return PresentationRenderer.FocusSummary(
+                BuildPresentation(),
+                VerbosityRegistry.ForSource<ProgressionObjectivePresentationSource>());
         }
 
         public override Message GetTooltip()

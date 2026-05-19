@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using MonsterTrainAccessibility.Core;
 using MonsterTrainAccessibility.Localization;
+using MonsterTrainAccessibility.Presentation.Verbosity;
 using MonsterTrainAccessibility.UI.Elements;
 using MonsterTrainAccessibility.Util;
 
@@ -15,18 +16,21 @@ namespace MonsterTrainAccessibility.Presentation.Cards
         {
             CardState card = ctx.Source;
             builder.SetTitle(Message.FromText(card.GetTitle()));
-            builder.SetSubtitle(Metadata(card));
+            builder.SetSubtitle(Metadata(card, ctx.Profile.IsVerbose(PresentationSlot.Subtitle)));
         }
 
-        private static Message Metadata(CardState card)
+        private static Message Metadata(CardState card, bool verbose)
         {
             List<Message> parts = new List<Message>();
-            MessageList.Add(parts, MetadataTypeName(card));
-            MessageList.Add(parts, Rarity(card));
+            MessageList.Add(parts, MetadataTypeName(card, verbose));
+            if (verbose)
+            {
+                MessageList.Add(parts, Rarity(card));
+            }
             return parts.Count > 0 ? Message.Join(", ", parts) : null;
         }
 
-        private static Message MetadataTypeName(CardState card)
+        private static Message MetadataTypeName(CardState card, bool verbose)
         {
             if (card == null)
             {
@@ -35,7 +39,7 @@ namespace MonsterTrainAccessibility.Presentation.Cards
 
             List<Message> parts = new List<Message>();
             MessageList.Add(parts, CardTypeCardText(card));
-            if (IsBannerUnit(card))
+            if (verbose && IsBannerUnit(card))
             {
                 MessageList.Add(parts, Message.Localized("ui", "CARD_METADATA.BANNER_UNIT"));
             }
@@ -118,10 +122,10 @@ namespace MonsterTrainAccessibility.Presentation.Cards
 
         public void Apply(PresentationContext<CardState> ctx, PresentationBuilder builder)
         {
-            builder.SetCost(Cost(ctx.Source));
+            builder.SetCost(Cost(ctx.Source, ctx.Profile.IsVerbose(PresentationSlot.Cost)));
         }
 
-        private static Message Cost(CardState card)
+        private static Message Cost(CardState card, bool verbose)
         {
             if (card == null)
             {
@@ -130,12 +134,12 @@ namespace MonsterTrainAccessibility.Presentation.Cards
 
             if (card.IsNonPlayableEnergyCostType())
             {
-                return Message.Localized("combat", "CARD.UNPLAYABLE");
+                return Message.Localized("combat", verbose ? "CARD.UNPLAYABLE" : "CARD.UNPLAYABLE_COMPACT");
             }
 
             if (card.IsConsumeRemainingEnergyCostType())
             {
-                return Message.Localized("combat", "CARD.X_COST");
+                return Message.Localized("combat", verbose ? "CARD.X_COST" : "CARD.X_COST_COMPACT");
             }
 
             AllGameManagers managers = AllGameManagers.Instance.OrNull();
@@ -146,7 +150,7 @@ namespace MonsterTrainAccessibility.Presentation.Cards
             }
 
             int cost = card.GetCost(cardStatistics, managers?.GetMonsterManager(), managers?.GetRelicManager());
-            return Message.Localized("combat", "CARD.COST", new { cost });
+            return Message.Localized("combat", verbose ? "CARD.COST" : "CARD.COST_COMPACT", new { cost });
         }
     }
 

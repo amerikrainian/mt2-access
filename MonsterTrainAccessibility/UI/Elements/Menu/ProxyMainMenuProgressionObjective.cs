@@ -1,6 +1,7 @@
 using MonsterTrainAccessibility.Localization;
 using MonsterTrainAccessibility.Presentation;
 using MonsterTrainAccessibility.Presentation.Progression;
+using MonsterTrainAccessibility.Presentation.Verbosity;
 
 namespace MonsterTrainAccessibility.UI.Elements
 {
@@ -16,12 +17,14 @@ namespace MonsterTrainAccessibility.UI.Elements
         public override Message GetLabel()
         {
             global::MonsterTrainAccessibility.Presentation.Presentation presentation = BuildPresentation();
-            return Message.Join(", ", presentation?.Title, presentation?.Subtitle);
+            return PresentationRenderer.FocusSummary(
+                presentation,
+                VerbosityRegistry.ForSource<ProgressionObjectivePresentationSource>());
         }
 
         public override Message GetStatusString()
         {
-            return BuildPresentation().Description;
+            return null;
         }
 
         private global::MonsterTrainAccessibility.Presentation.Presentation BuildPresentation()

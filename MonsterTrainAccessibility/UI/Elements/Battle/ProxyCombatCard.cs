@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using MonsterTrainAccessibility.Core;
 using MonsterTrainAccessibility.Localization;
 using MonsterTrainAccessibility.Presentation;
+using MonsterTrainAccessibility.Presentation.Verbosity;
 using MonsterTrainAccessibility.Util;
 using ShinyShoe;
 
@@ -191,7 +192,9 @@ namespace MonsterTrainAccessibility.UI.Elements
 
         internal static Message AccessibilitySummaryWithLore(CardState card)
         {
-            List<Message> lines = new List<Message>(PresentationRenderer.BufferLines(PhaseRegistry.Cards.Build(card)));
+            List<Message> lines = new List<Message>(PresentationRenderer.BufferLines(
+                PhaseRegistry.Cards.Build(card),
+                VerbosityRegistry.ForSource<CardState>()));
             InsertLoreAfterTitle(lines, LoreLines(card));
             return lines.Count > 0 ? Message.JoinLines(lines) : null;
         }
@@ -203,12 +206,16 @@ namespace MonsterTrainAccessibility.UI.Elements
                 return CompactElixirFocusSummary(card);
             }
 
-            return PresentationRenderer.FocusSummary(PhaseRegistry.Cards.Build(card));
+            return PresentationRenderer.FocusSummary(
+                PhaseRegistry.Cards.Build(card),
+                VerbosityRegistry.ForSource<CardState>());
         }
 
         public static Message AccessibilitySummary(CardState card)
         {
-            return PresentationRenderer.FocusTooltip(PhaseRegistry.Cards.Build(card));
+            return PresentationRenderer.FocusTooltip(
+                PhaseRegistry.Cards.Build(card),
+                VerbosityRegistry.ForSource<CardState>());
         }
 
         private static void InsertLoreAfterTitle(List<Message> lines, List<Message> lore)

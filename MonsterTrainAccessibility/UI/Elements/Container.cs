@@ -39,6 +39,22 @@ namespace MonsterTrainAccessibility.UI.Elements
 
         public int IndexOf(UIElement child) => _children.IndexOf(child);
 
+        public void Swap(int indexA, int indexB)
+        {
+            if (indexA == indexB ||
+                indexA < 0 ||
+                indexA >= _children.Count ||
+                indexB < 0 ||
+                indexB >= _children.Count)
+            {
+                return;
+            }
+
+            UIElement temporary = _children[indexA];
+            _children[indexA] = _children[indexB];
+            _children[indexB] = temporary;
+        }
+
         public override void Update()
         {
             OnUpdate();

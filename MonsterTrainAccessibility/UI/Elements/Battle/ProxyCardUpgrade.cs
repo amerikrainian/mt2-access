@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using MonsterTrainAccessibility.Core;
 using MonsterTrainAccessibility.Localization;
 using MonsterTrainAccessibility.Presentation;
+using MonsterTrainAccessibility.Presentation.Verbosity;
 using MonsterTrainAccessibility.UI;
 using MonsterTrainAccessibility.Util;
 
@@ -27,7 +28,9 @@ namespace MonsterTrainAccessibility.UI.Elements
 
         public override Message GetTooltip()
         {
-            return PresentationRenderer.FocusTooltip(PhaseRegistry.CardUpgrades.Build(_upgrade));
+            return PresentationRenderer.FocusTooltip(
+                PhaseRegistry.CardUpgrades.Build(_upgrade),
+                VerbosityRegistry.ForSource<CardUpgradeData>());
         }
 
         internal static Message Label(CardUpgradeData upgrade)

@@ -9,6 +9,7 @@ using MonsterTrainAccessibility.Localization;
 using MonsterTrainAccessibility.Presentation;
 using MonsterTrainAccessibility.Presentation.Relics;
 using MonsterTrainAccessibility.Presentation.Rewards;
+using MonsterTrainAccessibility.Presentation.Verbosity;
 using MonsterTrainAccessibility.UI;
 using MonsterTrainAccessibility.UI.Elements;
 using ShinyShoe;
@@ -591,7 +592,10 @@ namespace MonsterTrainAccessibility.UI.Screens
                 return;
             }
 
-            AddPresentationLines(lines, PhaseRegistry.Rewards.Build(new RewardPresentationSource(rewardData)));
+            AddPresentationLines(
+                lines,
+                PhaseRegistry.Rewards.Build(new RewardPresentationSource(rewardData)),
+                VerbosityRegistry.ForSource<RewardPresentationSource>());
         }
 
         private static void AddDeckRewardsBufferLines(
@@ -629,7 +633,10 @@ namespace MonsterTrainAccessibility.UI.Screens
                 return;
             }
 
-            AddPresentationLines(lines, PhaseRegistry.Cards.Build(cardState));
+            AddPresentationLines(
+                lines,
+                PhaseRegistry.Cards.Build(cardState),
+                VerbosityRegistry.ForSource<CardState>());
         }
 
         private static void AddRelicBufferLines(List<Message> lines, RelicData relicData)
@@ -641,12 +648,16 @@ namespace MonsterTrainAccessibility.UI.Screens
 
             AddPresentationLines(
                 lines,
-                PhaseRegistry.Relics.Build(RelicPresentationSource.FromState(new RelicState(relicData), includeDynamicInfo: true)));
+                PhaseRegistry.Relics.Build(RelicPresentationSource.FromState(new RelicState(relicData), includeDynamicInfo: true)),
+                VerbosityRegistry.ForSource<RelicPresentationSource>());
         }
 
-        private static void AddPresentationLines(List<Message> lines, AccessiblePresentation presentation)
+        private static void AddPresentationLines(
+            List<Message> lines,
+            AccessiblePresentation presentation,
+            VerbosityProfile profile)
         {
-            IReadOnlyList<Message> rendered = PresentationRenderer.BufferLines(presentation);
+            IReadOnlyList<Message> rendered = PresentationRenderer.BufferLines(presentation, profile);
             for (int i = 0; i < rendered.Count; i++)
             {
                 MessageList.Add(lines, rendered[i]);

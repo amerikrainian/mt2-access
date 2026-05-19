@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using MonsterTrainAccessibility.Localization;
 
@@ -13,6 +14,9 @@ namespace MonsterTrainAccessibility.ModSettings
         }
 
         public IReadOnlyList<Setting> Children => _children;
+        public bool ReorderableChildren { get; set; }
+        public Action<Setting, Setting> OnChildSwap { get; set; }
+        public bool CanConfigure { get; set; } = true;
 
         public void Add(Setting child)
         {

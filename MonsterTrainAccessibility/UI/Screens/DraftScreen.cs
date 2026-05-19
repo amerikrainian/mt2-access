@@ -3,6 +3,7 @@ using System.Reflection;
 using HarmonyLib;
 using MonsterTrainAccessibility.Localization;
 using MonsterTrainAccessibility.Presentation;
+using MonsterTrainAccessibility.Presentation.Verbosity;
 using MonsterTrainAccessibility.UI.Elements;
 using ShinyShoe;
 using TMPro;
@@ -134,7 +135,9 @@ namespace MonsterTrainAccessibility.UI.Screens
         {
             CardState bonus = BonusCardFor(card);
             return bonus != null
-                ? new List<Message>(PresentationRenderer.BufferLines(PhaseRegistry.Cards.Build(bonus)))
+                ? new List<Message>(PresentationRenderer.BufferLines(
+                    PhaseRegistry.Cards.Build(bonus),
+                    VerbosityRegistry.ForSource<CardState>()))
                 : null;
         }
 
