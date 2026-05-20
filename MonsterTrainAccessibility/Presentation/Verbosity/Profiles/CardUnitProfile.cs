@@ -3,7 +3,7 @@ using System;
 namespace MonsterTrainAccessibility.Presentation.Verbosity.Profiles
 {
     [VerbosityProfile(
-        "card",
+        "card_unit",
         PresentationSlot.Title,
         PresentationSlot.Subtitle,
         PresentationSlot.Cost,
@@ -12,9 +12,14 @@ namespace MonsterTrainAccessibility.Presentation.Verbosity.Profiles
         PresentationSlot.Upgrade,
         PresentationSlot.Tooltip,
         GroupKey = "card_group",
-        MatchPriority = -100)]
-    internal sealed class CardProfile
+        MatchPriority = 10)]
+    internal sealed class CardUnitProfile
     {
         public static Type SourceType => typeof(CardState);
+
+        public static bool Matches(CardState card)
+        {
+            return card != null && card.IsSpawnerCard();
+        }
     }
 }

@@ -137,7 +137,7 @@ namespace MonsterTrainAccessibility.UI.Screens
             return bonus != null
                 ? new List<Message>(PresentationRenderer.BufferLines(
                     PhaseRegistry.Cards.Build(bonus),
-                    VerbosityRegistry.ForSource<CardState>()))
+                    VerbosityRegistry.ForSource(bonus)))
                 : null;
         }
 

@@ -13,5 +13,8 @@ namespace MonsterTrainAccessibility.Presentation.Verbosity
 
         public string Key { get; }
         public PresentationSlot[] DefaultOrder { get; }
+        public string GroupKey { get; set; }
+        public int MatchPriority { get; set; }
+        public PresentationSlot[] SupportedSlots { get; set; }
     }
 }

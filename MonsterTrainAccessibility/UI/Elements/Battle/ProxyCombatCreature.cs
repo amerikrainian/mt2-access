@@ -5,6 +5,7 @@ using MonsterTrainAccessibility.Buffers;
 using MonsterTrainAccessibility.Core;
 using MonsterTrainAccessibility.Localization;
 using MonsterTrainAccessibility.Presentation;
+using MonsterTrainAccessibility.Presentation.Verbosity;
 using MonsterTrainAccessibility.UI;
 using ShinyShoe;
 
@@ -25,8 +26,7 @@ namespace MonsterTrainAccessibility.UI.Elements
 
         public CharacterState Character => _character;
         public override bool IsVisible => _character != null && !_character.IsDestroyed && _character.GetCharacterUI() != null && _character.GetCharacterUI().gameObject.activeInHierarchy;
-        public override Message GetLabel() => Label(_character);
-        public override Message GetStatusString() => Status(_character);
+        public override Message GetLabel() => FocusSummary(_character);
         public override Message GetTooltip() => Tooltip(_character);
 
         internal override string HandleBuffers(BufferManager buffers)
@@ -58,28 +58,23 @@ namespace MonsterTrainAccessibility.UI.Elements
             return Message.RawCleaned(AccessibilityLocalizationScope.Run(() => character?.GetName()));
         }
 
-        internal static Message Status(CharacterState character)
+        internal static Message FocusSummary(CharacterState character)
         {
-            if (character == null)
-            {
-                return null;
-            }
-            List<TooltipContent> tooltips = CollectSemanticTooltips(character);
-            return Status(character, tooltips);
+            return character != null
+                ? PresentationRenderer.FocusSummary(
+                    PhaseRegistry.Creatures.Build(character),
+                    VerbosityRegistry.ForSource(character))
+                : null;
         }
 
-        internal static Message Tooltip(CharacterState character)
-        {
-            if (character == null)
-            {
-                return null;
-            }
-            return BuildTooltip(character, CollectSemanticTooltips(character));
-        }
-
-        internal static Message Status(CharacterState character, List<TooltipContent> tooltips)
+        internal static IReadOnlyList<Message> StatParts(CharacterState character)
         {
             List<Message> parts = new List<Message>();
+            if (character == null)
+            {
+                return parts;
+            }
+
             if (character.GetTeamType() == Team.Type.Monsters && !character.IsPyreHeart())
             {
                 int size = character.GetSize();
@@ -105,15 +100,16 @@ namespace MonsterTrainAccessibility.UI.Elements
                 parts.Add(Message.Localized("combat", "CREATURE.HP", new { hp = character.GetHP(), maxHp = character.GetMaxHP() }));
             }
 
-            if (character.IsOuterTrainBoss())
-            {
-                var intent = BossIntent(character);
-                MessageList.Add(parts, intent.Status);
-            }
+            return parts;
+        }
 
-            MessageList.Add(parts, UnitAbilitySummary(character));
-            AddVisibleTooltipTitles(parts, tooltips);
-            return parts.Count > 0 ? Message.Join(", ", parts) : null;
+        internal static Message Tooltip(CharacterState character)
+        {
+            if (character == null)
+            {
+                return null;
+            }
+            return BuildTooltip(character, CollectSemanticTooltips(character));
         }
 
         internal static Message MainTooltipBody(CharacterState character)
@@ -192,60 +188,31 @@ namespace MonsterTrainAccessibility.UI.Elements
             return tooltips;
         }
 
-        private static void AddVisibleTooltipTitles(List<Message> parts, List<TooltipContent> tooltips)
+        internal static HashSet<string> VisibleStatusIds(CharacterState character)
         {
-            if (parts == null || tooltips == null || tooltips.Count == 0)
+            HashSet<string> ids = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            if (character == null)
             {
-                return;
+                return ids;
             }
 
-            for (int i = 0; i < tooltips.Count; i++)
+            List<CharacterState.StatusEffectStack> statusEffects = new List<CharacterState.StatusEffectStack>();
+            character.GetStatusEffects(ref statusEffects);
+            for (int i = 0; i < statusEffects.Count; i++)
             {
-                string tooltipId = tooltips[i].tooltipId;
-                if (string.Equals(tooltipId, "armor", StringComparison.OrdinalIgnoreCase) ||
-                    string.Equals(tooltipId, "unit_ability", StringComparison.OrdinalIgnoreCase))
+                string statusId = statusEffects[i].State?.GetStatusId();
+                if (!string.IsNullOrWhiteSpace(statusId) &&
+                    !string.Equals(statusId, "armor", StringComparison.OrdinalIgnoreCase) &&
+                    !string.Equals(statusId, "unit_ability", StringComparison.OrdinalIgnoreCase))
                 {
-                    continue;
+                    ids.Add(statusId);
                 }
-
-                Message title = MessageList.TooltipTitle(tooltips[i]);
-                string resolved = title?.Resolve();
-                if (!Message.ShouldAdd(resolved) || IsAlreadySummarized(parts, resolved))
-                {
-                    continue;
-                }
-
-                MessageList.Add(parts, title);
             }
+
+            return ids;
         }
 
-        private static bool IsAlreadySummarized(List<Message> parts, string candidate)
-        {
-            if (parts == null || string.IsNullOrWhiteSpace(candidate))
-            {
-                return false;
-            }
-
-            for (int i = 0; i < parts.Count; i++)
-            {
-                string existing = parts[i]?.Resolve();
-                if (string.IsNullOrWhiteSpace(existing))
-                {
-                    continue;
-                }
-
-                if (string.Equals(existing, candidate, StringComparison.OrdinalIgnoreCase) ||
-                    existing.StartsWith(candidate + " ", StringComparison.OrdinalIgnoreCase) ||
-                    existing.StartsWith(candidate + ",", StringComparison.OrdinalIgnoreCase))
-                {
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
-        private static Message UnitAbilitySummary(CharacterState character)
+        internal static Message UnitAbilitySummary(CharacterState character)
         {
             if (character == null || !character.HasUnitAbility())
             {

@@ -68,9 +68,9 @@ namespace MonsterTrainAccessibility.Buffers
 
         private void Populate()
         {
-            VerbosityProfile profile = VerbosityRegistry.ForSource<TSource>();
             for (int i = 0; i < _sources.Count; i++)
             {
+                VerbosityProfile profile = VerbosityRegistry.ForSource(_sources[i]);
                 IReadOnlyList<Message> lines = PresentationRenderer.BufferLines(_pipeline.Build(_sources[i]), profile);
                 if (i == 0)
                 {

@@ -15,7 +15,7 @@ namespace MonsterTrainAccessibility.Presentation
             StatusEffectManager = StatusEffectManager.Instance.OrNull();
             Tooltips = new Lazy<List<TooltipContent>>(() => new List<TooltipContent>());
             StatusEffects = new Lazy<List<StatusEffectStackData>>(() => new List<StatusEffectStackData>());
-            Profile = VerbosityRegistry.ForSource<TSource>();
+            Profile = VerbosityRegistry.ForSource(source);
         }
 
         public TSource Source { get; }

@@ -7,6 +7,7 @@ namespace MonsterTrainAccessibility.Presentation
         Trigger,
         Status,
         Context,
+        Ability,
         Intent,
         DynamicInfo,
         NestedPresentation,

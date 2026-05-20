@@ -19,14 +19,19 @@ namespace MonsterTrainAccessibility.Presentation.Verbosity
 
         public IReadOnlyList<VerbositySlotEntry> Entries => _entries;
 
-        public bool IsEnabled(PresentationSlot slot)
+        public bool IsShownInDetails(PresentationSlot slot)
         {
-            return _bySlot.TryGetValue(slot, out VerbositySlotEntry entry) && entry.Enabled;
+            return _bySlot.TryGetValue(slot, out VerbositySlotEntry entry) && entry.ShowInDetails;
         }
 
         public bool IsVerbose(PresentationSlot slot)
         {
             return !_bySlot.TryGetValue(slot, out VerbositySlotEntry entry) || entry.Verbose;
+        }
+
+        public bool IsInSummary(PresentationSlot slot)
+        {
+            return _bySlot.TryGetValue(slot, out VerbositySlotEntry entry) && entry.InSummary;
         }
 
         public static VerbosityProfile Default { get; } = BuildDefault();
@@ -36,7 +41,7 @@ namespace MonsterTrainAccessibility.Presentation.Verbosity
             List<VerbositySlotEntry> entries = new List<VerbositySlotEntry>();
             foreach (PresentationSlot slot in System.Enum.GetValues(typeof(PresentationSlot)))
             {
-                entries.Add(new VerbositySlotEntry(slot, enabled: true, verbose: true));
+                entries.Add(new VerbositySlotEntry(slot, showInDetails: true, verbose: true, inSummary: true));
             }
 
             return new VerbosityProfile(entries);

@@ -6,7 +6,11 @@ namespace MonsterTrainAccessibility.Presentation.Verbosity.Profiles
         "creature",
         PresentationSlot.Title,
         PresentationSlot.Subtitle,
-        PresentationSlot.Description,
+        PresentationSlot.Stats,
+        PresentationSlot.Status,
+        PresentationSlot.Ability,
+        PresentationSlot.Trigger,
+        PresentationSlot.Intent,
         PresentationSlot.Tooltip,
         PresentationSlot.Annotation)]
     internal sealed class CreatureProfile

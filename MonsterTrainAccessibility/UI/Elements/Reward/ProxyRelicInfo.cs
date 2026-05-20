@@ -6,6 +6,7 @@ using MonsterTrainAccessibility.Core;
 using MonsterTrainAccessibility.Localization;
 using MonsterTrainAccessibility.Presentation;
 using MonsterTrainAccessibility.Presentation.Relics;
+using MonsterTrainAccessibility.Presentation.Verbosity;
 using MonsterTrainAccessibility.UI;
 using MonsterTrainAccessibility.Util;
 using ShinyShoe;
@@ -81,12 +82,21 @@ namespace MonsterTrainAccessibility.UI.Elements
 
         public static Message FocusSummary(global::RelicTooltipProvider relic)
         {
-            return relic != null ? FocusSummary(BuildContent(relic)) : null;
+            return relic != null ? FocusSummary(RelicPresentationSource.FromProvider(relic)) : null;
         }
 
         public static Message FocusSummary(global::RelicState state, bool includeDynamicInfo)
         {
-            return state != null ? FocusSummary(BuildContent(state, includeDynamicInfo)) : null;
+            return state != null ? FocusSummary(RelicPresentationSource.FromState(state, includeDynamicInfo)) : null;
+        }
+
+        private static Message FocusSummary(RelicPresentationSource source)
+        {
+            return source != null
+                ? PresentationRenderer.FocusSummary(
+                    PhaseRegistry.Relics.Build(source),
+                    VerbosityRegistry.ForSource(source))
+                : null;
         }
 
         public static Message Tooltip(global::RelicTooltipProvider relic)

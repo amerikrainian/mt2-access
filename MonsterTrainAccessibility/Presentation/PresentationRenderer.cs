@@ -24,32 +24,15 @@ namespace MonsterTrainAccessibility.Presentation
             for (int i = 0; i < entries.Count; i++)
             {
                 VerbositySlotEntry entry = entries[i];
-                if (!entry.Enabled)
+                if (!entry.ShowInDetails || !entry.InSummary)
                 {
                     continue;
                 }
 
-                switch (entry.Slot)
-                {
-                    case PresentationSlot.Title:
-                        Add(parts, presentation.Title);
-                        break;
-                    case PresentationSlot.Subtitle:
-                        Add(parts, presentation.Subtitle);
-                        break;
-                    case PresentationSlot.Cost:
-                        Add(parts, presentation.Cost);
-                        break;
-                    case PresentationSlot.Stats:
-                        AddRange(parts, presentation.Stats);
-                        break;
-                    case PresentationSlot.Description:
-                        Add(parts, presentation.Description);
-                        break;
-                }
+                AddSlot(parts, presentation, entry.Slot, profile, forSummary: true);
             }
 
-            return parts.Count > 0 ? Message.Join(", ", parts) : null;
+            return parts.Count > 0 ? Message.Join(" ", parts) : null;
         }
 
         public static Message FocusTooltip(Presentation presentation, VerbosityProfile profile = null)
@@ -71,35 +54,52 @@ namespace MonsterTrainAccessibility.Presentation
             for (int i = 0; i < entries.Count; i++)
             {
                 VerbositySlotEntry entry = entries[i];
-                if (!entry.Enabled)
+                if (!entry.ShowInDetails)
                 {
                     continue;
                 }
 
-                switch (entry.Slot)
-                {
-                    case PresentationSlot.Title:
-                        Add(lines, presentation.Title);
-                        break;
-                    case PresentationSlot.Subtitle:
-                        Add(lines, presentation.Subtitle);
-                        break;
-                    case PresentationSlot.Cost:
-                        Add(lines, presentation.Cost);
-                        break;
-                    case PresentationSlot.Stats:
-                        AddRange(lines, presentation.Stats);
-                        break;
-                    case PresentationSlot.Description:
-                        Add(lines, presentation.Description);
-                        break;
-                    default:
-                        AddSectionsForSlot(lines, presentation, entry.Slot, profile);
-                        break;
-                }
+                AddSlot(lines, presentation, entry.Slot, profile, forSummary: false);
             }
 
             return lines;
+        }
+
+        private static void AddSlot(
+            List<Message> target,
+            Presentation presentation,
+            PresentationSlot slot,
+            VerbosityProfile profile,
+            bool forSummary)
+        {
+            switch (slot)
+            {
+                case PresentationSlot.Title:
+                    Add(target, presentation.Title);
+                    break;
+                case PresentationSlot.Subtitle:
+                    Add(target, presentation.Subtitle);
+                    break;
+                case PresentationSlot.Cost:
+                    Add(target, presentation.Cost);
+                    break;
+                case PresentationSlot.Stats:
+                    AddRange(target, presentation.Stats);
+                    break;
+                case PresentationSlot.Description:
+                    Add(target, presentation.Description);
+                    break;
+                default:
+                    if (forSummary)
+                    {
+                        AddSectionsForSlotSummary(target, presentation, slot, profile);
+                    }
+                    else
+                    {
+                        AddSectionsForSlot(target, presentation, slot, profile);
+                    }
+                    break;
+            }
         }
 
         private static void AddSectionsForSlot(
@@ -131,10 +131,78 @@ namespace MonsterTrainAccessibility.Presentation
             }
         }
 
+        private static void AddSectionsForSlotSummary(
+            List<Message> parts,
+            Presentation presentation,
+            PresentationSlot slot,
+            VerbosityProfile profile)
+        {
+            SectionKind? kind = SlotToSectionKind(slot);
+            if (kind == null)
+            {
+                return;
+            }
+
+            List<Message> sectionParts = new List<Message>();
+            List<PresentationSection> sections = SectionsForKind(presentation, kind.Value);
+            for (int i = 0; i < sections.Count; i++)
+            {
+                AddSectionSummary(sectionParts, sections[i], profile);
+            }
+
+            if (sectionParts.Count > 0)
+            {
+                Add(parts, Message.Join(" ", sectionParts));
+            }
+        }
+
+        private static List<PresentationSection> SectionsForKind(Presentation presentation, SectionKind kind)
+        {
+            List<PresentationSection> sections = new List<PresentationSection>();
+            for (int i = 0; i < presentation.Sections.Count; i++)
+            {
+                PresentationSection section = presentation.Sections[i];
+                if (section != null && section.Kind == kind)
+                {
+                    sections.Add(section);
+                }
+            }
+
+            sections.Sort((left, right) => left.Order.CompareTo(right.Order));
+            return sections;
+        }
+
+        private static void AddSectionSummary(List<Message> parts, PresentationSection section, VerbosityProfile profile)
+        {
+            if (section == null)
+            {
+                return;
+            }
+
+            if (section.NestedPresentation != null)
+            {
+                Add(parts, FocusSummary(section.NestedPresentation, profile));
+            }
+            else if (section.Title != null && section.Body != null)
+            {
+                Add(parts, Message.Join(": ", section.Title, section.Body));
+            }
+            else
+            {
+                Add(parts, section.Body ?? section.Title);
+            }
+
+            for (int i = 0; i < section.Children.Count; i++)
+            {
+                AddSectionSummary(parts, section.Children[i], profile);
+            }
+        }
+
         private static SectionKind? SlotToSectionKind(PresentationSlot slot)
         {
             switch (slot)
             {
+                case PresentationSlot.Ability: return SectionKind.Ability;
                 case PresentationSlot.Intent: return SectionKind.Intent;
                 case PresentationSlot.DynamicInfo: return SectionKind.DynamicInfo;
                 case PresentationSlot.Upgrade: return SectionKind.Upgrade;

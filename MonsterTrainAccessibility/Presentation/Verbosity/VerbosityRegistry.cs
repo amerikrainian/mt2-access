@@ -9,8 +9,8 @@ namespace MonsterTrainAccessibility.Presentation.Verbosity
 {
     internal static class VerbosityRegistry
     {
-        private static readonly Dictionary<Type, ProfileDescriptor> ProfilesBySource =
-            new Dictionary<Type, ProfileDescriptor>();
+        private static readonly Dictionary<Type, List<ProfileDescriptor>> ProfilesBySource =
+            new Dictionary<Type, List<ProfileDescriptor>>();
 
         private static bool _initialized;
 
@@ -43,8 +43,19 @@ namespace MonsterTrainAccessibility.Presentation.Verbosity
                     continue;
                 }
 
-                ProfileDescriptor descriptor = BuildDescriptor(attribute, config, root);
-                ProfilesBySource[sourceType] = descriptor;
+                ProfileDescriptor descriptor = BuildDescriptor(markerType, attribute, config, root);
+                if (!ProfilesBySource.TryGetValue(sourceType, out List<ProfileDescriptor> descriptors))
+                {
+                    descriptors = new List<ProfileDescriptor>();
+                    ProfilesBySource[sourceType] = descriptors;
+                }
+
+                descriptors.Add(descriptor);
+            }
+
+            foreach (List<ProfileDescriptor> descriptors in ProfilesBySource.Values)
+            {
+                descriptors.Sort((left, right) => right.MatchPriority.CompareTo(left.MatchPriority));
             }
 
             global::MonsterTrainAccessibility.ModSettings.ModSettings.Register(root);
@@ -55,23 +66,65 @@ namespace MonsterTrainAccessibility.Presentation.Verbosity
             return ForSource(typeof(TSource));
         }
 
+        public static VerbosityProfile ForSource<TSource>(TSource source)
+        {
+            if (source != null &&
+                ProfilesBySource.TryGetValue(typeof(TSource), out List<ProfileDescriptor> descriptors))
+            {
+                ProfileDescriptor fallback = null;
+                for (int i = 0; i < descriptors.Count; i++)
+                {
+                    ProfileDescriptor descriptor = descriptors[i];
+                    if (!descriptor.HasMatcher)
+                    {
+                        fallback = fallback ?? descriptor;
+                        continue;
+                    }
+
+                    if (descriptor.Matches(source))
+                    {
+                        return descriptor.Snapshot();
+                    }
+                }
+
+                if (fallback != null)
+                {
+                    return fallback.Snapshot();
+                }
+            }
+
+            return ForSource(typeof(TSource));
+        }
+
         public static VerbosityProfile ForSource(Type sourceType)
         {
             if (sourceType != null &&
-                ProfilesBySource.TryGetValue(sourceType, out ProfileDescriptor descriptor))
+                ProfilesBySource.TryGetValue(sourceType, out List<ProfileDescriptor> descriptors))
             {
-                return descriptor.Snapshot();
+                for (int i = 0; i < descriptors.Count; i++)
+                {
+                    if (!descriptors[i].HasMatcher)
+                    {
+                        return descriptors[i].Snapshot();
+                    }
+                }
+
+                if (descriptors.Count > 0)
+                {
+                    return descriptors[0].Snapshot();
+                }
             }
 
             return VerbosityProfile.Default;
         }
 
         private static ProfileDescriptor BuildDescriptor(
+            Type markerType,
             VerbosityProfileAttribute attribute,
             ConfigFile config,
             CategorySetting root)
         {
-            List<PresentationSlot> order = OrderedSlots(attribute.DefaultOrder);
+            List<PresentationSlot> order = OrderedSlots(attribute.DefaultOrder, attribute.SupportedSlots);
             string section = "Verbosity." + attribute.Key;
             CategorySetting profileCategory = new CategorySetting(
                 attribute.Key,
@@ -80,12 +133,13 @@ namespace MonsterTrainAccessibility.Presentation.Verbosity
                 ReorderableChildren = true
             };
 
-            Dictionary<PresentationSlot, BoolSetting> enabled = new Dictionary<PresentationSlot, BoolSetting>();
+            Dictionary<PresentationSlot, BoolSetting> showInDetails = new Dictionary<PresentationSlot, BoolSetting>();
             Dictionary<PresentationSlot, BoolSetting> verbose = new Dictionary<PresentationSlot, BoolSetting>();
+            Dictionary<PresentationSlot, BoolSetting> inSummary = new Dictionary<PresentationSlot, BoolSetting>();
             Dictionary<PresentationSlot, CategorySetting> slotCategories =
                 new Dictionary<PresentationSlot, CategorySetting>();
-            HashSet<PresentationSlot> defaultEnabled = new HashSet<PresentationSlot>(attribute.DefaultOrder);
-            defaultEnabled.Add(PresentationSlot.Title);
+            HashSet<PresentationSlot> defaultShownInDetails = new HashSet<PresentationSlot>(attribute.DefaultOrder);
+            defaultShownInDetails.Add(PresentationSlot.Title);
             ConfigEntry<string> orderEntry = config.Bind(
                 section,
                 "order",
@@ -106,16 +160,26 @@ namespace MonsterTrainAccessibility.Presentation.Verbosity
 
                 if (slot != PresentationSlot.Title)
                 {
-                    BoolSetting enabledSetting = new BoolSetting(
+                    BoolSetting showInDetailsSetting = new BoolSetting(
                         config,
                         section,
-                        slot + ".enabled",
-                        Message.Localized("ui", "VERBOSITY_SETTINGS.ENABLED"),
-                        defaultEnabled.Contains(slot),
-                        "Whether this presentation part is announced.");
-                    slotCategory.Add(enabledSetting);
-                    enabled[slot] = enabledSetting;
+                        slot + ".show_in_details",
+                        Message.Localized("ui", "VERBOSITY_SETTINGS.SHOW_IN_DETAILS"),
+                        defaultShownInDetails.Contains(slot),
+                        "Whether this presentation part is shown in details.");
+                    slotCategory.Add(showInDetailsSetting);
+                    showInDetails[slot] = showInDetailsSetting;
                 }
+
+                BoolSetting inSummarySetting = new BoolSetting(
+                    config,
+                    section,
+                    slot + ".in_summary",
+                    Message.Localized("ui", "VERBOSITY_SETTINGS.IN_SUMMARY"),
+                    DefaultInSummary(slot),
+                    "Whether this presentation part is included in focus speech.");
+                slotCategory.Add(inSummarySetting);
+                inSummary[slot] = inSummarySetting;
 
                 if (SlotSupportsVerbose(slot))
                 {
@@ -133,7 +197,15 @@ namespace MonsterTrainAccessibility.Presentation.Verbosity
                 profileCategory.Add(slotCategory);
             }
 
-            ProfileDescriptor descriptor = new ProfileDescriptor(order, orderEntry, enabled, verbose, slotCategories);
+            ProfileDescriptor descriptor = new ProfileDescriptor(
+                order,
+                orderEntry,
+                showInDetails,
+                verbose,
+                inSummary,
+                slotCategories,
+                ResolveMatcher(markerType),
+                attribute.MatchPriority);
             descriptor.ApplyOrderToSortPriorities();
             profileCategory.OnChildSwap = descriptor.SwapSettings;
             profileCategory.Add(new ActionSetting(
@@ -142,11 +214,35 @@ namespace MonsterTrainAccessibility.Presentation.Verbosity
                 descriptor.ResetToDefaults,
                 Message.Localized("ui", "VERBOSITY_SETTINGS.RESET_PROFILE_DONE"),
                 rebuildScreenOnActivate: true));
-            root.Add(profileCategory);
+            ParentCategory(root, attribute).Add(profileCategory);
             return descriptor;
         }
 
-        private static List<PresentationSlot> OrderedSlots(PresentationSlot[] defaultOrder)
+        private static CategorySetting ParentCategory(CategorySetting root, VerbosityProfileAttribute attribute)
+        {
+            if (string.IsNullOrWhiteSpace(attribute.GroupKey))
+            {
+                return root;
+            }
+
+            IReadOnlyList<Setting> children = root.Children;
+            for (int i = 0; i < children.Count; i++)
+            {
+                if (children[i] is CategorySetting category &&
+                    string.Equals(category.Key, attribute.GroupKey, StringComparison.Ordinal))
+                {
+                    return category;
+                }
+            }
+
+            CategorySetting group = new CategorySetting(
+                attribute.GroupKey,
+                Message.Localized("ui", "VERBOSITY_SETTINGS." + attribute.GroupKey.ToUpperInvariant() + ".LABEL"));
+            root.Add(group);
+            return group;
+        }
+
+        private static List<PresentationSlot> OrderedSlots(PresentationSlot[] defaultOrder, PresentationSlot[] supportedSlots)
         {
             List<PresentationSlot> order = new List<PresentationSlot>();
             if (defaultOrder != null)
@@ -160,11 +256,14 @@ namespace MonsterTrainAccessibility.Presentation.Verbosity
                 }
             }
 
-            foreach (PresentationSlot slot in Enum.GetValues(typeof(PresentationSlot)))
+            if (supportedSlots != null)
             {
-                if (!order.Contains(slot))
+                for (int i = 0; i < supportedSlots.Length; i++)
                 {
-                    order.Add(slot);
+                    if (!order.Contains(supportedSlots[i]))
+                    {
+                        order.Add(supportedSlots[i]);
+                    }
                 }
             }
 
@@ -191,7 +290,9 @@ namespace MonsterTrainAccessibility.Presentation.Verbosity
                 for (int i = 0; i < parts.Length; i++)
                 {
                     string part = parts[i].Trim();
-                    if (Enum.TryParse(part, ignoreCase: true, out PresentationSlot slot) && !order.Contains(slot))
+                    if (Enum.TryParse(part, ignoreCase: true, out PresentationSlot slot) &&
+                        fallbackOrder.Contains(slot) &&
+                        !order.Contains(slot))
                     {
                         order.Add(slot);
                     }
@@ -222,6 +323,24 @@ namespace MonsterTrainAccessibility.Presentation.Verbosity
             }
         }
 
+        private static bool DefaultInSummary(PresentationSlot slot)
+        {
+            switch (slot)
+            {
+                case PresentationSlot.Title:
+                case PresentationSlot.Subtitle:
+                case PresentationSlot.Cost:
+                case PresentationSlot.Stats:
+                case PresentationSlot.Description:
+                case PresentationSlot.Ability:
+                case PresentationSlot.Trigger:
+                case PresentationSlot.Status:
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
         private static Type ResolveSourceType(Type markerType)
         {
             PropertyInfo property = markerType.GetProperty("SourceType", BindingFlags.Public | BindingFlags.Static);
@@ -230,26 +349,62 @@ namespace MonsterTrainAccessibility.Presentation.Verbosity
                 : null;
         }
 
+        private static Func<object, bool> ResolveMatcher(Type markerType)
+        {
+            MethodInfo method = markerType.GetMethod("Matches", BindingFlags.Public | BindingFlags.Static);
+            if (method == null || method.ReturnType != typeof(bool))
+            {
+                return null;
+            }
+
+            ParameterInfo[] parameters = method.GetParameters();
+            if (parameters.Length != 1)
+            {
+                return null;
+            }
+
+            return source =>
+                source != null &&
+                parameters[0].ParameterType.IsInstanceOfType(source) &&
+                (bool)method.Invoke(null, new[] { source });
+        }
+
         private sealed class ProfileDescriptor
         {
             private readonly IReadOnlyList<PresentationSlot> _order;
             private readonly ConfigEntry<string> _orderEntry;
-            private readonly IReadOnlyDictionary<PresentationSlot, BoolSetting> _enabled;
+            private readonly IReadOnlyDictionary<PresentationSlot, BoolSetting> _showInDetails;
             private readonly IReadOnlyDictionary<PresentationSlot, BoolSetting> _verbose;
+            private readonly IReadOnlyDictionary<PresentationSlot, BoolSetting> _inSummary;
             private readonly IReadOnlyDictionary<PresentationSlot, CategorySetting> _slotCategories;
+            private readonly Func<object, bool> _matcher;
 
             public ProfileDescriptor(
                 IReadOnlyList<PresentationSlot> order,
                 ConfigEntry<string> orderEntry,
-                IReadOnlyDictionary<PresentationSlot, BoolSetting> enabled,
+                IReadOnlyDictionary<PresentationSlot, BoolSetting> showInDetails,
                 IReadOnlyDictionary<PresentationSlot, BoolSetting> verbose,
-                IReadOnlyDictionary<PresentationSlot, CategorySetting> slotCategories)
+                IReadOnlyDictionary<PresentationSlot, BoolSetting> inSummary,
+                IReadOnlyDictionary<PresentationSlot, CategorySetting> slotCategories,
+                Func<object, bool> matcher,
+                int matchPriority)
             {
                 _order = order;
                 _orderEntry = orderEntry;
-                _enabled = enabled;
+                _showInDetails = showInDetails;
                 _verbose = verbose;
+                _inSummary = inSummary;
                 _slotCategories = slotCategories;
+                _matcher = matcher;
+                MatchPriority = matchPriority;
+            }
+
+            public int MatchPriority { get; }
+            public bool HasMatcher => _matcher != null;
+
+            public bool Matches(object source)
+            {
+                return _matcher != null && _matcher(source);
             }
 
             public VerbosityProfile Snapshot()
@@ -259,11 +414,13 @@ namespace MonsterTrainAccessibility.Presentation.Verbosity
                 for (int i = 0; i < orderedSlots.Count; i++)
                 {
                     PresentationSlot slot = orderedSlots[i];
-                    bool enabled = slot == PresentationSlot.Title ||
-                        (_enabled.TryGetValue(slot, out BoolSetting enabledSetting) && enabledSetting.Value);
+                    bool showInDetails = slot == PresentationSlot.Title ||
+                        (_showInDetails.TryGetValue(slot, out BoolSetting showInDetailsSetting) && showInDetailsSetting.Value);
                     bool verbose = !_verbose.TryGetValue(slot, out BoolSetting verboseSetting) ||
                         verboseSetting.Value;
-                    entries.Add(new VerbositySlotEntry(slot, enabled, verbose));
+                    bool inSummary = _inSummary.TryGetValue(slot, out BoolSetting inSummarySetting) &&
+                        inSummarySetting.Value;
+                    entries.Add(new VerbositySlotEntry(slot, showInDetails, verbose, inSummary));
                 }
 
                 return new VerbosityProfile(entries);
@@ -295,8 +452,9 @@ namespace MonsterTrainAccessibility.Presentation.Verbosity
             public bool ResetToDefaults()
             {
                 _orderEntry.Value = ToOrderCsv(_order);
-                ResetMap(_enabled);
+                ResetMap(_showInDetails);
                 ResetMap(_verbose);
+                ResetMap(_inSummary);
                 ApplyOrderToSortPriorities(_order);
                 return true;
             }

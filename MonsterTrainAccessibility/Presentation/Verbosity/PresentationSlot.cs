@@ -7,6 +7,7 @@ namespace MonsterTrainAccessibility.Presentation.Verbosity
         Cost,
         Stats,
         Description,
+        Ability,
         Intent,
         DynamicInfo,
         Upgrade,

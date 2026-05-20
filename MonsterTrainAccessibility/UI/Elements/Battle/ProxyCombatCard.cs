@@ -194,7 +194,7 @@ namespace MonsterTrainAccessibility.UI.Elements
         {
             List<Message> lines = new List<Message>(PresentationRenderer.BufferLines(
                 PhaseRegistry.Cards.Build(card),
-                VerbosityRegistry.ForSource<CardState>()));
+                VerbosityRegistry.ForSource(card)));
             InsertLoreAfterTitle(lines, LoreLines(card));
             return lines.Count > 0 ? Message.JoinLines(lines) : null;
         }
@@ -203,19 +203,21 @@ namespace MonsterTrainAccessibility.UI.Elements
         {
             if (IsCompactElixirCard(card))
             {
-                return CompactElixirFocusSummary(card);
+                var presentation = PhaseRegistry.Cards.Build(card);
+                presentation.Description = CompactElixirEffectText(card);
+                return PresentationRenderer.FocusSummary(presentation, VerbosityRegistry.ForSource(card));
             }
 
             return PresentationRenderer.FocusSummary(
                 PhaseRegistry.Cards.Build(card),
-                VerbosityRegistry.ForSource<CardState>());
+                VerbosityRegistry.ForSource(card));
         }
 
         public static Message AccessibilitySummary(CardState card)
         {
             return PresentationRenderer.FocusTooltip(
                 PhaseRegistry.Cards.Build(card),
-                VerbosityRegistry.ForSource<CardState>());
+                VerbosityRegistry.ForSource(card));
         }
 
         private static void InsertLoreAfterTitle(List<Message> lines, List<Message> lore)
@@ -265,14 +267,6 @@ namespace MonsterTrainAccessibility.UI.Elements
         {
             return card != null &&
                 (card.HasTrait<CardTraitInfusion>() || card.HasTrait<CardTraitCraftedSpike>());
-        }
-
-        private static Message CompactElixirFocusSummary(CardState card)
-        {
-            List<Message> parts = new List<Message>();
-            MessageList.Add(parts, Message.FromText(card.GetTitle()));
-            MessageList.Add(parts, CompactElixirEffectText(card));
-            return parts.Count > 0 ? Message.Join(", ", parts) : null;
         }
 
         private static Message CompactElixirEffectText(CardState card)

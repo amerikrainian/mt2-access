@@ -636,7 +636,7 @@ namespace MonsterTrainAccessibility.UI.Screens
             AddPresentationLines(
                 lines,
                 PhaseRegistry.Cards.Build(cardState),
-                VerbosityRegistry.ForSource<CardState>());
+                VerbosityRegistry.ForSource(cardState));
         }
 
         private static void AddRelicBufferLines(List<Message> lines, RelicData relicData)
