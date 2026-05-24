@@ -9,7 +9,13 @@ namespace MonsterTrainAccessibility.Presentation.Verbosity.Profiles
         PresentationSlot.Description,
         PresentationSlot.Subtitle,
         PresentationSlot.Upgrade,
-        PresentationSlot.Tooltip,
+        PresentationSlot.TooltipKeyword,
+        PresentationSlot.TooltipStatus,
+        PresentationSlot.TooltipTrigger,
+        PresentationSlot.TooltipAbility,
+        PresentationSlot.TooltipEffect,
+        PresentationSlot.TooltipGeneratedContent,
+        PresentationSlot.TooltipOther,
         GroupKey = "card_group",
         MatchPriority = 100)]
     internal sealed class CardElixirProfile

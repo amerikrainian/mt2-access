@@ -74,7 +74,7 @@ namespace MonsterTrainAccessibility.UI.Elements
             return new TooltipContent(
                 title,
                 body,
-                TooltipDesigner.TooltipDesignType.Default,
+                TooltipDesigner.TooltipDesignType.Keyword,
                 trait.GetCardTooltipId());
         }
 

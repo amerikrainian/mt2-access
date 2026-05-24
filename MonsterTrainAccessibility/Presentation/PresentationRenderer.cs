@@ -210,6 +210,16 @@ namespace MonsterTrainAccessibility.Presentation
                 case PresentationSlot.Status: return SectionKind.Status;
                 case PresentationSlot.Context: return SectionKind.Context;
                 case PresentationSlot.Tooltip: return SectionKind.Tooltip;
+                case PresentationSlot.TooltipKeyword: return SectionKind.TooltipKeyword;
+                case PresentationSlot.TooltipStatus: return SectionKind.TooltipStatus;
+                case PresentationSlot.TooltipTrigger: return SectionKind.TooltipTrigger;
+                case PresentationSlot.TooltipEffect: return SectionKind.TooltipEffect;
+                case PresentationSlot.TooltipAbility: return SectionKind.TooltipAbility;
+                case PresentationSlot.TooltipUpgrade: return SectionKind.TooltipUpgrade;
+                case PresentationSlot.TooltipEquipment: return SectionKind.TooltipEquipment;
+                case PresentationSlot.TooltipRoomEffect: return SectionKind.TooltipRoomEffect;
+                case PresentationSlot.TooltipGeneratedContent: return SectionKind.TooltipGeneratedContent;
+                case PresentationSlot.TooltipOther: return SectionKind.TooltipOther;
                 case PresentationSlot.NestedPresentation: return SectionKind.NestedPresentation;
                 case PresentationSlot.Annotation: return SectionKind.Annotation;
                 default: return null;

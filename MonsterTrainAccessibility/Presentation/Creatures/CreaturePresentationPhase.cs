@@ -107,12 +107,29 @@ namespace MonsterTrainAccessibility.Presentation.Creatures
                 }
 
                 string key = MessageList.TooltipKey(tooltip);
+                TooltipCategory category = CategorizeCreatureTooltip(tooltip);
                 builder.AddSection(
-                    SectionKind.Tooltip,
+                    TooltipCategoryMapper.ToSectionKind(category),
                     MessageList.TooltipTitle(tooltip),
                     Message.FromText(tooltip.body),
                     key);
             }
+        }
+
+        private static TooltipCategory CategorizeCreatureTooltip(TooltipContent tooltip)
+        {
+            TooltipCategory fallback = TooltipCategory.Effect;
+            string id = tooltip.tooltipId ?? string.Empty;
+            if (id.IndexOf("grafted_equipment", StringComparison.OrdinalIgnoreCase) >= 0)
+            {
+                fallback = TooltipCategory.Equipment;
+            }
+            else if (id.IndexOf("room", StringComparison.OrdinalIgnoreCase) >= 0)
+            {
+                fallback = TooltipCategory.RoomEffect;
+            }
+
+            return TooltipCategoryMapper.Refine(tooltip, fallback);
         }
 
         private static void AddBossIntent(PresentationBuilder builder, CharacterState character)

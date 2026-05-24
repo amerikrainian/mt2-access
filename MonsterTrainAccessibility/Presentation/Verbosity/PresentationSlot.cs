@@ -15,6 +15,16 @@ namespace MonsterTrainAccessibility.Presentation.Verbosity
         Status,
         Context,
         Tooltip,
+        TooltipKeyword,
+        TooltipStatus,
+        TooltipTrigger,
+        TooltipEffect,
+        TooltipAbility,
+        TooltipUpgrade,
+        TooltipEquipment,
+        TooltipRoomEffect,
+        TooltipGeneratedContent,
+        TooltipOther,
         NestedPresentation,
         Annotation
     }

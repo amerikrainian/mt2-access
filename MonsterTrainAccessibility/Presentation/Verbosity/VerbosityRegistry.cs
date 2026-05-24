@@ -160,15 +160,27 @@ namespace MonsterTrainAccessibility.Presentation.Verbosity
 
                 if (slot != PresentationSlot.Title)
                 {
+                    bool defaultShowInDetails = defaultShownInDetails.Contains(slot);
+                    if (IsTooltipCategorySlot(slot))
+                    {
+                        defaultShowInDetails = TooltipShowInDetailsDefault(config, section);
+                    }
+
                     BoolSetting showInDetailsSetting = new BoolSetting(
                         config,
                         section,
                         slot + ".show_in_details",
                         Message.Localized("ui", "VERBOSITY_SETTINGS.SHOW_IN_DETAILS"),
-                        defaultShownInDetails.Contains(slot),
+                        defaultShowInDetails,
                         "Whether this presentation part is shown in details.");
                     slotCategory.Add(showInDetailsSetting);
                     showInDetails[slot] = showInDetailsSetting;
+                }
+
+                bool defaultInSummary = DefaultInSummary(slot);
+                if (IsTooltipCategorySlot(slot))
+                {
+                    defaultInSummary = TooltipInSummaryDefault(config, section);
                 }
 
                 BoolSetting inSummarySetting = new BoolSetting(
@@ -176,7 +188,7 @@ namespace MonsterTrainAccessibility.Presentation.Verbosity
                     section,
                     slot + ".in_summary",
                     Message.Localized("ui", "VERBOSITY_SETTINGS.IN_SUMMARY"),
-                    DefaultInSummary(slot),
+                    defaultInSummary,
                     "Whether this presentation part is included in focus speech.");
                 slotCategory.Add(inSummarySetting);
                 inSummary[slot] = inSummarySetting;
@@ -321,6 +333,46 @@ namespace MonsterTrainAccessibility.Presentation.Verbosity
                 default:
                     return false;
             }
+        }
+
+        private static bool IsTooltipCategorySlot(PresentationSlot slot)
+        {
+            switch (slot)
+            {
+                case PresentationSlot.TooltipKeyword:
+                case PresentationSlot.TooltipStatus:
+                case PresentationSlot.TooltipTrigger:
+                case PresentationSlot.TooltipEffect:
+                case PresentationSlot.TooltipAbility:
+                case PresentationSlot.TooltipUpgrade:
+                case PresentationSlot.TooltipEquipment:
+                case PresentationSlot.TooltipRoomEffect:
+                case PresentationSlot.TooltipGeneratedContent:
+                case PresentationSlot.TooltipOther:
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
+        private static bool TooltipShowInDetailsDefault(ConfigFile config, string section)
+        {
+            ConfigEntry<bool> entry = config.Bind(
+                section,
+                PresentationSlot.Tooltip + ".show_in_details",
+                true,
+                new ConfigDescription("Whether generic tooltip details are shown."));
+            return entry.Value;
+        }
+
+        private static bool TooltipInSummaryDefault(ConfigFile config, string section)
+        {
+            ConfigEntry<bool> entry = config.Bind(
+                section,
+                PresentationSlot.Tooltip + ".in_summary",
+                DefaultInSummary(PresentationSlot.Tooltip),
+                new ConfigDescription("Whether generic tooltip details are included in focus speech."));
+            return entry.Value;
         }
 
         private static bool DefaultInSummary(PresentationSlot slot)

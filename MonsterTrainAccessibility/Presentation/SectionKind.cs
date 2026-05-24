@@ -10,6 +10,16 @@ namespace MonsterTrainAccessibility.Presentation
         Ability,
         Intent,
         DynamicInfo,
+        TooltipKeyword,
+        TooltipStatus,
+        TooltipTrigger,
+        TooltipEffect,
+        TooltipAbility,
+        TooltipUpgrade,
+        TooltipEquipment,
+        TooltipRoomEffect,
+        TooltipGeneratedContent,
+        TooltipOther,
         NestedPresentation,
         Annotation
     }

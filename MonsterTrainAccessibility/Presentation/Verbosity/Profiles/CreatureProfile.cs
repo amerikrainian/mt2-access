@@ -11,7 +11,14 @@ namespace MonsterTrainAccessibility.Presentation.Verbosity.Profiles
         PresentationSlot.Ability,
         PresentationSlot.Trigger,
         PresentationSlot.Intent,
-        PresentationSlot.Tooltip,
+        PresentationSlot.TooltipKeyword,
+        PresentationSlot.TooltipStatus,
+        PresentationSlot.TooltipTrigger,
+        PresentationSlot.TooltipAbility,
+        PresentationSlot.TooltipEffect,
+        PresentationSlot.TooltipEquipment,
+        PresentationSlot.TooltipRoomEffect,
+        PresentationSlot.TooltipOther,
         PresentationSlot.Annotation)]
     internal sealed class CreatureProfile
     {

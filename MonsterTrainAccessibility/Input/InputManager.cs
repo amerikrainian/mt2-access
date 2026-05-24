@@ -268,6 +268,11 @@ namespace MonsterTrainAccessibility.Input
                 .AddBinding(ControllerInput.X, ControllerInput.RightTrigger)
                 .BlocksGameInput = true;
 
+            AddAction("read_moon_phase", Message.Localized("ui", "HUD.MOON_PHASE"))
+                .AddBinding(KeyCode.P)
+                .AddBinding(ControllerInput.DpadDown, ControllerInput.RightTrigger)
+                .BlocksGameInput = true;
+
             AddAction("read_unit_outcome", new Message("input.read_unit_outcome"))
                 .AddBinding(KeyCode.I)
                 .AddBinding(ControllerInput.Y, ControllerInput.RightTrigger)

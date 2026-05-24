@@ -91,6 +91,7 @@ namespace MonsterTrainAccessibility.UI.Screens
             ClaimAction("ui_select");
             ClaimAction("read_ember");
             ClaimAction("read_forge_points");
+            ClaimAction("read_moon_phase");
             ClaimAction("read_unit_outcome");
             ClaimAction("read_floor_outcomes");
             ClaimAction("read_all_floor_outcomes");
@@ -253,6 +254,8 @@ namespace MonsterTrainAccessibility.UI.Screens
                     return ReadEmber();
                 case "read_forge_points":
                     return ReadForgePoints();
+                case "read_moon_phase":
+                    return ReadMoonPhase();
                 case "read_unit_outcome":
                     return ReadFocusedUnitOutcome();
                 case "read_floor_outcomes":
@@ -471,6 +474,18 @@ namespace MonsterTrainAccessibility.UI.Screens
             {
                 count = saveManager.GetForgePoints()
             }));
+            return true;
+        }
+
+        private static bool ReadMoonPhase()
+        {
+            PlayerManager playerManager = Core.GameManagers.GetPlayerManager();
+            if (playerManager == null || !playerManager.GetHasMoonPhaseCardEffect())
+            {
+                return true;
+            }
+
+            SpeechManager.Output(Message.FromText(playerManager.CurrentMoonPhase.LocalizedName()));
             return true;
         }
 
@@ -1436,6 +1451,8 @@ namespace MonsterTrainAccessibility.UI.Screens
                     _targetSignature = null;
                     SyncTargetingFocus(force: true);
                     return true;
+                case "read_moon_phase":
+                    return ReadMoonPhase();
                 default:
                     return false;
             }

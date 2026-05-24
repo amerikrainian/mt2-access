@@ -232,8 +232,9 @@ namespace MonsterTrainAccessibility.Presentation.Cards
                     continue;
                 }
 
+                TooltipCategory category = TooltipCategoryMapper.Refine(tooltip, TooltipCategory.Effect);
                 builder.AddSection(
-                    SectionKind.Tooltip,
+                    TooltipCategoryMapper.ToSectionKind(category),
                     MessageList.TooltipTitle(tooltip),
                     Message.FromText(tooltip.body),
                     MessageList.TooltipKey(tooltip));
