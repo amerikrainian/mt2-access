@@ -1,5 +1,10 @@
 # Change Log
 
+## 0.2.1
+
+- Added `p` to check moon phase
+- Added the first version of the verbosity announcement configuration system. Would love some feedback on it, as the game itself is not terribly intuitive/consistent with what is in what category. We'll likely need to refine this, but we can't know until the community shows its support (or lack thereof)
+
 ## 0.2.0
 
 - Fixed a bug where your focus would be stuck after opening settings on rewards screen. You could have gotten yourself unstuck by hitting tab, but you don't have to anymore (QgSama). Silly Unity focus restore.
