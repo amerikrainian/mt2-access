@@ -150,6 +150,13 @@ namespace MonsterTrainAccessibility.UI.Screens
                 return;
             }
 
+            if (IsVictoryActive)
+            {
+                FocusVictoryFirst();
+                _initialFocusApplied = true;
+                return;
+            }
+
             if (AllowsBattleFocus)
             {
                 FocusCurrent();
@@ -191,7 +198,7 @@ namespace MonsterTrainAccessibility.UI.Screens
                 if (_victoryRoot == null || !string.Equals(nextSignature, _signature, StringComparison.Ordinal))
                 {
                     BuildRegistry();
-                    _victoryRoot?.FocusFirst();
+                    FocusVictoryFirst();
                 }
 
                 _vitalsTracker?.FlushPending();
@@ -2667,6 +2674,16 @@ namespace MonsterTrainAccessibility.UI.Screens
             }
 
             AddVictoryButton(root, ProxyVictoryButton.Create(victory));
+        }
+
+        private void FocusVictoryFirst()
+        {
+            if (_victoryRoot == null)
+            {
+                return;
+            }
+
+            _victoryRoot.FocusFirst();
         }
 
         private void AppendVictorySignature(StringBuilder sb)

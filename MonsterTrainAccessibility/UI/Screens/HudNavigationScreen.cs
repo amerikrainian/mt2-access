@@ -63,6 +63,7 @@ namespace MonsterTrainAccessibility.UI.Screens
             ClaimAction("buffer_next_item");
             ClaimAction("buffer_prev");
             ClaimAction("buffer_next");
+            ClaimAction("ui_cancel");
         }
 
         internal bool IsForHud(global::Hud hud)
@@ -109,9 +110,37 @@ namespace MonsterTrainAccessibility.UI.Screens
                 case "buffer_next":
                     BufferManager.Instance.NextBuffer();
                     return true;
+                case "ui_cancel":
+                    CloseHudNavigation();
+                    return true;
                 default:
                     return base.OnActionJustPressed(action);
             }
+        }
+
+        public override bool BlocksGameInput(InputAction action)
+        {
+            if (action?.Key == "ui_cancel")
+            {
+                return true;
+            }
+
+            return base.BlocksGameInput(action);
+        }
+
+        private void CloseHudNavigation()
+        {
+            if (_hud == null || !_hud.IsHudNavigationEnabled())
+            {
+                ScreenManager.RemoveFromTree(this);
+                return;
+            }
+
+            CoreInputControlMapping mapping = new CoreInputControlMapping(
+                global::InputManager.Controls.Close,
+                InputType.None,
+                fake: true);
+            _hud.ApplyScreenInput(mapping, null, global::InputManager.Controls.Close);
         }
 
         protected override void BuildRegistry()
