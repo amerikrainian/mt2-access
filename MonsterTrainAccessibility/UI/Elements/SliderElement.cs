@@ -84,6 +84,10 @@ namespace MonsterTrainAccessibility.UI.Elements
                     return Decrement();
                 case "ui_right":
                     return Increment();
+                case "ui_home":
+                    return SetToBoundary(minimum: true);
+                case "ui_end":
+                    return SetToBoundary(minimum: false);
                 default:
                     return false;
             }
@@ -107,11 +111,34 @@ namespace MonsterTrainAccessibility.UI.Elements
             }
 
             int current = CurrentValue(_helper, _slider);
+            return ChangeTo(current + delta);
+        }
+
+        private bool SetToBoundary(bool minimum)
+        {
+            if (_slider == null)
+            {
+                return false;
+            }
+
+            int target = Mathf.RoundToInt(minimum ? _slider.minValue : _slider.maxValue);
+            return ChangeTo(target);
+        }
+
+        private bool ChangeTo(int value)
+        {
+            if (_slider == null)
+            {
+                return false;
+            }
+
+            int current = CurrentValue(_helper, _slider);
             int min = Mathf.RoundToInt(_slider.minValue);
             int max = Mathf.RoundToInt(_slider.maxValue);
-            int next = Mathf.Clamp(current + delta, min, max);
+            int next = Mathf.Clamp(value, min, max);
             if (next == current)
             {
+                SpeechManager.Output(Message.RawCleaned(FormatValue(next)));
                 return true;
             }
 

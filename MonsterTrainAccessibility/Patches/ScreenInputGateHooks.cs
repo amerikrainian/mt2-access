@@ -92,6 +92,10 @@ namespace MonsterTrainAccessibility.Patches
                     return "ui_left";
                 case global::InputManager.Controls.Right:
                     return "ui_right";
+                case global::InputManager.Controls.Home:
+                    return "ui_home";
+                case global::InputManager.Controls.End:
+                    return "ui_end";
                 case global::InputManager.Controls.Submit:
                 case global::InputManager.Controls.AdvanceDialogue:
                     return "ui_accept";
@@ -112,7 +116,9 @@ namespace MonsterTrainAccessibility.Patches
                 action?.Key == "ui_select" ||
                 action?.Key == "ui_cancel" ||
                 action?.Key == "ui_scroll_up" ||
-                action?.Key == "ui_scroll_down";
+                action?.Key == "ui_scroll_down" ||
+                action?.Key == "ui_home" ||
+                action?.Key == "ui_end";
         }
     }
 }

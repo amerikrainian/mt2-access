@@ -136,9 +136,21 @@ namespace MonsterTrainAccessibility.UI.Elements
                 case "ui_up":
                     return NavigationAxis == NavigationAxis.Vertical ? MoveRelative(-1) : false;
                 case "ui_left":
-                    return NavigationAxis == NavigationAxis.Horizontal ? MoveRelative(-1) : HandleFocusedChildAction(action);
+                    return NavigationAxis == NavigationAxis.Horizontal ? MoveRelative(-1) : HandleFocusedChildAction(action, handledFallback: true);
                 case "ui_right":
-                    return NavigationAxis == NavigationAxis.Horizontal ? MoveRelative(1) : HandleFocusedChildAction(action);
+                    return NavigationAxis == NavigationAxis.Horizontal ? MoveRelative(1) : HandleFocusedChildAction(action, handledFallback: true);
+                case "ui_home":
+                    if (HandleFocusedChildAction(action))
+                    {
+                        return true;
+                    }
+                    return MoveToBoundary(first: true);
+                case "ui_end":
+                    if (HandleFocusedChildAction(action))
+                    {
+                        return true;
+                    }
+                    return MoveToBoundary(first: false);
                 case "ui_accept":
                 case "ui_select":
                     return Activate();
@@ -209,6 +221,27 @@ namespace MonsterTrainAccessibility.UI.Elements
                     return true;
                 }
             }
+        }
+
+        public bool MoveToBoundary(bool first)
+        {
+            if (Children.Count == 0)
+            {
+                return false;
+            }
+
+            int start = first ? 0 : Children.Count - 1;
+            int step = first ? 1 : -1;
+            for (int i = start; i >= 0 && i < Children.Count; i += step)
+            {
+                if (Children[i].IsVisible)
+                {
+                    SetFocus(i, selectForNavigation: true);
+                    return true;
+                }
+            }
+
+            return true;
         }
 
         public void SetFocusTo(UIElement element)
@@ -310,7 +343,7 @@ namespace MonsterTrainAccessibility.UI.Elements
             return false;
         }
 
-        private bool HandleFocusedChildAction(InputAction action)
+        private bool HandleFocusedChildAction(InputAction action, bool handledFallback = false)
         {
             INavigationActionHandler actionHandler = FocusedChild as INavigationActionHandler;
             if (actionHandler != null && actionHandler.HandleAction(action))
@@ -318,7 +351,7 @@ namespace MonsterTrainAccessibility.UI.Elements
                 return true;
             }
 
-            return true;
+            return handledFallback;
         }
 
         private void SetFocus(int index, bool selectForNavigation)

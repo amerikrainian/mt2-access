@@ -19,6 +19,8 @@
     "input.scroll_down": "Scroll down",
     "input.navigate_left": "Navigate left",
     "input.navigate_right": "Navigate right",
+    "input.navigate_home": "Navigate to first item",
+    "input.navigate_end": "Navigate to last item",
     "input.select": "Select",
     "input.accept": "Accept",
     "input.cancel": "Cancel",

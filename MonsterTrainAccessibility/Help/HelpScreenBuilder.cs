@@ -59,6 +59,8 @@ namespace MonsterTrainAccessibility.Help
                 case "ui_down":
                 case "ui_left":
                 case "ui_right":
+                case "ui_home":
+                case "ui_end":
                 case "ui_accept":
                 case "ui_select":
                 case "ui_cancel":
