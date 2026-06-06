@@ -1,5 +1,9 @@
 # Change Log
 
+## 0.2.2
+
+- Added home/end to jump to beginning/end of lists. This should help with that huge mutator list (Corax). 
+
 ## 0.2.1
 
 - Added `p` to check moon phase
