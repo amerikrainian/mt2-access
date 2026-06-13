@@ -1,8 +1,12 @@
 # Change Log
 
+## 0.2.3
+
+- Fixed battle speeds not being announced when you press `n` in combat (Kridikal).
+
 ## 0.2.2
 
-- Added home/end to jump to beginning/end of lists. This should help with that huge mutator list (Corax). 
+- Added home/end to jump to beginning/end of lists. This should help with that huge mutator list (Corax).
 
 ## 0.2.1
 

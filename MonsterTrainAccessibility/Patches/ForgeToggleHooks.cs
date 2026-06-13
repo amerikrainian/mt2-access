@@ -33,6 +33,12 @@ namespace MonsterTrainAccessibility.Patches
                 return;
             }
 
+            if (triggeredMappingID == global::InputManager.Controls.GameSpeedToggle)
+            {
+                AnnounceGameSpeed();
+                return;
+            }
+
             SaveManager saveManager = GameManagers.GetSaveManager();
             if (saveManager == null)
             {
@@ -46,6 +52,17 @@ namespace MonsterTrainAccessibility.Patches
             }
 
             SpeechManager.Output(Message.Localized("messages", nextState ? "state.on" : "state.off"));
+        }
+
+        private static void AnnounceGameSpeed()
+        {
+            SaveManager saveManager = GameManagers.GetSaveManager();
+            if (saveManager == null)
+            {
+                return;
+            }
+
+            SpeechManager.Output(Message.FromText(saveManager.GetActiveGameSpeed().GetLocKey().Localize()));
         }
     }
 }
