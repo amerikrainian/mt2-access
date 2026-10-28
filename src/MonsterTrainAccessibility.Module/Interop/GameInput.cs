@@ -20,6 +20,14 @@ namespace MonsterTrainAccessibility.Module.Interop
             UISignals.GameUITriggered.Dispatch(Fake(global::InputManager.Controls.Submit), widget);
         }
 
+        /// <summary>The pointer coming onto a widget: what hover shows (a card's tooltips, a filter's name)
+        /// the game shows, as for the mouse.</summary>
+        public static void Hover(IGameUIComponent widget)
+        {
+            if (widget == null) return;
+            UISignals.GameUITriggered.Dispatch(Fake(global::InputManager.Controls.PointerEnter), widget);
+        }
+
         /// <summary>A control with no widget behind it (Escape, a screen's own hotkey).</summary>
         public static void Send(global::InputManager.Controls control)
             => UISignals.GameUITriggered.Dispatch(Fake(control), null);

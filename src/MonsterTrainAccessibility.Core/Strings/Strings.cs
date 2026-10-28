@@ -111,6 +111,28 @@ namespace MonsterTrainAccessibility.Core.Strings
             D("role.dialog", "dialog"),
             // The game's Menu: its Discord link shows only the logo.
             D("pause.discord", "Discord"),
+            // The words for the icons game text draws inline (<sprite name="Ember">), where the game has
+            // no name of its own for the icon (status effect, trigger and card effect icons read by the
+            // game's own names).
+            D("icon.attack", "attack"),
+            D("icon.armor", "armor"),
+            D("icon.ember", "ember"),
+            D("icon.gold", "gold"),
+            D("icon.health", "health"),
+            D("icon.pyre", "pyre health"),
+            D("icon.capacity", "capacity"),
+            D("icon.dragons_hoard", "Dragon's Hoard"),
+            D("icon.forge", "forge points"),
+            D("icon.x_cost", "X cost"),
+            D("icon.deployment_ember", "deployment ember"),
+            D("icon.ability", "ability"),
+            D("icon.charged_echo", "charged echo"),
+            D("icon.charged_echo_slot", "charged echo slot"),
+            // A card's numbers, which its face shows beside icons; {0} = the number as drawn.
+            D("card.cost", "cost {0}"),
+            D("card.attack", "{0} attack"),
+            D("card.health", "{0} health"),
+            D("card.size", "size {0}"),
             // A pyre heart's two stats, which the game shows as icons with numbers; {0} = the number.
             D("pyre.attack", "Pyre attack {0}"),
             D("pyre.health", "Pyre health {0}"),
@@ -313,6 +335,12 @@ namespace MonsterTrainAccessibility.Core.Strings
         public static string RoleDialog => Get("role.dialog");
         public static string PauseDiscord => Get("pause.discord");
         public static string StateCompleted => Get("state.completed");
+        public static string Icon(string key) => Has("icon." + key) ? Get("icon." + key) : null;
+        public static string CardCost(string value) => F("card.cost", value);
+        public static string CardAttack(string value) => F("card.attack", value);
+        public static string CardHealth(string value) => F("card.health", value);
+        public static string CardSize(string value) => F("card.size", value);
+
         public static string PyreAttack(string value) => F("pyre.attack", value);
         public static string PyreHealth(string value) => F("pyre.health", value);
 

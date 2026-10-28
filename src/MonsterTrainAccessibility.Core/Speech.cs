@@ -15,6 +15,10 @@ namespace MonsterTrainAccessibility.Core
     {
         public static Action<string, bool> Speak = (text, interrupt) => { };
 
+        /// <summary>How inline icon markup in a line becomes words before it is spoken. The default names
+        /// a sprite by its own name (<see cref="SpriteNames"/>); the module sets the game's own words.</summary>
+        public static Func<string, string> IconWords = SpriteNames;
+
         public static void Say(string text, bool interrupt = false)
         {
             if (string.IsNullOrEmpty(text)) return;
@@ -26,7 +30,7 @@ namespace MonsterTrainAccessibility.Core
                 interrupt = _held.Count == 0;
                 _held.Add(text);
             }
-            Speak(SpriteNames(text), interrupt);
+            Speak(IconWords(text), interrupt);
         }
 
         // ---- the hold ----

@@ -47,6 +47,8 @@ namespace MonsterTrainAccessibility.Module
             CoreLog.Warning = host.LogWarning;
             CoreLog.Error = host.LogError;
             Speech.Speak = (text, interrupt) => host.Speech.Speak(text, interrupt);
+            // Game text draws icons inline as markup: every line reads them by the game's own words.
+            Speech.IconWords = Interop.GameSprites.Words;
             NavInput.Current = new UnityNavInput();
             Navigation.FocusActive = () => FocusMode.Active;
             InputManager.FocusActive = () => FocusMode.Active;
@@ -136,6 +138,13 @@ namespace MonsterTrainAccessibility.Module
             InputManager.Register(UiActions.RegionNext, "Next section", InputCategory.UI)
                 .AddBinding(new KeyboardBinding(KeyCode.DownArrow, alt: true))
                 .AddBinding(new ControllerBinding(ControllerInput.DpadDown, ControllerInput.RightTrigger));
+            // Page turning, answered by the screen that pages (the Logbook) and by nothing else: no handler.
+            InputManager.Register(Screens.CompendiumScreen.PagePrev, "Previous page", InputCategory.UI)
+                .AddBinding(new KeyboardBinding(KeyCode.PageUp))
+                .AddBinding(new ControllerBinding(ControllerInput.DpadLeft, ControllerInput.RightTrigger));
+            InputManager.Register(Screens.CompendiumScreen.PageNext, "Next page", InputCategory.UI)
+                .AddBinding(new KeyboardBinding(KeyCode.PageDown))
+                .AddBinding(new ControllerBinding(ControllerInput.DpadRight, ControllerInput.RightTrigger));
             // Buffer review, the Harkest Dungeon keys: Ctrl+Left/Right switch buffers, Ctrl+Up/Down step
             // lines; on the pad, the right stick.
             Buffers.Init();
@@ -183,6 +192,7 @@ namespace MonsterTrainAccessibility.Module
             ScreenManager.Register(new Screens.TrainRoomPickerScreen());
             ScreenManager.Register(new Screens.ChallengeProgressScreen());
             ScreenManager.Register(new Screens.ChallengeRewardsScreen());
+            ScreenManager.Register(new Screens.CompendiumScreen());
             ScreenManager.Register(new ModMenuScreen());
             ScreenManager.Register(new HelpScreen());
         }
