@@ -15,6 +15,6 @@ namespace MonsterTrainAccessibility.Tests
         public bool EscapeDown => false;
         public bool UpHeld => false;
         public bool DownHeld => false;
-        public string TypedText => "";
+        public string TypedText { get; set; } = "";
     }
 }

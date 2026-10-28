@@ -49,7 +49,7 @@ namespace MonsterTrainAccessibility.Module.UI
                 string part = raw.Trim();
                 if (sb.Length > 0)
                 {
-                    char last = sb[sb.Length - 1];
+                    char last = LastShown(sb);
                     sb.Append(last == '.' || last == '!' || last == '?' || last == ':' ? " " : ". ");
                 }
                 sb.Append(part);
@@ -58,6 +58,22 @@ namespace MonsterTrainAccessibility.Module.UI
         }
 
         public static string Sentences(params string[] parts) => Sentences((IEnumerable<string>)parts);
+
+        // The last character a reader sees: past any closing markup tags ("bonus.</i>" ends in '.').
+        private static char LastShown(System.Text.StringBuilder sb)
+        {
+            int i = sb.Length - 1;
+            while (i >= 0)
+            {
+                if (char.IsWhiteSpace(sb[i])) { i--; continue; }
+                if (sb[i] != '>') return sb[i];
+                int open = i;
+                while (open >= 0 && sb[open] != '<') open--;
+                if (open < 0) return sb[i];
+                i = open - 1;
+            }
+            return ' ';
+        }
 
         /// <summary>Detail lines for the ui buffer from single texts: the non-blank ones, in order
         /// (a null or empty text is simply no line).</summary>

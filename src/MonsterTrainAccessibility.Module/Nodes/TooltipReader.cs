@@ -1,5 +1,9 @@
+using System;
 using System.Collections.Generic;
 using MonsterTrainAccessibility.Core;
+using MonsterTrainAccessibility.Core.Graph;
+using MonsterTrainAccessibility.Core.UI;
+using MonsterTrainAccessibility.Module.UI;
 using UnityEngine;
 
 namespace MonsterTrainAccessibility.Module.Nodes
@@ -18,6 +22,7 @@ namespace MonsterTrainAccessibility.Module.Nodes
     /// the tooltips it instantiated, exactly as drawn. The secondary panel some move to is layout
     /// only and is read like the rest; the game's prompt to show it is not a tooltip and is skipped.</item>
     /// </list>
+    /// <see cref="Item"/> is a read-only line made of a widget's tooltips (a meter, a victory marker).
     /// Tooltips are flat lists in this game: a tooltip never opens another; content one generates
     /// (a card a relic creates) is a further entry in the same list.
     /// </summary>
@@ -39,6 +44,25 @@ namespace MonsterTrainAccessibility.Module.Nodes
                 }
             }
             return Lines(tooltips);
+        }
+
+        /// <summary>A widget read by its tooltips: the first one's title (else its body) heads the line,
+        /// the rest follow it, each its own line in the buffer.</summary>
+        public static NodeVtable Item(Component widget)
+        {
+            Func<string> label = () => { var lines = Lines(widget); return lines.Count > 0 ? lines[0] : null; };
+            Func<string> rest = () =>
+            {
+                var lines = Lines(widget);
+                return lines.Count > 1 ? GameNodes.Sentences(lines.GetRange(1, lines.Count - 1)) : null;
+            };
+            return new NodeVtable
+            {
+                ControlType = ControlTypes.Text,
+                Announcements = new List<NodeAnnouncement> { GameNodes.LabelPart(label), GameNodes.TooltipPart(rest) },
+                SearchText = label,
+                Details = () => GameNodes.Lines(Lines(widget)),
+            };
         }
 
         /// <summary>A tooltip list as a container would show it.</summary>

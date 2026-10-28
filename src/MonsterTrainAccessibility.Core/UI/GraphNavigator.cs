@@ -900,6 +900,7 @@ namespace MonsterTrainAccessibility.Core.UI
             if (!_graph.FocusAtColumn(_searchNodes[index].Id, _searchColumn)) return;
             var node = _graph.CurrentNode;
             PlayHover(node);
+            FireFocus(node); // a result is a landing like any other: a radio found by typing is chosen
             Speak(ComposeMove(_lastSpokenNode, node, entry: false), interrupt: true);
             _lastSpokenKey = node.Id;
             _lastSpokenNode = node;

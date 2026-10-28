@@ -133,6 +133,26 @@ namespace MonsterTrainAccessibility.Core.Strings
             D("card.attack", "{0} attack"),
             D("card.health", "{0} health"),
             D("card.size", "size {0}"),
+            // The Logbook. An enemy's numbers beside their icons ({0} = the number), its variant buttons
+            // (drawn as bare numbers), its artist credit ({0} = the name).
+            D("enemy.variant", "Variant {0}"),
+            D("enemy.attack", "{0} attack"),
+            D("enemy.heal", "{0} healing"),
+            D("enemy.health", "{0} health"),
+            D("enemy.armor", "{0} armor"),
+            D("enemy.artist", "Artist: {0}"),
+            // A search field's clear button, an icon.
+            D("search.clear", "Clear search"),
+            // A champion upgrade path's level nodes, drawn as numerals; {0} = the level.
+            D("upgrade.level", "Upgrade level {0}"),
+            // A mastery card frame, which the game shows as a picture; {0} = its kind below.
+            D("frame.name", "{0} frame"),
+            D("frame.default", "Default"),
+            D("frame.metallic", "Metallic"),
+            D("frame.heaven_throne", "Heaven's Throne"),
+            D("frame.prismatic", "Prismatic"),
+            // A champion whose portrait the game rings with the mastery frame.
+            D("state.mastered", "mastered"),
             // A pyre heart's two stats, which the game shows as icons with numbers; {0} = the number.
             D("pyre.attack", "Pyre attack {0}"),
             D("pyre.health", "Pyre health {0}"),
@@ -335,6 +355,18 @@ namespace MonsterTrainAccessibility.Core.Strings
         public static string RoleDialog => Get("role.dialog");
         public static string PauseDiscord => Get("pause.discord");
         public static string StateCompleted => Get("state.completed");
+        public static string EnemyVariant(string number) => F("enemy.variant", number);
+        public static string EnemyAttack(string value) => F("enemy.attack", value);
+        public static string EnemyHeal(string value) => F("enemy.heal", value);
+        public static string EnemyHealth(string value) => F("enemy.health", value);
+        public static string EnemyArmor(string value) => F("enemy.armor", value);
+        public static string EnemyArtist(string name) => F("enemy.artist", name);
+        public static string SearchClear => Get("search.clear");
+        public static string UpgradeLevel(int level) => F("upgrade.level", level);
+        public static string FrameName(string kind) => F("frame.name", kind);
+        public static string Frame(string key) => Get("frame." + key);
+        public static string StateMastered => Get("state.mastered");
+
         public static string Icon(string key) => Has("icon." + key) ? Get("icon." + key) : null;
         public static string CardCost(string value) => F("card.cost", value);
         public static string CardAttack(string value) => F("card.attack", value);

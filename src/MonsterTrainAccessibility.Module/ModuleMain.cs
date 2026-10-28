@@ -52,7 +52,7 @@ namespace MonsterTrainAccessibility.Module
             NavInput.Current = new UnityNavInput();
             Navigation.FocusActive = () => FocusMode.Active;
             InputManager.FocusActive = () => FocusMode.Active;
-            InputManager.TextFieldFocused = () => false;
+            InputManager.TextFieldFocused = () => TextEdit.OwnsKeyboard;
             GraphAnnouncer.PositionText = (i, n) => host.Settings.SpeakPositions ? Strings.Position(i, n) : null;
             GraphAnnouncer.ExpandedStateText = Strings.ExpandedState;
             InputBinding.RegisterType("keyboard", KeyboardBinding.Deserialize);
@@ -205,9 +205,10 @@ namespace MonsterTrainAccessibility.Module
                 Speech.Say(Strings.UpdateAvailable(_updateCheck.NewerVersion));
             }
             FocusMode.Tick();
+            Safe(TextEdit.Tick, "text edit");
             InputManager.Tick();
             ScreenManager.Tick();
-            Navigation.TickTypeahead();
+            if (!TextEdit.OwnsKeyboard) Navigation.TickTypeahead();
             Safe(Later.Tick, "later");
             Safe(Buffers.Tick, "buffers");
         }
@@ -226,6 +227,7 @@ namespace MonsterTrainAccessibility.Module
             // On a reload the successor already owns the input: drop our hooks only. On a shutdown,
             // give everything back to the game.
             bool restore = _host == null || !_host.SuccessorLoaded;
+            try { TextEdit.Shutdown(); } catch (Exception e) { _host?.LogError("[dispose] text edit: " + e); }
             try { FocusMode.Shutdown(restore); } catch (Exception e) { _host?.LogError("[dispose] focus: " + e); }
             try { Gamepad.Reset(); } catch (Exception e) { _host?.LogError("[dispose] gamepad: " + e); }
             try { ScreenManager.Shutdown(); } catch (Exception e) { _host?.LogError("[dispose] screens: " + e); }

@@ -56,6 +56,51 @@ namespace MonsterTrainAccessibility.Tests
             }
         }
 
+        // Radio buttons that are chosen by landing on them (a list of enemies, a row of clans).
+        private sealed class ChooseOnLandingScreen : Screen
+        {
+            public readonly List<string> Chosen = new List<string>();
+            public override string Key => "test.choose";
+            public override bool IsActive() => true;
+            public override void Build(GraphBuilder b)
+            {
+                b.PushContext("Enemies", "list");
+                foreach (var name in new[] { "Forsaken", "Stryx", "Hallow" })
+                    b.AddItem(ControlId.Structural(name), new NodeVtable
+                    {
+                        ControlType = ControlTypes.RadioButton,
+                        Announcements = new[] { new NodeAnnouncement(() => name, kind: AnnouncementKinds.Label) },
+                        OnFocus = () => Chosen.Add(name),
+                    });
+                b.PopContext();
+            }
+        }
+
+        [Fact]
+        public void ATypeAheadResultIsALandingThatRunsTheFocusHook()
+        {
+            Speech.Speak = (t, i) => { };
+            var input = new FakeNavInput { FrameCount = 1 };
+            NavInput.Current = input;
+            try
+            {
+                var nav = new GraphNavigator();
+                var screen = new ChooseOnLandingScreen();
+                nav.Attach(screen);
+                nav.EnsureFocus();
+                nav.TickTypeahead(); // the first tick on a screen only notes it
+
+                input.TypedText = "s";
+                nav.TickTypeahead();
+
+                Assert.Contains("Stryx", screen.Chosen);
+            }
+            finally
+            {
+                Speech.Speak = (t, i) => { };
+            }
+        }
+
         [Fact]
         public void AUiKeyTheNavigatorDoesNotOwnGoesToTheScreenByItsKey()
         {
