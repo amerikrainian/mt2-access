@@ -65,6 +65,7 @@ bind.buffer.line.next=Nächste Pufferzeile
 bind.buffer.line.prev=Vorherige Pufferzeile
 bind.mod.focus=Navigation umschalten
 role.dialog=Dialogfeld
+pause.discord=Discord
 screen.mod_menu=Monster Train Accessibility
 mod.settings=Einstellungen
 mod.key_help=Alle Tasten

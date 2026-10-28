@@ -65,6 +65,7 @@ bind.buffer.line.next=다음 버퍼 줄
 bind.buffer.line.prev=이전 버퍼 줄
 bind.mod.focus=탐색 켜기/끄기
 role.dialog=대화 상자
+pause.discord=Discord
 screen.mod_menu=Monster Train Accessibility
 mod.settings=설정
 mod.key_help=모든 키

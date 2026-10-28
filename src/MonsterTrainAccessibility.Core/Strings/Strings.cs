@@ -107,6 +107,8 @@ namespace MonsterTrainAccessibility.Core.Strings
 
             // The role word for a modal dialog context.
             D("role.dialog", "dialog"),
+            // The game's Menu: its Discord link shows only the logo.
+            D("pause.discord", "Discord"),
 
             D("screen.mod_menu", "Monster Train Accessibility"),
             D("mod.settings", "Settings"),
@@ -302,6 +304,9 @@ namespace MonsterTrainAccessibility.Core.Strings
         /// registration label when no entry exists.</summary>
         public static string BindLabel(string actionKey, string fallback)
             => Has("bind." + actionKey) ? Get("bind." + actionKey) : fallback;
+
+        public static string RoleDialog => Get("role.dialog");
+        public static string PauseDiscord => Get("pause.discord");
 
         public static string ScreenModMenu => Get("screen.mod_menu");
         public static string ModSettings => Get("mod.settings");

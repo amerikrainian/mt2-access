@@ -65,6 +65,7 @@ bind.buffer.line.next=缓冲区下一行
 bind.buffer.line.prev=缓冲区上一行
 bind.mod.focus=切换导航
 role.dialog=对话框
+pause.discord=Discord
 screen.mod_menu=Monster Train Accessibility
 mod.settings=设置
 mod.key_help=所有按键

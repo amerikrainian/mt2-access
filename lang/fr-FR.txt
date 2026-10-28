@@ -65,6 +65,7 @@ bind.buffer.line.next=Ligne de tampon suivante
 bind.buffer.line.prev=Ligne de tampon précédente
 bind.mod.focus=Activer ou désactiver la navigation
 role.dialog=dialogue
+pause.discord=Discord
 screen.mod_menu=Monster Train Accessibility
 mod.settings=Paramètres
 mod.key_help=Toutes les touches

@@ -71,7 +71,7 @@ namespace MonsterTrainAccessibility.Module.Screens
         {
             var button = place != null ? place.Button : null;
             if (button == null || !button.gameObject.activeInHierarchy) return;
-            b.AddItem(ControlId.Structural("mainmenu:" + key), GameNodes.GameButton(button,
+            b.AddItem(ControlId.Structural("mainmenu:" + key), GameWidgets.Button(button,
                 label ?? (() => Caption(place)),
                 () => Join(HoverLine(place), note?.Invoke())));
         }
@@ -105,7 +105,7 @@ namespace MonsterTrainAccessibility.Module.Screens
         {
             var change = screen.changeUserButton;
             if (change != null && change.gameObject.activeInHierarchy)
-                b.AddItem(ControlId.Structural("mainmenu:user"), GameNodes.GameButton(change, () => screen.usernameLabel != null ? screen.usernameLabel.text : null));
+                b.AddItem(ControlId.Structural("mainmenu:user"), GameWidgets.Button(change, () => screen.usernameLabel != null ? screen.usernameLabel.text : null));
             var fixedUser = screen.nonSwitchableUserButton;
             if (fixedUser != null && fixedUser.gameObject.activeInHierarchy)
                 b.AddItem(ControlId.Structural("mainmenu:user"), GameNodes.Text(() => screen.nonSwitchableUsernameLabel != null ? screen.nonSwitchableUsernameLabel.text : null));

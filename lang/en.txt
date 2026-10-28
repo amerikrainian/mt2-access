@@ -67,6 +67,7 @@ bind.buffer.line.next=Next buffer line
 bind.buffer.line.prev=Previous buffer line
 bind.mod.focus=Toggle navigation
 role.dialog=dialog
+pause.discord=Discord
 screen.mod_menu=Monster Train Accessibility
 mod.settings=Settings
 mod.key_help=All keys

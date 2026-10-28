@@ -97,29 +97,6 @@ namespace MonsterTrainAccessibility.Module.UI
             };
         }
 
-        /// <summary>A game button (<see cref="ShinyShoe.GameUISelectableButton"/>): the label given, the
-        /// game's "Locked" when the button is locked, "disabled" when it is otherwise out of use (a locked
-        /// button is not interactable either: the lock says why), then the description. Activation is a
-        /// Submit through the game's input signal (<see cref="Interop.GameInput"/>), since the game
-        /// triggers these from screen input, not from onClick.</summary>
-        public static NodeVtable GameButton(ShinyShoe.GameUISelectableButton button, Func<string> label, Func<string> description = null)
-        {
-            bool Locked() => button.state == ShinyShoe.GameUISelectableButton.State.Locked;
-            return new NodeVtable
-            {
-                ControlType = ControlTypes.Button,
-                Announcements = new List<NodeAnnouncement>
-                {
-                    LabelPart(label),
-                    new NodeAnnouncement(() => Locked() ? Interop.GameText.Term("Locked") : null, kind: AnnouncementKinds.Enabled),
-                    DisabledPart(() => Locked() || (button.interactable && button.state != ShinyShoe.GameUISelectableButton.State.Disabled)),
-                    TooltipPart(description),
-                },
-                SearchText = label,
-                OnActivate = () => Interop.GameInput.Submit(button),
-            };
-        }
-
         /// <summary>A uGUI Button: label from its TMP child (or the given override), enabled from
         /// interactable, activation through its onClick so the game's own handler runs.</summary>
         public static NodeVtable Button(UnityEngine.UI.Button button, Func<string> label = null, ControlType type = null)
