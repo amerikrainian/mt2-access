@@ -82,3 +82,6 @@ screen.help=此處可用按鍵
 help.none=此處無可用按鍵
 help.row={0}：{1}
 help.jump_to=跳到{0}
+state.completed=已完成
+pyre.attack=Pyre 攻擊 {0}
+pyre.health=Pyre 生命值 {0}

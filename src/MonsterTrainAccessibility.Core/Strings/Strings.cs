@@ -54,6 +54,8 @@ namespace MonsterTrainAccessibility.Core.Strings
             D("state.off", "off"),
             D("state.expanded", "expanded"),
             D("state.collapsed", "collapsed"),
+            // A challenge the player has beaten (the game marks it with an icon only).
+            D("state.completed", "completed"),
             D("value.blank", "blank"),
             D("value.space", "space"),
             D("edit.begin", "editing"),
@@ -109,6 +111,9 @@ namespace MonsterTrainAccessibility.Core.Strings
             D("role.dialog", "dialog"),
             // The game's Menu: its Discord link shows only the logo.
             D("pause.discord", "Discord"),
+            // A pyre heart's two stats, which the game shows as icons with numbers; {0} = the number.
+            D("pyre.attack", "Pyre attack {0}"),
+            D("pyre.health", "Pyre health {0}"),
 
             D("screen.mod_menu", "Monster Train Accessibility"),
             D("mod.settings", "Settings"),
@@ -307,6 +312,9 @@ namespace MonsterTrainAccessibility.Core.Strings
 
         public static string RoleDialog => Get("role.dialog");
         public static string PauseDiscord => Get("pause.discord");
+        public static string StateCompleted => Get("state.completed");
+        public static string PyreAttack(string value) => F("pyre.attack", value);
+        public static string PyreHealth(string value) => F("pyre.health", value);
 
         public static string ScreenModMenu => Get("screen.mod_menu");
         public static string ModSettings => Get("mod.settings");

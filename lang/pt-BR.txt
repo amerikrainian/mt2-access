@@ -82,3 +82,6 @@ screen.help=Teclas aqui
 help.none=nenhuma tecla aqui
 help.row={0}: {1}
 help.jump_to=Ir para {0}
+state.completed=concluído
+pyre.attack=Ataque da Pyre {0}
+pyre.health=Vida da Pyre {0}

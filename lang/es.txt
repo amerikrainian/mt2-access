@@ -82,3 +82,6 @@ screen.help=Teclas aquí
 help.none=sin teclas aquí
 help.row={0}: {1}
 help.jump_to=Ir a {0}
+state.completed=completado
+pyre.attack=Ataque de Pyre {0}
+pyre.health=Salud de Pyre {0}

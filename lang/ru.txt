@@ -82,3 +82,6 @@ screen.help=Клавиши здесь
 help.none=здесь нет клавиш
 help.row={0}: {1}
 help.jump_to=Перейти: {0}
+state.completed=завершено
+pyre.attack=Атака Pyre {0}
+pyre.health=Здоровье Pyre {0}

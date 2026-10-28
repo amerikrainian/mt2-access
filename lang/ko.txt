@@ -82,3 +82,6 @@ screen.help=여기서 쓸 수 있는 키
 help.none=여기서 쓸 수 있는 키 없음
 help.row={0}: {1}
 help.jump_to={0}(으)로 이동
+state.completed=완료됨
+pyre.attack=Pyre 공격력 {0}
+pyre.health=Pyre 체력 {0}

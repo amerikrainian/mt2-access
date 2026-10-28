@@ -82,3 +82,6 @@ screen.help=此处按键
 help.none=此处无按键
 help.row={0}：{1}
 help.jump_to=跳到{0}
+state.completed=已完成
+pyre.attack=薪火攻击力 {0}
+pyre.health=薪火生命值 {0}

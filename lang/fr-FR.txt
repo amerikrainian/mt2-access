@@ -82,3 +82,6 @@ screen.help=Touches ici
 help.none=aucune touche ici
 help.row={0}: {1}
 help.jump_to=Aller à {0}
+state.completed=terminé
+pyre.attack=Attaque de Pyre Heart {0}
+pyre.health=Santé de Pyre Heart {0}
