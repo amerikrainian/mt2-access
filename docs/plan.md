@@ -58,9 +58,8 @@ Expected savings over a straight port of main (estimates, not measured on the re
 - `ScreenAudit` (the dev coverage report) once there are game screens to audit.
 
 ### 3.3 Phase 3: readers and registries, before any game screen
-1. **Screen registry**: the live game `UIScreen`s, filled by hooks on the game's screen show/hide
-   path (main's `RegisterUIScreen` hook is the reference), the equivalent of Guildrun's `GameScopes`.
-   No scene scans.
+1. **Screen registry** (done): `Module/Interop/GameScreens` asks the game's own `ScreenManager`
+   (`GetScreenActive`, `GetScreen`) on every read. No hooks, no scene scans.
 2. **`TooltipReader`** with four entry points, each returning `List<TooltipContent>` in the game's
    order:
    - `For(Component)`: `ITooltipProvider.Tooltips`;
