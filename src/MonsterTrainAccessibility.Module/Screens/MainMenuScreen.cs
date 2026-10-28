@@ -73,7 +73,7 @@ namespace MonsterTrainAccessibility.Module.Screens
             if (button == null || !button.gameObject.activeInHierarchy) return;
             b.AddItem(ControlId.Structural("mainmenu:" + key), GameWidgets.Button(button,
                 label ?? (() => Caption(place)),
-                () => Join(HoverLine(place), note?.Invoke())));
+                () => GameNodes.Sentences(HoverLine(place), note?.Invoke())));
         }
 
         private static string Caption(MainMenuButton place)
@@ -109,13 +109,6 @@ namespace MonsterTrainAccessibility.Module.Screens
             var fixedUser = screen.nonSwitchableUserButton;
             if (fixedUser != null && fixedUser.gameObject.activeInHierarchy)
                 b.AddItem(ControlId.Structural("mainmenu:user"), GameNodes.Text(() => screen.nonSwitchableUsernameLabel != null ? screen.nonSwitchableUsernameLabel.text : null));
-        }
-
-        private static string Join(string first, string second)
-        {
-            if (string.IsNullOrWhiteSpace(first)) return second;
-            if (string.IsNullOrWhiteSpace(second)) return first;
-            return first + ". " + second;
         }
     }
 }

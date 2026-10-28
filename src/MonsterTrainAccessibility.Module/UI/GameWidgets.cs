@@ -20,21 +20,22 @@ namespace MonsterTrainAccessibility.Module.UI
     /// </summary>
     public static class GameWidgets
     {
-        /// <summary>A button: the label given, the game's "Locked" when the button is locked, "disabled"
-        /// when it is otherwise out of use (a locked button is not interactable either: the lock says
-        /// why), then the description. Enter presses it.</summary>
-        public static NodeVtable Button(GameUISelectableButton button, Func<string> label, Func<string> description = null)
+        /// <summary>A button: the label given, any state parts given (a value, "selected"), the game's
+        /// "Locked" when the button is locked, "disabled" when it is otherwise out of use (a locked
+        /// button is not interactable either: the lock says why), then the description. Enter presses
+        /// it.</summary>
+        public static NodeVtable Button(GameUISelectableButton button, Func<string> label, Func<string> description = null,
+            params NodeAnnouncement[] state)
         {
+            var parts = new List<NodeAnnouncement> { GameNodes.LabelPart(label) };
+            parts.AddRange(state);
+            parts.Add(LockedPart(button));
+            parts.Add(GameNodes.DisabledPart(() => Usable(button)));
+            parts.Add(GameNodes.TooltipPart(description));
             return new NodeVtable
             {
                 ControlType = ControlTypes.Button,
-                Announcements = new List<NodeAnnouncement>
-                {
-                    GameNodes.LabelPart(label),
-                    LockedPart(button),
-                    GameNodes.DisabledPart(() => Usable(button)),
-                    GameNodes.TooltipPart(description),
-                },
+                Announcements = parts,
                 SearchText = label,
                 OnActivate = () => GameInput.Submit(button),
             };

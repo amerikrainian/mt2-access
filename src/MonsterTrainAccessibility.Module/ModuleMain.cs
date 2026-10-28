@@ -179,6 +179,8 @@ namespace MonsterTrainAccessibility.Module
             ScreenManager.Register(new Screens.PauseMenuScreen());
             ScreenManager.Register(new Screens.SettingsScreen());
             ScreenManager.Register(new Screens.DialogScreen());
+            ScreenManager.Register(new Screens.TrainCosmeticsScreen());
+            ScreenManager.Register(new Screens.TrainRoomPickerScreen());
             ScreenManager.Register(new ModMenuScreen());
             ScreenManager.Register(new HelpScreen());
         }

@@ -37,6 +37,28 @@ namespace MonsterTrainAccessibility.Module.UI
         public static NodeAnnouncement TooltipPart(Func<string> description)
             => new NodeAnnouncement(description, kind: AnnouncementKinds.Tooltip);
 
+        /// <summary>Texts as one line of sentences, the blanks dropped: each joined to the next with a
+        /// period unless it already ends in sentence punctuation (game texts often do), so nothing
+        /// reads as "..".</summary>
+        public static string Sentences(IEnumerable<string> parts)
+        {
+            var sb = new System.Text.StringBuilder();
+            foreach (var raw in parts)
+            {
+                if (string.IsNullOrWhiteSpace(raw)) continue;
+                string part = raw.Trim();
+                if (sb.Length > 0)
+                {
+                    char last = sb[sb.Length - 1];
+                    sb.Append(last == '.' || last == '!' || last == '?' || last == ':' ? " " : ". ");
+                }
+                sb.Append(part);
+            }
+            return sb.Length > 0 ? sb.ToString() : null;
+        }
+
+        public static string Sentences(params string[] parts) => Sentences((IEnumerable<string>)parts);
+
         /// <summary>Detail lines for the ui buffer from single texts: the non-blank ones, in order
         /// (a null or empty text is simply no line).</summary>
         public static IEnumerable<string> Lines(params string[] texts)
