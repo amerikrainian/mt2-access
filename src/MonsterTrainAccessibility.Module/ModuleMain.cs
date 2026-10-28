@@ -175,6 +175,7 @@ namespace MonsterTrainAccessibility.Module
         private static void RegisterScreens()
         {
             ScreenManager.Register(new Screens.IntroStartScreen());
+            ScreenManager.Register(new Screens.MainMenuScreen());
             ScreenManager.Register(new ModMenuScreen());
             ScreenManager.Register(new HelpScreen());
         }
