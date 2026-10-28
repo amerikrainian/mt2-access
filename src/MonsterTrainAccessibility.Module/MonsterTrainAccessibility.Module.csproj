@@ -1,0 +1,61 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    The reloadable feature module: screens, node factories, input bindings, focus suppression, and the
+    Harmony patches. NOT a BepInEx plugin (no [BepInPlugin]); the host loads it (with Core) by hand from
+    the DLL bytes under a per-generation assembly name, so it can be rebuilt and reloaded without
+    restarting the game. It owns no native handles and no MonoBehaviour types; that permanent code stays
+    in the host. The game's Assembly-CSharp is referenced PUBLICIZED: private members read as plain
+    fields (screen.collectButton), so a member the game renames is a compile error, not a runtime crash.
+  -->
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <AssemblyName>MonsterTrainAccessibility.Module</AssemblyName>
+    <RootNamespace>MonsterTrainAccessibility.Module</RootNamespace>
+    <Nullable>disable</Nullable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <NoWarn>$(NoWarn);CS0436</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\MonsterTrainAccessibility.Contracts\MonsterTrainAccessibility.Contracts.csproj" />
+    <ProjectReference Include="..\MonsterTrainAccessibility.Core\MonsterTrainAccessibility.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="BepInEx.AssemblyPublicizer.MSBuild" Version="0.4.2" PrivateAssets="all" />
+  </ItemGroup>
+
+  <!--
+    Fast iteration deploy (Debug only): copy just the two reloadable DLLs (Core + Module) into the plugin
+    folder. Both are overwrite-safe while the game runs (byte-loaded, never locked), so the day-to-day
+    loop is dotnet build on this project then POST /reload (or F6 in-game). The lang files go along:
+    a reload reads the game language's file again, so a translation is tried the same way.
+  -->
+  <Target Name="DeployModule" AfterTargets="Build" Condition="'$(Configuration)' == 'Debug'">
+    <PropertyGroup>
+      <CoreDll>$(RepoRoot)src\MonsterTrainAccessibility.Core\bin\$(Configuration)\netstandard2.0\MonsterTrainAccessibility.Core.dll</CoreDll>
+    </PropertyGroup>
+    <ItemGroup>
+      <_LangFile Include="$(RepoRoot)lang\*.txt" />
+    </ItemGroup>
+    <MakeDir Directories="$(PluginDeployDir)" />
+    <Copy SourceFiles="$(TargetPath);$(CoreDll)" DestinationFolder="$(PluginDeployDir)" ContinueOnError="true" />
+    <Copy SourceFiles="@(_LangFile)" DestinationFolder="$(PluginDeployDir)\lang"
+          SkipUnchangedFiles="true" ContinueOnError="true" Condition="'@(_LangFile)' != ''" />
+    <Message Importance="high" Text="MonsterTrainAccessibility.Module + Core deployed -> $(PluginDeployDir)" />
+  </Target>
+
+  <ItemGroup>
+    <!-- BepInEx 5 loader + Harmony. -->
+    <Reference Include="$(BepInExDir)\core\BepInEx.dll" Private="false" />
+    <Reference Include="$(BepInExDir)\core\0Harmony.dll" Private="false" />
+    <!-- The game: Assembly-CSharp publicized, every other game and Unity assembly as shipped. The
+         framework facades (System*, mscorlib, netstandard, Mono*) come from the SDK instead. -->
+    <Reference Include="$(ManagedDir)\Assembly-CSharp.dll" Publicize="true" Private="false" />
+    <Reference Include="$(ManagedDir)\*.dll"
+               Exclude="$(ManagedDir)\Assembly-CSharp.dll;$(ManagedDir)\System*.dll;$(ManagedDir)\Mono.*.dll;$(ManagedDir)\mscorlib.dll;$(ManagedDir)\netstandard.dll;$(ManagedDir)\Microsoft.*.dll;$(ManagedDir)\Accessibility.dll"
+               Private="false" />
+  </ItemGroup>
+
+</Project>

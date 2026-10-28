@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    The PERMANENT contract between the host plugin and the reloadable side (Core + Module). Loaded once
+    by the chainloader under its own name; everything the host holds a reference to is typed by this assembly,
+    never by Core, so a module hot-reload keeps type identity across the boundary. Deliberately tiny and
+    stable: interfaces, the speech pipeline (host-owned), the settings seam, and the text filter the
+    pipeline needs. References nothing external (no Unity, no BepInEx).
+  -->
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <AssemblyName>MonsterTrainAccessibility.Contracts</AssemblyName>
+    <RootNamespace>MonsterTrainAccessibility.Contracts</RootNamespace>
+    <Nullable>disable</Nullable>
+  </PropertyGroup>
+
+</Project>

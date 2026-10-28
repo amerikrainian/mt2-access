@@ -1,11 +1,22 @@
-release
-bin
-obj
-# Where we decompiled the game to
-game/
+# The decompiled game reference (game/): local only, never committed.
+/game/
 
-# Build artifacts
+# Build output
+bin/
+obj/
+*.user
+.vs/
+
+# Machine-specific build overrides
+Directory.Build.local.props
+
+# Release artifacts and the installer's cargo output
+releases/
+release/
+installer/target/
 *.zip
 *.exe
-installer/target/
-third_party/
+
+# The rendered manual (mdbook build docs_src)
+docs_src/book/
+tools/python/__pycache__/

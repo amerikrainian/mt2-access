@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Engine-free, RELOADABLE logic: the key-graph navigation engine (from guildrun-access, itself from
+    wotr-access), the navigator, the input category model, the screen stack, the type-ahead search, and
+    the authored strings table. References Contracts only (no Unity, no BepInEx) so it stays unit-testable
+    off-engine. The host loads this assembly with the module, from its bytes under a per-generation name,
+    so a change here hot-reloads with the module. Anything the host must hold belongs in Contracts.
+  -->
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <AssemblyName>MonsterTrainAccessibility.Core</AssemblyName>
+    <RootNamespace>MonsterTrainAccessibility.Core</RootNamespace>
+    <Nullable>disable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\MonsterTrainAccessibility.Contracts\MonsterTrainAccessibility.Contracts.csproj" />
+  </ItemGroup>
+
+</Project>

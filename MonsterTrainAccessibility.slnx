@@ -1,0 +1,7 @@
+<Solution>
+  <Project Path="src/MonsterTrainAccessibility.Contracts/MonsterTrainAccessibility.Contracts.csproj" />
+  <Project Path="src/MonsterTrainAccessibility.Core/MonsterTrainAccessibility.Core.csproj" />
+  <Project Path="src/MonsterTrainAccessibility.Module/MonsterTrainAccessibility.Module.csproj" />
+  <Project Path="src/MonsterTrainAccessibility/MonsterTrainAccessibility.csproj" />
+  <Project Path="src/MonsterTrainAccessibility.Tests/MonsterTrainAccessibility.Tests.csproj" />
+</Solution>

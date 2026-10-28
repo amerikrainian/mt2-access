@@ -10,9 +10,17 @@ if [ "${#STAGED_CS[@]}" -eq 0 ]; then
 fi
 
 echo "Formatting staged C# files..."
-dotnet format MonsterTrainAccessibility.sln \
-  --include "${STAGED_CS[@]}" \
-  --no-restore
+# Per project: dotnet format cannot open the .slnx solution on every SDK.
+for project in src/*/*.csproj; do
+  dir="$(dirname "$project")/"
+  files=()
+  for file in "${STAGED_CS[@]}"; do
+    case "$file" in "$dir"*) files+=("$file") ;; esac
+  done
+  if [ "${#files[@]}" -gt 0 ]; then
+    dotnet format "$project" --include "${files[@]}" --no-restore
+  fi
+done
 
 for file in "${STAGED_CS[@]}"; do
   if [ -f "$file" ]; then

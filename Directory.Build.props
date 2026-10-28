@@ -1,0 +1,39 @@
+<Project>
+  <PropertyGroup>
+    <Version>0.3.0</Version>
+    <LangVersion>latest</LangVersion>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <RepoRoot>$(MSBuildThisFileDirectory)</RepoRoot>
+  </PropertyGroup>
+
+  <!-- Optional machine-specific overrides (gitignored). Drop a GameDir here if auto-detect misses. -->
+  <Import Project="$(RepoRoot)Directory.Build.local.props" Condition="Exists('$(RepoRoot)Directory.Build.local.props')" />
+
+  <!--
+    Resolve the game install without committing a machine-specific path. Precedence:
+      1. -p:GameDir=... on the CLI, or GameDir in Directory.Build.local.props (imported above)
+      2. the MONSTER_TRAIN_PATH environment variable
+      3. Steam's main library, located via the registry (Windows)
+      4. the default install location
+  -->
+  <PropertyGroup>
+    <GameDir Condition="'$(GameDir)' == '' and '$(MONSTER_TRAIN_PATH)' != ''">$(MONSTER_TRAIN_PATH)</GameDir>
+
+    <_SteamPath Condition="'$(GameDir)' == ''">$([MSBuild]::GetRegistryValueFromView('HKEY_CURRENT_USER\Software\Valve\Steam', 'SteamPath', null, RegistryView.Registry64, RegistryView.Registry32))</_SteamPath>
+    <_SteamPath Condition="'$(GameDir)' == '' and '$(_SteamPath)' == ''">$([MSBuild]::GetRegistryValueFromView('HKEY_LOCAL_MACHINE\SOFTWARE\Valve\Steam', 'InstallPath', null, RegistryView.Registry32, RegistryView.Registry64))</_SteamPath>
+    <_SteamGameDir Condition="'$(_SteamPath)' != ''">$([System.IO.Path]::GetFullPath($([System.IO.Path]::Combine('$(_SteamPath)', 'steamapps', 'common', 'Monster Train 2'))))</_SteamGameDir>
+    <GameDir Condition="'$(GameDir)' == '' and '$(_SteamGameDir)' != '' and Exists('$(_SteamGameDir)')">$(_SteamGameDir)</GameDir>
+
+    <GameDir Condition="'$(GameDir)' == '' and Exists('C:\Program Files (x86)\Steam\steamapps\common\Monster Train 2')">C:\Program Files (x86)\Steam\steamapps\common\Monster Train 2</GameDir>
+
+    <ManagedDir>$(GameDir)\MonsterTrain2_Data\Managed</ManagedDir>
+    <BepInExDir>$(GameDir)\BepInEx</BepInExDir>
+    <PluginDeployDir>$(BepInExDir)\plugins\MonsterTrainAccessibility</PluginDeployDir>
+  </PropertyGroup>
+
+  <!-- Only the engine-coupled projects need the game; warn there if detection failed or BepInEx is missing. -->
+  <Target Name="_CheckGameDir" BeforeTargets="ResolveAssemblyReferences"
+          Condition="('$(MSBuildProjectName)' == 'MonsterTrainAccessibility' or '$(MSBuildProjectName)' == 'MonsterTrainAccessibility.Module') and ('$(GameDir)' == '' or !Exists('$(BepInExDir)\core\BepInEx.dll'))">
+    <Warning Text="Game or BepInEx 5 not found. GameDir='$(GameDir)'. Set MONSTER_TRAIN_PATH, pass -p:GameDir=..., or create Directory.Build.local.props; BepInEx 5 must be installed in the game folder." />
+  </Target>
+</Project>

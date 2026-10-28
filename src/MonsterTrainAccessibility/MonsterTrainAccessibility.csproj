@@ -1,0 +1,117 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    The BepInEx 5 plugin: the PERMANENT host. Engine + native glue only: the plugin entry, the Prism
+    P/Invoke speech backend, the one MonoBehaviour pump, the module loader (which loads Core + Module from
+    their bytes under a per-generation assembly name), the settings store, and the dev HTTP server with its
+    Roslyn REPL. References BepInEx 5's core dlls, the game's managed assemblies, and Contracts. NEVER
+    references Core or Module at compile time (a compile-time reference would load the plain-named Core
+    and break the generation split). Runs on the game's Mono (Unity 2022.3).
+  -->
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <AssemblyName>MonsterTrainAccessibility</AssemblyName>
+    <RootNamespace>MonsterTrainAccessibility</RootNamespace>
+    <Nullable>disable</Nullable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <NoWarn>$(NoWarn);CS0436</NoWarn>
+    <!-- Copy NuGet runtime assemblies (Roslyn scripting and its dependencies) into the build output so
+         DeployToGame ships them beside the plugin. The game/loader refs are Private=false. -->
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    <GenerateDependencyFile>false</GenerateDependencyFile>
+  </PropertyGroup>
+
+  <!-- The mod version lives in Directory.Build.props alone; this generates the BuildVersion constant. -->
+  <Target Name="GenerateBuildVersion" BeforeTargets="BeforeCompile">
+    <PropertyGroup>
+      <_BuildVersionFile>$(IntermediateOutputPath)BuildVersion.g.cs</_BuildVersionFile>
+    </PropertyGroup>
+    <ItemGroup>
+      <_BuildVersionLine Include="namespace MonsterTrainAccessibility" />
+      <_BuildVersionLine Include="{" />
+      <_BuildVersionLine Include="    internal static class BuildVersion" />
+      <_BuildVersionLine Include="    {" />
+      <_BuildVersionLine Include='        public const string Value = "$(Version)"%3B' />
+      <_BuildVersionLine Include="    }" />
+      <_BuildVersionLine Include="}" />
+    </ItemGroup>
+    <WriteLinesToFile File="$(_BuildVersionFile)" Lines="@(_BuildVersionLine)"
+                      Overwrite="true" WriteOnlyWhenDifferent="true" />
+    <ItemGroup>
+      <Compile Include="$(_BuildVersionFile)" />
+      <FileWrites Include="$(_BuildVersionFile)" />
+    </ItemGroup>
+  </Target>
+
+  <ItemGroup>
+    <ProjectReference Include="..\MonsterTrainAccessibility.Contracts\MonsterTrainAccessibility.Contracts.csproj" />
+    <!-- The reloadable side. ReferenceOutputAssembly=false: the host loads these by hand (renamed bytes)
+         and never references their types at compile time; these entries only force them to build before
+         the host so DeployToGame can copy their DLLs. -->
+    <ProjectReference Include="..\MonsterTrainAccessibility.Module\MonsterTrainAccessibility.Module.csproj">
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <Private>false</Private>
+    </ProjectReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- In-process C# REPL for the dev /eval server (Roslyn scripting, netstandard2.0 build, on Mono). -->
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Scripting" Version="4.8.0" />
+  </ItemGroup>
+
+  <!-- Roslyn's netstandard2.0 build names these facade assemblies. netstandard2.1 has their types
+       inbox, so the SDK drops the packages from the output, but Unity's Mono ships no assembly by
+       these names: they go beside the plugin by hand. -->
+  <ItemGroup>
+    <_RoslynFacade Include="$(NuGetPackageRoot)system.memory\4.5.5\lib\netstandard2.0\System.Memory.dll" />
+    <_RoslynFacade Include="$(NuGetPackageRoot)system.buffers\4.5.1\lib\netstandard2.0\System.Buffers.dll" />
+    <_RoslynFacade Include="$(NuGetPackageRoot)system.numerics.vectors\4.5.0\lib\netstandard2.0\System.Numerics.Vectors.dll" />
+    <_RoslynFacade Include="$(NuGetPackageRoot)system.threading.tasks.extensions\4.5.4\lib\netstandard2.0\System.Threading.Tasks.Extensions.dll" />
+  </ItemGroup>
+
+  <!--
+    Auto-deploy on build (Debug only): copy the host + Contracts + Roslyn deps (everything in the output)
+    plus the Core and Module DLLs into BepInEx/plugins/MonsterTrainAccessibility, and prism.dll next to
+    MonsterTrain2.exe. ContinueOnError keeps a locked file (game running) a warning; close the game and
+    rebuild to deploy the host. Core and Module are overwrite-safe at runtime (byte-loaded, never locked);
+    the chainloader skips them since they carry no [BepInPlugin].
+    The main branch's single-DLL layout (plugins\MonsterTrainAccessibility.dll) carries the same assembly
+    name and plugin GUID as this host: it is removed so the two never load side by side.
+  -->
+  <Target Name="DeployToGame" AfterTargets="Build" Condition="'$(Configuration)' == 'Debug'">
+    <PropertyGroup>
+      <CoreDll>$(RepoRoot)src\MonsterTrainAccessibility.Core\bin\$(Configuration)\netstandard2.0\MonsterTrainAccessibility.Core.dll</CoreDll>
+      <ModuleDll>$(RepoRoot)src\MonsterTrainAccessibility.Module\bin\$(Configuration)\netstandard2.1\MonsterTrainAccessibility.Module.dll</ModuleDll>
+    </PropertyGroup>
+    <ItemGroup>
+      <_DeployDll Include="$(TargetDir)*.dll" />
+      <_LangFile Include="$(RepoRoot)lang\*.txt" />
+      <_LegacyPlugin Include="$(BepInExDir)\plugins\MonsterTrainAccessibility.dll;$(BepInExDir)\plugins\MonsterTrainAccessibility.deps.json" />
+    </ItemGroup>
+    <Delete Files="@(_LegacyPlugin)" ContinueOnError="true" />
+    <MakeDir Directories="$(PluginDeployDir)" />
+    <Copy SourceFiles="@(_DeployDll);@(_RoslynFacade);$(CoreDll);$(ModuleDll)"
+          DestinationFolder="$(PluginDeployDir)" ContinueOnError="true" Retries="0" />
+    <Copy SourceFiles="$(RepoRoot)prism\native\win-x64\prism.dll"
+          DestinationFolder="$(GameDir)" SkipUnchangedFiles="true" ContinueOnError="true" />
+    <Copy SourceFiles="@(_LangFile)" DestinationFolder="$(PluginDeployDir)\lang"
+          SkipUnchangedFiles="true" ContinueOnError="true" Condition="'@(_LangFile)' != ''" />
+    <Message Importance="high" Text="MonsterTrainAccessibility deployed -> $(PluginDeployDir)" />
+  </Target>
+
+  <ItemGroup>
+    <!-- BepInEx 5 loader + Harmony + Mono.Cecil (the module loader renames assemblies with it). -->
+    <Reference Include="$(BepInExDir)\core\BepInEx.dll" Private="false" />
+    <Reference Include="$(BepInExDir)\core\0Harmony.dll" Private="false" />
+    <Reference Include="$(BepInExDir)\core\Mono.Cecil.dll" Private="false" />
+    <!-- Unity, for the pump and the dev inspectors. -->
+    <Reference Include="$(ManagedDir)\UnityEngine.dll" Private="false" />
+    <Reference Include="$(ManagedDir)\UnityEngine.CoreModule.dll" Private="false" />
+    <Reference Include="$(ManagedDir)\UnityEngine.InputLegacyModule.dll" Private="false" />
+    <Reference Include="$(ManagedDir)\UnityEngine.ScreenCaptureModule.dll" Private="false" />
+    <Reference Include="$(ManagedDir)\UnityEngine.UI.dll" Private="false" />
+    <Reference Include="$(ManagedDir)\UnityEngine.UIModule.dll" Private="false" />
+    <Reference Include="$(ManagedDir)\Unity.TextMeshPro.dll" Private="false" />
+  </ItemGroup>
+
+</Project>
