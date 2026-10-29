@@ -248,3 +248,5 @@ event_kind.combat.moon_phase=Cambios de fase lunar
 event_kind.resource.gold=Cambios de monedas
 shop.unaffordable=no te alcanza
 event_kind.merchant.chatter=Charla del mercader
+gameover.battle=Batalla {0}
+gameover.level=nivel {0}

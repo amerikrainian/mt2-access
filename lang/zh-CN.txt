@@ -248,3 +248,5 @@ event_kind.combat.phase=战斗阶段
 event_kind.resource.gold=金币变化
 shop.unaffordable=买不起
 event_kind.merchant.chatter=商人闲聊
+gameover.battle=战斗{0}
+gameover.level=等级{0}

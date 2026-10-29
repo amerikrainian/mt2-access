@@ -265,6 +265,10 @@ namespace MonsterTrainAccessibility.Core.Strings
             D("event.chatter.slay", "slay"),
             D("event.chatter.idle", "idle"),
 
+            // A run's end: a battle of the run by its place ({0} = 1 for the first), a clan's level ({0}).
+            D("gameover.battle", "Battle {0}"),
+            D("gameover.level", "level {0}"),
+
             // A shop's good or service the player's coin does not cover.
             D("shop.unaffordable", "can't afford"),
 

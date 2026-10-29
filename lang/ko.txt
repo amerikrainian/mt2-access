@@ -248,3 +248,5 @@ event_kind.combat.moon_phase=달의 위상 변화
 event_kind.resource.gold=코인 변화
 shop.unaffordable=구매 불가
 event_kind.merchant.chatter=상인의 수다
+gameover.battle=전투 {0}
+gameover.level=레벨 {0}

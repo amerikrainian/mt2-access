@@ -248,3 +248,5 @@ event_kind.combat.moon_phase=月相變化
 event_kind.resource.gold=金幣變化
 shop.unaffordable=買不起
 event_kind.merchant.chatter=商人閒聊
+gameover.battle=戰鬥{0}
+gameover.level=等級{0}

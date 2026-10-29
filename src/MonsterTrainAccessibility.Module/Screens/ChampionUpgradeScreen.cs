@@ -43,7 +43,7 @@ namespace MonsterTrainAccessibility.Module.Screens
             b.PushContext(null);
             if (screen.hasOptions && screen.upgradeChoiceItems != null)
             {
-                b.StartRow();
+                bool open = false;
                 int i = 0;
                 foreach (var option in screen.upgradeChoiceItems)
                 {
@@ -52,13 +52,18 @@ namespace MonsterTrainAccessibility.Module.Screens
                     // left to read again until the forge closes or offers its next round.
                     if (option == null || !option.gameObject.activeInHierarchy || option.cardUI == null || option.upgradeData == null || !option.interactable) continue;
                     var choice = option;
+                    if (!open)
+                    {
+                        b.StartRow();
+                        open = true;
+                    }
                     b.AddItem(ControlId.Structural("forge:" + i++), CardNodes.Offer(
                         () => choice._upgradeNameLabel != null ? choice._upgradeNameLabel.Content() : null,
                         choice.cardUI, CardTooltipContainer.LoreTooltipSetting.Never,
                         () => GameInput.Hover(choice.SelectableUI),
                         () => GameInput.Submit(choice.SelectableUI)));
                 }
-                b.EndRow();
+                if (open) b.EndRow();
             }
             var leave = screen.noUpgradesButton;
             if (leave != null && leave.gameObject.activeInHierarchy && PauseMenuScreen.Caption(leave) != null)

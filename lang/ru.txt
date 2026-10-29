@@ -248,3 +248,5 @@ event_kind.combat.moon_phase=Смена фазы луны
 event_kind.resource.gold=Изменения монет
 shop.unaffordable=не хватает
 event_kind.merchant.chatter=Болтовня торговца
+gameover.battle=Бой {0}
+gameover.level=уровень {0}
