@@ -12,9 +12,9 @@ using Screen = MonsterTrainAccessibility.Core.Screens.Screen;
 namespace MonsterTrainAccessibility.Module.Screens
 {
     /// <summary>
-    /// Depart's run types (<see cref="global::StartRunOptionsDialog"/>, opened over the Covenant Outpost),
-    /// one list in the dialog's order: its "Choose your run type." line, then New Run while there is no
-    /// saved run, else Resume Run followed by the saved run as the game draws it on that panel (clans,
+    /// Depart's run types (<see cref="global::StartRunOptionsDialog"/>, opened over the Covenant Outpost).
+    /// Opening it speaks its header and line ("Depart. Choose your run type."); then one list in the
+    /// dialog's order: New Run while there is no saved run, else Resume Run followed by the saved run as the game draws it on that panel (clans,
     /// Covenant rank, distance, mutators, win streaks, each read by its own tooltips, the Covenant's
     /// effects in the buffer) and New Run; then Daily Challenge, Community Challenges and Back. Focus
     /// lands where the game's own selection starts. Enter presses through the game (New Run over a saved
@@ -38,14 +38,23 @@ namespace MonsterTrainAccessibility.Module.Screens
 
         public override bool IsActive() => Dialog != null;
 
+        // Opening speaks the dialog's header and its line ("Depart. Choose your run type."), once: not
+        // again when focus comes back from the game's confirmation. The list is unnamed, so the first
+        // readout is the option landed on.
+        public override void OnPush()
+        {
+            var dialog = Dialog;
+            if (dialog == null || !Core.UI.Navigation.FocusActive()) return;
+            string intro = GameNodes.Sentences(ChallengeProgressScreen.HeaderOf(dialog, "Header label"),
+                ChallengeProgressScreen.HeaderOf(dialog, "Description"));
+            if (intro != null) Core.Speech.Say(intro);
+        }
+
         public override void Build(GraphBuilder b)
         {
             var dialog = Dialog;
             if (dialog == null) return;
-            b.PushContext(ChallengeProgressScreen.HeaderOf(dialog, "Header label"), Strings.RoleList);
-            string description = ChallengeProgressScreen.HeaderOf(dialog, "Description");
-            if (description != null)
-                b.AddItem(ControlId.Structural("depart:description"), GameNodes.Text(() => ChallengeProgressScreen.HeaderOf(dialog, "Description")));
+            b.PushContext(null);
             var start = Option(b, "new", dialog.standardRunOption);
             var resume = Option(b, "resume", dialog.continueGameOption);
             if (resume != null) SavedRun(b, dialog.continueGameOption);

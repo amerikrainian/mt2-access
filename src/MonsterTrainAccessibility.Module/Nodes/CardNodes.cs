@@ -75,10 +75,12 @@ namespace MonsterTrainAccessibility.Module.Nodes
             return Shown(frame.GetNameLabel(state.GetCardType()));
         }
 
-        // Cost, type plate, attack, health, size: the face's numbers and plate, in the order drawn.
+        // The copies the card stands for when the game draws a count ("x2"), then cost, type plate,
+        // attack, health, size: the face's numbers and plate, in the order drawn.
         private static string Face(CardUI card)
         {
             var parts = new List<string>();
+            if (card.countRoot != null && card.countRoot.activeSelf) Add(parts, Shown(card.countLabel), null);
             Add(parts, Shown(card._costLabel), Strings.CardCost);
             Add(parts, card._cardFrame != null ? Shown(card._cardFrame.factionLabel) : null, null);
             var ability = card._abilityDisplay;
