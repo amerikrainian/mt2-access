@@ -16,8 +16,8 @@ namespace MonsterTrainAccessibility.Module.Screens
         // ---- Enemies ----
 
         // One stop, top to bottom: the lists as tabs (base game, Soul Savior) with the list's filters
-        // beside them; the enemies as a row, landing on the chosen one; the chosen enemy's variants as a
-        // row; its details. Then the search, a stop of its own (its edit owns the arrows).
+        // beside them; the search, on a line of its own (Left and Right are its caret's); the enemies as
+        // a row, landing on the chosen one; the chosen enemy's variants as a row; its details.
         private void Enemies(GraphBuilder b, CompendiumSectionEnemies enemies)
         {
             bool soulSavior = SoulSaviorList(enemies);
@@ -35,6 +35,7 @@ namespace MonsterTrainAccessibility.Module.Screens
                 FilterNodes.Dropdown(b, "logbook:enemies:tier", enemies.difficultyTierFilterUI);
                 b.EndRow();
             }
+            FilterNodes.Search(b, _enemySearch, enemies.searchFilterUI);
 
             var shown = new List<CharacterButtonUI>();
             foreach (var enemy in soulSavior ? enemies.railforgedCharacterButtons : enemies.baseGameCharacterButtons)
@@ -63,9 +64,6 @@ namespace MonsterTrainAccessibility.Module.Screens
                 }
             }
             EnemyNodes.Details(b, "logbook:enemy:details", enemies.characterDataUI);
-
-            b.BeginStop("search");
-            FilterNodes.Search(b, _enemySearch, enemies.searchFilterUI);
         }
 
         // As FilterNodes.Dropdown declares one: shown, with its dropdown.

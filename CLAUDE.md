@@ -183,8 +183,10 @@ RT+Back toggles focus mode.
 
 A text field (the Logbook's searches) is edited with the game's own editor, started on landing
 (`Module/UI/SearchField`, `Module/UI/TextEdit`): the mod's keys stand down while it lasts; Enter or
-Escape end it with focus kept (Enter edits again), Tab and Shift+Tab end it and move on. A field is a
-Tab-stop of its own, since the edit owns the arrows.
+Escape end it with focus kept (Enter edits again), Tab and Shift+Tab end it and move on. A single-line
+field has no use for Up and Down, so they end it too and move to the control above or below: it sits
+on a line of its own among its stop's controls (Left and Right are the caret's). The pad has the same
+ways out (the shoulders, the D-pad and left stick, B as Escape).
 
 A key that is silent somewhere must say so with `.When(...)`, so the key help lists it only where it
 does something; a screen offers its own keys through `GetActions`.

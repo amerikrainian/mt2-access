@@ -3,6 +3,7 @@ using MonsterTrainAccessibility.Core;
 using MonsterTrainAccessibility.Core.Input;
 using MonsterTrainAccessibility.Core.Strings;
 using MonsterTrainAccessibility.Core.UI;
+using MonsterTrainAccessibility.Module.Input;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -22,7 +23,11 @@ namespace MonsterTrainAccessibility.Module.UI
     /// and each step is echoed from the field's state before and after it (<see cref="EditEcho"/>).
     /// Enter, Escape and Tab end it: the first two are the field's own way out, and Escape keeps the
     /// text (the field would put the old one back, and with it undo a filter the player just typed);
-    /// Tab and Shift+Tab go on to the next or the previous stop, as they do from any control.
+    /// Tab and Shift+Tab go on to the next or the previous stop, as they do from any control. A
+    /// single-line field has no use for Up and Down, so they end it too and move to the control above
+    /// or below, as they do from any control: such a field sits among the others of its stop. The pad,
+    /// which cannot type, has the same ways out: the shoulders as Tab, the D-pad and left stick as the
+    /// arrows, B as Escape.
     /// </summary>
     public static class TextEdit
     {
@@ -90,12 +95,19 @@ namespace MonsterTrainAccessibility.Module.UI
                 }
                 bool first = !_seenFocus;
                 _seenFocus = true;
-                if (UnityEngine.Input.GetKeyDown(KeyCode.Tab))
+                string onward = Onward(_field);
+                // An arrow with nothing that way keeps the edit (a field alone in its stop).
+                var move = onward != null ? InputManager.Find(onward) : null;
+                if (move != null && Navigation.WouldHandle(move))
                 {
-                    bool back = UnityEngine.Input.GetKey(KeyCode.LeftShift) || UnityEngine.Input.GetKey(KeyCode.RightShift);
                     _field.DeactivateInputField();
                     End(announce: false);
-                    InputManager.Dispatch(back ? UiActions.Prev : UiActions.Next);
+                    InputManager.Dispatch(onward);
+                    return;
+                }
+                if (Pressed(ControllerInput.B))
+                {
+                    End(announce: true);
                     return;
                 }
                 var now = Read(_field);
@@ -125,12 +137,44 @@ namespace MonsterTrainAccessibility.Module.UI
             _holdKeys = false;
         }
 
+        // The move that ends the edit and goes on, if one was pressed this frame: Tab and the shoulders
+        // to the next or previous stop; in a single-line field, a plain Up or Down (Shift with them
+        // selects) to the control above or below.
+        private static string Onward(TMP_InputField field)
+        {
+            bool shift = UnityEngine.Input.GetKey(KeyCode.LeftShift) || UnityEngine.Input.GetKey(KeyCode.RightShift);
+            if (UnityEngine.Input.GetKeyDown(KeyCode.Tab)) return shift ? UiActions.Prev : UiActions.Next;
+            if (Pressed(ControllerInput.RightShoulder)) return UiActions.Next;
+            if (Pressed(ControllerInput.LeftShoulder)) return UiActions.Prev;
+            if (field.lineType != TMP_InputField.LineType.SingleLine) return null;
+            if ((UnityEngine.Input.GetKeyDown(KeyCode.UpArrow) && !shift) || Pressed(ControllerInput.DpadUp) || Pressed(ControllerInput.LeftStickUp)) return UiActions.Up;
+            if ((UnityEngine.Input.GetKeyDown(KeyCode.DownArrow) && !shift) || Pressed(ControllerInput.DpadDown) || Pressed(ControllerInput.LeftStickDown)) return UiActions.Down;
+            return null;
+        }
+
+        private static bool Pressed(ControllerInput input) => Gamepad.IsHeld(input) && !Gamepad.WasHeld(input);
+
+        // The pad's ways in and out of an edit.
+        private static readonly ControllerInput[] PadKeys =
+        {
+            ControllerInput.A, ControllerInput.B, ControllerInput.LeftShoulder, ControllerInput.RightShoulder,
+            ControllerInput.DpadUp, ControllerInput.DpadDown, ControllerInput.LeftStickUp, ControllerInput.LeftStickDown,
+        };
+
         private static EditState Read(TMP_InputField field)
             => new EditState(field.text, field.selectionStringFocusPosition, field.selectionStringAnchorPosition);
 
+        // A key that begins or ends an edit, still down: the edit waits for it to come up before it
+        // starts, and the mod's keys wait for it after it ends (a held arrow must not also repeat).
         private static bool EndKeyHeld()
-            => UnityEngine.Input.GetKey(KeyCode.Return) || UnityEngine.Input.GetKey(KeyCode.KeypadEnter)
-            || UnityEngine.Input.GetKey(KeyCode.Escape) || UnityEngine.Input.GetKey(KeyCode.Tab);
+        {
+            if (UnityEngine.Input.GetKey(KeyCode.Return) || UnityEngine.Input.GetKey(KeyCode.KeypadEnter)
+                || UnityEngine.Input.GetKey(KeyCode.Escape) || UnityEngine.Input.GetKey(KeyCode.Tab)
+                || UnityEngine.Input.GetKey(KeyCode.UpArrow) || UnityEngine.Input.GetKey(KeyCode.DownArrow)) return true;
+            foreach (var input in PadKeys)
+                if (Gamepad.IsHeld(input)) return true;
+            return false;
+        }
 
         private static void End(bool announce)
         {

@@ -10,11 +10,12 @@ namespace MonsterTrainAccessibility.Module.UI
 {
     /// <summary>
     /// One of the game's search fields (the Logbook's card and enemy searches), edited with the game's
-    /// own editor through <see cref="TextEdit"/>, as Guildrun's compendium search is: a Tab-stop of its
-    /// own, since an edit owns the arrows; landing on it starts the edit; Escape or Enter end it with
-    /// focus still on the field, which then waits for Enter (or for focus to come back) to be edited
-    /// again; Tab and Shift+Tab end it and move on. The game filters as the text changes. A screen
-    /// with a search holds one of these and calls <see cref="Update"/> from its <c>OnUpdate</c>.
+    /// own editor through <see cref="TextEdit"/>: landing on it starts the edit; Escape or Enter end it
+    /// with focus still on the field, which then waits for Enter (or for focus to come back) to be
+    /// edited again; Tab and Shift+Tab end it and move on, and so do Up and Down, the field being one
+    /// line: it sits among the controls of its stop, on a line of its own (Left and Right are its
+    /// caret's). The game filters as the text changes. A screen with a search holds one of these and
+    /// calls <see cref="Update"/> from its <c>OnUpdate</c>.
     /// </summary>
     internal sealed class SearchField
     {
