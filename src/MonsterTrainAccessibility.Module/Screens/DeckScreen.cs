@@ -51,7 +51,9 @@ namespace MonsterTrainAccessibility.Module.Screens
         public override void Build(GraphBuilder b)
         {
             var screen = Game;
-            if (screen == null || !Dealt(screen)) return;
+            // A card being taken away (a purge confirmed): its place empties as the game animates it out,
+            // then the game closes the screen or moves on to the next pick. Nothing to say meanwhile.
+            if (screen == null || !Dealt(screen) || screen.waitingForAnimation) return;
             // A mode that picks from the deck says what it wants as it opens ("Purge Card. Remove a card
             // from your deck."), not as items: the list starts on the cards.
             bool instructed = screen.instructionsRoot != null && screen.instructionsRoot.activeInHierarchy
