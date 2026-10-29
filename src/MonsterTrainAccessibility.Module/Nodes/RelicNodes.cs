@@ -54,6 +54,32 @@ namespace MonsterTrainAccessibility.Module.Nodes
             };
         }
 
+        /// <summary>An artifact from its state, where no card of it is drawn (a run's artifacts, every page
+        /// of them): "Heaven's Light, +2 capacity on each floor…"; its tooltips in the buffer, from the
+        /// game's own tooltip generator.</summary>
+        public static NodeVtable State(RelicState relic)
+        {
+            Func<string> name = () => relic.GetName();
+            return new NodeVtable
+            {
+                ControlType = ControlTypes.Text,
+                Announcements = new List<NodeAnnouncement>
+                {
+                    GameNodes.LabelPart(name),
+                    GameNodes.TooltipPart(() => relic.GetDescription(AllGameManagers.Instance?.GetRelicManager(), includeDynamicInfo: true)),
+                },
+                SearchText = name,
+                Details = () =>
+                {
+                    var managers = AllGameManagers.Instance;
+                    var tooltips = new List<TooltipContent>();
+                    TooltipGenerator.GetRelicTooltips(tooltips, relic, managers?.GetStatusEffectManager(), managers?.GetRelicManager(),
+                        TooltipGenerator.OptionalFlags.Lore, managers?.GetSaveManager());
+                    return GameNodes.Lines(TooltipReader.Lines(tooltips));
+                },
+            };
+        }
+
         private static string Shown(TMP_Text text)
         {
             string content = text != null && text.gameObject.activeInHierarchy ? text.Content() : null;

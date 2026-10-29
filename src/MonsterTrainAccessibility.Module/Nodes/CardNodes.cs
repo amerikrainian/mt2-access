@@ -75,6 +75,39 @@ namespace MonsterTrainAccessibility.Module.Nodes
             };
         }
 
+        /// <summary>A deck's card in a run's summary (<see cref="CardSummaryItem"/>: its name and count, the
+        /// card itself drawn only in the preview hovering it shows). Landing hovers it, so the preview
+        /// draws it, and it reads as any card from there, with the count ("x2") and, for a card whose
+        /// content is not installed, the game's lock.</summary>
+        public static NodeVtable SummaryItem(CardSummaryItem item, Func<CardUI> preview)
+        {
+            Func<string> name = () => item.nameLabel != null ? item.nameLabel.Content() : null;
+            Func<CardUI> shown = () =>
+            {
+                var card = preview();
+                return card != null && card.gameObject.activeInHierarchy && card.GetCardState() == item.CardState ? card : null;
+            };
+            var count = new NodeAnnouncement(() => Shown(item.countLabel), kind: AnnouncementKinds.Value);
+            var locked = new NodeAnnouncement(() => item.Locked ? GameText.Term("Locked") : null, kind: AnnouncementKinds.Enabled);
+            return new NodeVtable
+            {
+                ControlType = ControlTypes.Item,
+                Announcements = new List<NodeAnnouncement>
+                {
+                    GameNodes.LabelPart(() => shown() != null ? Name(shown()) : name()),
+                    new NodeAnnouncement(() => shown() != null ? TypeOf(shown()) : null, kind: AnnouncementKinds.Role),
+                    count,
+                    new NodeAnnouncement(() => shown() != null ? Face(shown()) : null, kind: AnnouncementKinds.Value),
+                    locked,
+                    GameNodes.TooltipPart(() => shown() != null ? Text(shown()) : null),
+                    new NodeAnnouncement(() => shown() != null ? RarityOf(shown()) : null, kind: AnnouncementKinds.Review),
+                },
+                SearchText = name,
+                OnFocus = () => GameInput.Hover(item.SelectableUI),
+                Details = () => shown() != null ? GameNodes.Lines(Tooltips(shown(), CardTooltipContainer.LoreTooltipSetting.Preferences)) : null,
+            };
+        }
+
         public static NodeVtable Locked(LockedCardUI card, Action hover)
         {
             Func<string> title = () => { var lines = TooltipReader.Lines(card.Tooltips); return lines.Count > 0 ? lines[0] : null; };
