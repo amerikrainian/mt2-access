@@ -177,9 +177,9 @@ namespace MonsterTrainAccessibility.Module.Nodes
         }
 
         private static string Set(TMP_Text text)
-            => text != null && text.gameObject.activeSelf && !string.IsNullOrWhiteSpace(text.text) ? text.text : null;
+            => text != null && text.gameObject.activeSelf && !string.IsNullOrWhiteSpace(text.Content()) ? text.Content() : null;
 
         private static string Shown(TMP_Text text)
-            => text != null && text.gameObject.activeInHierarchy && !string.IsNullOrWhiteSpace(text.text) ? text.text : null;
+            => text != null && text.gameObject.activeInHierarchy && !string.IsNullOrWhiteSpace(text.Content()) ? text.Content() : null;
     }
 }

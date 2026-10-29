@@ -77,15 +77,15 @@ namespace MonsterTrainAccessibility.Module.Screens
         }
 
         private static string Caption(MainMenuButton place)
-            => place.label != null && !string.IsNullOrWhiteSpace(place.label.text) ? place.label.text : null;
+            => place.label != null && !string.IsNullOrWhiteSpace(place.label.Content()) ? place.label.Content() : null;
 
         // Every other text the place carries: the line the game fades in on hover ("Start a Run").
         private static string HoverLine(MainMenuButton place)
         {
             foreach (var text in place.GetComponentsInChildren<TMP_Text>(true))
             {
-                if (text == null || text == place.label || string.IsNullOrWhiteSpace(text.text)) continue;
-                return text.text;
+                if (text == null || text == place.label || string.IsNullOrWhiteSpace(text.Content())) continue;
+                return text.Content();
             }
             return null;
         }
@@ -96,7 +96,7 @@ namespace MonsterTrainAccessibility.Module.Screens
         {
             if (AppManager.PlatformServices.IsDlcInstalled(DLC.Railforged) || screen.dlcRequiredIndicator == null) return null;
             var text = screen.dlcRequiredIndicator.GetComponentInChildren<TMP_Text>(true);
-            return text != null && !string.IsNullOrWhiteSpace(text.text) ? text.text : null;
+            return text != null && !string.IsNullOrWhiteSpace(text.Content()) ? text.Content() : null;
         }
 
         // The signed-in account, where the platform has one: a button when the player may switch it,
@@ -105,10 +105,10 @@ namespace MonsterTrainAccessibility.Module.Screens
         {
             var change = screen.changeUserButton;
             if (change != null && change.gameObject.activeInHierarchy)
-                b.AddItem(ControlId.Structural("mainmenu:user"), GameWidgets.Button(change, () => screen.usernameLabel != null ? screen.usernameLabel.text : null));
+                b.AddItem(ControlId.Structural("mainmenu:user"), GameWidgets.Button(change, () => screen.usernameLabel != null ? screen.usernameLabel.Content() : null));
             var fixedUser = screen.nonSwitchableUserButton;
             if (fixedUser != null && fixedUser.gameObject.activeInHierarchy)
-                b.AddItem(ControlId.Structural("mainmenu:user"), GameNodes.Text(() => screen.nonSwitchableUsernameLabel != null ? screen.nonSwitchableUsernameLabel.text : null));
+                b.AddItem(ControlId.Structural("mainmenu:user"), GameNodes.Text(() => screen.nonSwitchableUsernameLabel != null ? screen.nonSwitchableUsernameLabel.Content() : null));
         }
     }
 }

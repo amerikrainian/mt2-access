@@ -37,8 +37,8 @@ namespace MonsterTrainAccessibility.Module.Screens
             var dialog = Top;
             if (dialog == null) return;
             b.PushContext(null, Strings.RoleDialog, positions: false);
-            if (dialog.contentLabel != null && !string.IsNullOrWhiteSpace(dialog.contentLabel.text))
-                b.AddItem(ControlId.Structural("dialog:message"), GameNodes.Text(() => dialog.contentLabel.text));
+            if (dialog.contentLabel != null && !string.IsNullOrWhiteSpace(dialog.contentLabel.Content()))
+                b.AddItem(ControlId.Structural("dialog:message"), GameNodes.Text(() => dialog.contentLabel.Content()));
             Choice(b, "button1", dialog.button1, dialog.button1Label);
             Choice(b, "button2", dialog.button2, dialog.button2Label);
             b.PopContext();
@@ -55,7 +55,7 @@ namespace MonsterTrainAccessibility.Module.Screens
         private static void Choice(GraphBuilder b, string key, ShinyShoe.GameUISelectableButton button, TMPro.TMP_Text caption)
         {
             if (button == null || !button.gameObject.activeInHierarchy) return;
-            b.AddItem(ControlId.Structural("dialog:" + key), GameWidgets.Button(button, () => caption != null ? caption.text : null));
+            b.AddItem(ControlId.Structural("dialog:" + key), GameWidgets.Button(button, () => caption != null ? caption.Content() : null));
         }
     }
 }

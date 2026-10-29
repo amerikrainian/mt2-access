@@ -69,8 +69,8 @@ namespace MonsterTrainAccessibility.Module.Screens
             if (Shown(hud.pyreArmorUI)) b.AddItem(Id("armor"), HudNodes.Count(hud.pyreArmorUI, "HudTooltip_PyreArmor_Title"));
             if (Shown(hud.goldUI)) b.AddItem(Id("gold"), HudNodes.Count(hud.goldUI, "HudTooltip_Gold_Title"));
             if (Shown(hud.deckButton))
-                b.AddItem(Id("deck"), HudNodes.Count(hud.deckButton, "HudTooltip_Deck_Title", hud.deckButton.GetComponent<GameUISelectableButton>()));
-            if (Shown(hud.dragonsHoardUI)) b.AddItem(Id("hoard"), HudNodes.Count(hud.dragonsHoardUI, "HudTooltip_DragonsHoard_Title", hud.dragonsHoardButton));
+                b.AddItem(Id("deck"), Leaving(HudNodes.Count(hud.deckButton, "HudTooltip_Deck_Title", hud.deckButton.GetComponent<GameUISelectableButton>())));
+            if (Shown(hud.dragonsHoardUI)) b.AddItem(Id("hoard"), Leaving(HudNodes.Count(hud.dragonsHoardUI, "HudTooltip_DragonsHoard_Title", hud.dragonsHoardButton)));
             if (Shown(hud.forgePointsUI)) b.AddItem(Id("forge"), HudNodes.Count(hud.forgePointsUI, "HudTooltip_ForgePoints_Title", hud.forgePointsUI.forgeButton));
             Line(b, "clans", hud.classesUI);
             if (Shown(hud.covenantUI)) b.AddItem(Id("covenant"), StartingConditionsNodes.Covenant(hud.covenantUI));
@@ -110,7 +110,7 @@ namespace MonsterTrainAccessibility.Module.Screens
             b.PushContext(Strings.HudTrainStats, Strings.RoleList);
             int i = 0;
             foreach (var number in new[] { stats.energyPerTurnLabel, stats.deploymentPhaseEnergyPerTurnLabel, stats.cardsPerTurnLabel, stats.capacityPerFloorLabel })
-                if (number != null && !string.IsNullOrWhiteSpace(number.text)) b.AddItem(Id("train:" + i++), HudNodes.TrainStat(number));
+                if (number != null && !string.IsNullOrWhiteSpace(number.Content())) b.AddItem(Id("train:" + i++), HudNodes.TrainStat(number));
             b.PopContext();
         }
 
@@ -131,10 +131,23 @@ namespace MonsterTrainAccessibility.Module.Screens
         private static void Button(GraphBuilder b, string key, GameUISelectableButton button, string term)
         {
             if (!Shown(button)) return;
-            b.AddItem(Id(key), GameWidgets.Button(button, () => GameText.Term(term)));
+            b.AddItem(Id(key), Leaving(GameWidgets.Button(button, () => GameText.Term(term))));
         }
 
         private static bool Shown(Component widget) => widget != null && widget.gameObject.activeInHierarchy;
+
+        // A press that opens another screen (the deck, the hoard, the map, settings) closes the list, as
+        // the game's own HUD navigation ends: the screen it opens is in front, not under the list.
+        private static NodeVtable Leaving(NodeVtable vt)
+        {
+            var press = vt.OnActivate;
+            if (press != null) vt.OnActivate = () =>
+            {
+                s_open = false;
+                press();
+            };
+            return vt;
+        }
 
         private static bool InBattle()
         {

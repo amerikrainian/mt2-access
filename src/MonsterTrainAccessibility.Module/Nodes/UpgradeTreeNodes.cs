@@ -19,7 +19,7 @@ namespace MonsterTrainAccessibility.Module.Nodes
         public static void Tree(GraphBuilder b, string key, UpgradeTreeUI tree)
         {
             if (tree == null || !tree.gameObject.activeInHierarchy) return;
-            b.PushContext(tree.titleLabel != null ? tree.titleLabel.text : null, Strings.RoleList);
+            b.PushContext(tree.titleLabel != null ? tree.titleLabel.Content() : null, Strings.RoleList);
             // A vertical move into the row lands on the level shown: landing shows a level.
             b.StartRow(entry: () => System.Math.Max(0, tree.currentLevel));
             for (int i = 0; i < tree.levelNodes.Count; i++)

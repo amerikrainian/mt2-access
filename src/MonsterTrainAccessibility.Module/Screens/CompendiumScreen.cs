@@ -91,7 +91,7 @@ namespace MonsterTrainAccessibility.Module.Screens
 
             b.BeginStop("paging");
             if (page is PaginatedCompendiumSection paged && paged.pageCountLabel != null && paged.pageCountLabel.gameObject.activeInHierarchy)
-                b.AddItem(ControlId.Structural("logbook:pagecount"), GameNodes.Text(() => paged.pageCountLabel.text));
+                b.AddItem(ControlId.Structural("logbook:pagecount"), GameNodes.Text(() => paged.pageCountLabel.Content()));
             PageButton(b, screen, PageTurnZone.TurnDir.Left, "Leaderboard_Navigation_PreviousPage");
             PageButton(b, screen, PageTurnZone.TurnDir.Right, "Leaderboard_Navigation_NextPage");
 
@@ -142,8 +142,8 @@ namespace MonsterTrainAccessibility.Module.Screens
             {
                 if (screen.pagesBySection.TryGetValue(screen.currentSection, out CompendiumSection page)
                     && page is PaginatedCompendiumSection paged && paged.pageCountLabel != null
-                    && !string.IsNullOrWhiteSpace(paged.pageCountLabel.text))
-                    Core.Speech.Say(paged.pageCountLabel.text, interrupt: true);
+                    && !string.IsNullOrWhiteSpace(paged.pageCountLabel.Content()))
+                    Core.Speech.Say(paged.pageCountLabel.Content(), interrupt: true);
             }, "logbook page");
         }
 

@@ -62,8 +62,8 @@ namespace MonsterTrainAccessibility.Module.Screens
                 // "Cards drawn: 359", or the name alone where the game shows no value.
                 b.AddItem(ControlId.Structural(id), GameNodes.Text(() =>
                 {
-                    string value = Spoken(stat.statValueLabel) ? stat.statValueLabel.text : null;
-                    return value != null ? stat.statNameLabel.text + ": " + value : stat.statNameLabel.text;
+                    string value = Spoken(stat.statValueLabel) ? stat.statValueLabel.Content() : null;
+                    return value != null ? stat.statNameLabel.Content() + ": " + value : stat.statNameLabel.Content();
                 }));
                 return;
             }
@@ -113,18 +113,18 @@ namespace MonsterTrainAccessibility.Module.Screens
             }
             var text = t.GetComponent<TMP_Text>();
             if (Spoken(text))
-                b.AddItem(ControlId.Structural(id), GameNodes.Text(() => text.text));
+                b.AddItem(ControlId.Structural(id), GameNodes.Text(() => text.Content()));
             for (int i = 0; i < t.childCount; i++)
             {
                 var child = t.GetChild(i);
                 // A caption followed by its number ("Cards drawn", "359"; "Level", "10") is one line.
                 var label = PlainText(child);
                 var value = i + 1 < t.childCount ? PlainText(t.GetChild(i + 1)) : null;
-                if (label != null && value != null && IsNumber(value.text))
+                if (label != null && value != null && IsNumber(value.Content()))
                 {
                     var l = label;
                     var v = value;
-                    b.AddItem(ControlId.Structural(id + "/" + i), GameNodes.Text(() => l.text + ": " + v.text));
+                    b.AddItem(ControlId.Structural(id + "/" + i), GameNodes.Text(() => l.Content() + ": " + v.Content()));
                     i++;
                     continue;
                 }
@@ -145,7 +145,7 @@ namespace MonsterTrainAccessibility.Module.Screens
         // A text that says something once its markup and invisible characters are gone.
         private static bool Spoken(TMP_Text text)
             => text != null && text.enabled && text.gameObject.activeInHierarchy
-               && Contracts.TextFilter.Clean(text.text).Length > 0;
+               && Contracts.TextFilter.Clean(text.Content()).Length > 0;
 
         // A count or amount as the game prints one: digits with separators, a fraction, a percentage.
         private static bool IsNumber(string text)
@@ -183,8 +183,8 @@ namespace MonsterTrainAccessibility.Module.Screens
             var parts = new List<string>();
             foreach (var text in widget.GetComponentsInChildren<TMP_Text>(false))
             {
-                if (string.IsNullOrWhiteSpace(text.text) || text.GetComponentInParent<GameUIControlMapping>() != null) continue;
-                parts.Add(text.text.Trim());
+                if (string.IsNullOrWhiteSpace(text.Content()) || text.GetComponentInParent<GameUIControlMapping>() != null) continue;
+                parts.Add(text.Content().Trim());
             }
             return parts.Count > 0 ? string.Join(", ", parts) : null;
         }

@@ -104,7 +104,7 @@ namespace MonsterTrainAccessibility.Module.Screens
             {
                 var texts = new List<string>();
                 foreach (var text in boss.GetComponentsInChildren<TMP_Text>(false))
-                    if (!string.IsNullOrWhiteSpace(text.text)) texts.Add(text.text.Trim());
+                    if (!string.IsNullOrWhiteSpace(text.Content())) texts.Add(text.Content().Trim());
                 return texts.Count > 0 ? string.Join(" ", texts) : null;
             };
             return new NodeVtable
@@ -131,7 +131,7 @@ namespace MonsterTrainAccessibility.Module.Screens
             System.Func<string> header = () =>
             {
                 foreach (var text in pyre.GetComponentsInChildren<TMP_Text>(false))
-                    if (text != pyre.titleLabel && text != pyre.externalDescriptionLabel && !string.IsNullOrWhiteSpace(text.text)) return text.text;
+                    if (text != pyre.titleLabel && text != pyre.externalDescriptionLabel && !string.IsNullOrWhiteSpace(text.Content())) return text.Content();
                 return null;
             };
             b.AddItem(ControlId.Structural("opening:pyre"), new NodeVtable
@@ -148,6 +148,6 @@ namespace MonsterTrainAccessibility.Module.Screens
         }
 
         private static string Shown(TMP_Text text)
-            => text != null && text.gameObject.activeInHierarchy && !string.IsNullOrWhiteSpace(text.text) ? text.text : null;
+            => text != null && text.gameObject.activeInHierarchy && !string.IsNullOrWhiteSpace(text.Content()) ? text.Content() : null;
     }
 }

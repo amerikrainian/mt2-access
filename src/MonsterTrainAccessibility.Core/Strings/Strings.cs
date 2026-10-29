@@ -167,6 +167,10 @@ namespace MonsterTrainAccessibility.Core.Strings
             D("map.no_backward", "No previous map node."),
             // A map node already visited, in the ring the train is in.
             D("state.visited", "visited"),
+            // The Dragon's Hoard's loot levels, which the game shows as numbers; {0} = the level. "current"
+            // marks the level the hoard is at, which the game shows only by a highlight.
+            D("hoard.level", "Level {0}"),
+            D("state.current", "current"),
             // The run's HUD, which Tab opens as a list anywhere in a run, and its groups the game
             // draws without a heading.
             D("hud.title", "Run info"),
@@ -405,6 +409,8 @@ namespace MonsterTrainAccessibility.Core.Strings
         public static string MapNoForward => Get("map.no_forward");
         public static string MapNoBackward => Get("map.no_backward");
         public static string StateVisited => Get("state.visited");
+        public static string HoardLevel(int level) => F("hoard.level", level);
+        public static string StateCurrent => Get("state.current");
         public static string HudTitle => Get("hud.title");
         public static string HudTrainStats => Get("hud.train_stats");
         public static string HudArtifacts => Get("hud.artifacts");

@@ -126,6 +126,6 @@ namespace MonsterTrainAccessibility.Module.Nodes
         private static bool Active(UnityEngine.GameObject root) => root != null && root.activeInHierarchy;
 
         private static string Shown(TMP_Text text)
-            => text != null && text.gameObject.activeInHierarchy && !string.IsNullOrWhiteSpace(text.text) ? text.text.Trim() : null;
+            => text != null && text.gameObject.activeInHierarchy && !string.IsNullOrWhiteSpace(text.Content()) ? text.Content().Trim() : null;
     }
 }

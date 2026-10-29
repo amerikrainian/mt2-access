@@ -69,7 +69,7 @@ namespace MonsterTrainAccessibility.Module.UI
         /// value alone. Left and right navigate, never cycle.</summary>
         public static NodeVtable Dropdown(GameUISelectableDropdown dropdown, Func<string> label)
         {
-            Func<string> current = () => dropdown.valueLabel != null ? dropdown.valueLabel.text : null;
+            Func<string> current = () => dropdown.valueLabel != null ? dropdown.valueLabel.Content() : null;
             return new NodeVtable
             {
                 ControlType = ControlTypes.ComboBox,
@@ -90,7 +90,7 @@ namespace MonsterTrainAccessibility.Module.UI
         /// tenth of its range through the game's own setter, which saves and plays the tick.</summary>
         public static NodeVtable Slider(SelectableSliderHelper slider, Func<string> label, params NodeAnnouncement[] extra)
         {
-            Func<string> value = () => slider.valueLabel != null ? slider.valueLabel.text : slider.Value.ToString();
+            Func<string> value = () => slider.valueLabel != null ? slider.valueLabel.Content() : slider.Value.ToString();
             var parts = new List<NodeAnnouncement>
             {
                 GameNodes.LabelPart(label),
@@ -136,7 +136,7 @@ namespace MonsterTrainAccessibility.Module.UI
         private static string StateOf(GameUISelectableToggle toggle)
         {
             TMP_Text caption = toggle.isOn ? toggle.onLabel : toggle.offLabel;
-            if (caption != null && !string.IsNullOrWhiteSpace(caption.text)) return caption.text;
+            if (caption != null && !string.IsNullOrWhiteSpace(caption.Content())) return caption.Content();
             return toggle.isOn ? Strings.StateOn : Strings.StateOff;
         }
 
@@ -147,14 +147,14 @@ namespace MonsterTrainAccessibility.Module.UI
             if (!dropdown.CanBeActivated()) return;
             var entries = dropdown.entries;
             if (entries == null || entries.Count == 0) return;
-            string currentText = dropdown.valueLabel != null ? dropdown.valueLabel.text : null;
+            string currentText = dropdown.valueLabel != null ? dropdown.valueLabel.Content() : null;
             int current = -1;
             var choices = new List<ChoiceOption>();
             for (int i = 0; i < entries.Count; i++)
             {
                 var entry = entries[i];
                 if (entry == null || !entry.gameObject.activeSelf) continue;
-                string text = entry.label != null ? entry.label.text : null;
+                string text = entry.label != null ? entry.label.Content() : null;
                 if (string.IsNullOrWhiteSpace(text)) continue;
                 if (current < 0 && text == currentText) current = choices.Count;
                 var option = entry.GetComponent<GameUISelectableButton>();

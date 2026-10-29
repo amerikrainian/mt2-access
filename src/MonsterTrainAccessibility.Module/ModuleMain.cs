@@ -219,6 +219,9 @@ namespace MonsterTrainAccessibility.Module
             ScreenManager.Register(new Screens.MapScreen());
             ScreenManager.Register(new Screens.HudScreen());
             ScreenManager.Register(new Screens.ChampionUpgradeScreen());
+            ScreenManager.Register(new Screens.DeckScreen());
+            ScreenManager.Register(new Screens.DragonsHoardScreen());
+            ScreenManager.Register(new Screens.DragonsHoardLevelsScreen());
             ScreenManager.Register(new Screens.PauseMenuScreen());
             ScreenManager.Register(new Screens.SettingsScreen());
             ScreenManager.Register(new Screens.DialogScreen());

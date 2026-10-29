@@ -48,7 +48,7 @@ namespace MonsterTrainAccessibility.Module.Screens
             }
             if (board.noFriendsMessage != null && board.noFriendsMessage.activeInHierarchy) Walk(b, board.noFriendsMessage.transform, id + ":nofriends");
             if (board.errorLabel != null && Spoken(board.errorLabel))
-                b.AddItem(ControlId.Structural(id + ":error"), GameNodes.Text(() => board.errorLabel.text));
+                b.AddItem(ControlId.Structural(id + ":error"), GameNodes.Text(() => board.errorLabel.Content()));
             if (board.paginationControls != null) Walk(b, board.paginationControls.transform, id + ":pages");
         }
 
@@ -61,9 +61,9 @@ namespace MonsterTrainAccessibility.Module.Screens
             var parts = new List<string>();
             foreach (var cell in cells)
             {
-                if (cell.name == "Name label") { name = cell.text; continue; }
+                if (cell.name == "Name label") { name = cell.Content(); continue; }
                 var title = header != null ? header.Find(cell.name)?.GetComponent<TMP_Text>() : null;
-                parts.Add(title != null && Spoken(title) ? title.text + ": " + cell.text : cell.text);
+                parts.Add(title != null && Spoken(title) ? title.Content() + ": " + cell.Content() : cell.Content());
             }
             if (name != null) parts.Insert(0, name);
             return string.Join(", ", parts);

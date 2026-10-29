@@ -56,7 +56,7 @@ namespace MonsterTrainAccessibility.Module.Screens
         private static void Artifacts(GraphBuilder b, CompendiumSectionBlessings artifacts)
         {
             if (artifacts.countLabel != null && artifacts.countLabel.gameObject.activeInHierarchy)
-                b.AddItem(ControlId.Structural("logbook:artifacts:count"), GameNodes.Text(() => artifacts.countLabel.text));
+                b.AddItem(ControlId.Structural("logbook:artifacts:count"), GameNodes.Text(() => artifacts.countLabel.Content()));
             int c = 0;
             foreach (var collection in artifacts.collectionUIs)
             {

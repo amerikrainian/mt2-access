@@ -131,3 +131,5 @@ bind.map.next=Siguiente elección de ruta
 bind.run.hud=Información de la partida
 mod.category.map=Mapa
 card.upgraded=nuevo: {0}
+hoard.level=Nivel {0}
+state.current=actual

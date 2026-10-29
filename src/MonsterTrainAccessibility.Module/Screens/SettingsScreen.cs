@@ -138,7 +138,7 @@ namespace MonsterTrainAccessibility.Module.Screens
             {
                 if (child.gameObject.name != "Label") continue;
                 var text = child.GetComponent<TMP_Text>();
-                if (text != null && !string.IsNullOrWhiteSpace(text.text)) return text.text;
+                if (text != null && !string.IsNullOrWhiteSpace(text.Content())) return text.Content();
             }
             return null;
         }

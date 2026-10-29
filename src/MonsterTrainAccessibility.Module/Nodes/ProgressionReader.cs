@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using MonsterTrainAccessibility.Module.UI;
 
 namespace MonsterTrainAccessibility.Module.Nodes
 {
@@ -25,7 +26,7 @@ namespace MonsterTrainAccessibility.Module.Nodes
 
         private static void Add(List<string> lines, TMPro.TMP_Text text)
         {
-            if (text != null && !string.IsNullOrWhiteSpace(text.text)) lines.Add(text.text);
+            if (text != null && !string.IsNullOrWhiteSpace(text.Content())) lines.Add(text.Content());
         }
     }
 }

@@ -66,7 +66,7 @@ namespace MonsterTrainAccessibility.Module.Nodes
         private static string SearchLabel(SearchFilterUI filter, TMP_InputField field)
         {
             var placeholder = field.placeholder as TMP_Text;
-            if (placeholder != null && !string.IsNullOrWhiteSpace(placeholder.text)) return placeholder.text;
+            if (placeholder != null && !string.IsNullOrWhiteSpace(placeholder.Content())) return placeholder.Content();
             string key = filter.inputField.fieldTitleLocalizationKey;
             return !string.IsNullOrEmpty(key) ? GameText.Term(key) : Label(filter);
         }
@@ -77,10 +77,10 @@ namespace MonsterTrainAccessibility.Module.Nodes
         {
             foreach (var text in filter.GetComponentsInChildren<TMP_Text>(false))
             {
-                if (string.IsNullOrWhiteSpace(text.text)) continue;
+                if (string.IsNullOrWhiteSpace(text.Content())) continue;
                 if (text.GetComponentInParent<FilterOptionButton>() != null || text.GetComponentInParent<GameUISelectableDropdown>() != null
                     || text.GetComponentInParent<TMP_InputField>() != null || text.GetComponentInParent<GameUIControlMapping>() != null) continue;
-                return text.text;
+                return text.Content();
             }
             return null;
         }
@@ -93,7 +93,7 @@ namespace MonsterTrainAccessibility.Module.Nodes
             if (tips != null && tips.Count > 0 && !string.IsNullOrWhiteSpace(tips[0].title)) return CardTextHelper.RemoveBold(tips[0].title);
             var parts = new System.Collections.Generic.List<string>();
             foreach (var text in option.GetComponentsInChildren<TMP_Text>(false))
-                if (text.enabled && !string.IsNullOrWhiteSpace(text.text) && text.GetComponentInParent<GameUIControlMapping>() == null) parts.Add(text.text.Trim());
+                if (text.enabled && !string.IsNullOrWhiteSpace(text.Content()) && text.GetComponentInParent<GameUIControlMapping>() == null) parts.Add(text.Content().Trim());
             return parts.Count > 0 ? string.Join(", ", parts) : null;
         }
 

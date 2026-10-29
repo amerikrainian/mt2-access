@@ -107,8 +107,8 @@ namespace MonsterTrainAccessibility.Module.Screens
         {
             if (label == null || !label.gameObject.activeInHierarchy) return;
             var text = label.GetComponentInChildren<TMP_Text>(false);
-            if (text == null || string.IsNullOrWhiteSpace(text.text)) return;
-            b.AddItem(ControlId.Structural("depart:mode:" + key), GameNodes.Text(() => text.text));
+            if (text == null || string.IsNullOrWhiteSpace(text.Content())) return;
+            b.AddItem(ControlId.Structural("depart:mode:" + key), GameNodes.Text(() => text.Content()));
         }
     }
 }

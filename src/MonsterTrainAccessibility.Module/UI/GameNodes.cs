@@ -231,7 +231,7 @@ namespace MonsterTrainAccessibility.Module.UI
             Func<string> current = () =>
             {
                 var caption = dropdown.captionText;
-                if (caption != null && !string.IsNullOrEmpty(caption.text)) return caption.text;
+                if (caption != null && !string.IsNullOrEmpty(caption.Content())) return caption.Content();
                 var options = dropdown.options;
                 int v = dropdown.value;
                 return options != null && v >= 0 && v < options.Count ? options[v].text : null;
@@ -285,7 +285,7 @@ namespace MonsterTrainAccessibility.Module.UI
                 {
                     if (tmp == null || !string.Equals(tmp.gameObject.name, "Title", StringComparison.OrdinalIgnoreCase)) continue;
                     if (tmp.transform.IsChildOf(widget.transform)) continue; // the widget's own caption
-                    if (!string.IsNullOrWhiteSpace(tmp.text)) return tmp.text;
+                    if (!string.IsNullOrWhiteSpace(tmp.Content())) return tmp.Content();
                 }
             }
             return null;
@@ -296,7 +296,7 @@ namespace MonsterTrainAccessibility.Module.UI
         {
             if (widget == null) return null;
             var tmp = widget.GetComponentInChildren<TMP_Text>(true);
-            if (tmp != null && !string.IsNullOrEmpty(tmp.text)) return tmp.text;
+            if (tmp != null && !string.IsNullOrEmpty(tmp.Content())) return tmp.Content();
             var legacy = widget.GetComponentInChildren<UnityEngine.UI.Text>(true);
             if (legacy != null && !string.IsNullOrEmpty(legacy.text)) return legacy.text;
             return widget.gameObject.name;

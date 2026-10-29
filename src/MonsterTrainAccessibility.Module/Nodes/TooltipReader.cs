@@ -134,8 +134,8 @@ namespace MonsterTrainAccessibility.Module.Nodes
             foreach (var tooltip in container.tooltipUIs)
             {
                 if (tooltip == null || tooltip == container.secondaryTooltipPrompt) continue;
-                string title = tooltip.titleText != null && tooltip.titleText.gameObject.activeSelf ? tooltip.titleText.text : null;
-                string body = tooltip.bodyText != null && tooltip.bodyText.gameObject.activeSelf ? tooltip.bodyText.text : null;
+                string title = tooltip.titleText != null && tooltip.titleText.gameObject.activeSelf ? tooltip.titleText.Content() : null;
+                string body = tooltip.bodyText != null && tooltip.bodyText.gameObject.activeSelf ? tooltip.bodyText.Content() : null;
                 string line = Line(title, body);
                 if (line != null) lines.Add(line);
             }

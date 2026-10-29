@@ -157,9 +157,9 @@ namespace MonsterTrainAccessibility.Module.Screens
             int i = 0;
             foreach (var text in dialog.GetComponentsInChildren<TMP_Text>(false))
             {
-                if (string.IsNullOrWhiteSpace(text.text) || text.GetComponentInParent<GameUISelectableButton>() != null) continue;
+                if (string.IsNullOrWhiteSpace(text.Content()) || text.GetComponentInParent<GameUISelectableButton>() != null) continue;
                 var shown = text;
-                b.AddItem(ControlId.Structural("firstcovenant:text:" + i++), GameNodes.Text(() => shown.text));
+                b.AddItem(ControlId.Structural("firstcovenant:text:" + i++), GameNodes.Text(() => shown.Content()));
             }
             Choice(b, "0", dialog.buttonCov0);
             Choice(b, "1", dialog.buttonCov1);

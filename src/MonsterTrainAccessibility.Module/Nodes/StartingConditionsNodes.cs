@@ -90,8 +90,8 @@ namespace MonsterTrainAccessibility.Module.Nodes
                 var mainClan = main();
                 var subClan = sub();
                 if (mainClan == null || subClan == null) return null;
-                string line = (rank.preIconLabel != null ? rank.preIconLabel.text : "") + mainClan.GetTitle() + " " + subClan.GetTitle()
-                    + (rank.postIconLabel != null ? rank.postIconLabel.text : "");
+                string line = (rank.preIconLabel != null ? rank.preIconLabel.Content() : "") + mainClan.GetTitle() + " " + subClan.GetTitle()
+                    + (rank.postIconLabel != null ? rank.postIconLabel.Content() : "");
                 if (rank.covenantLevelRoot != null && rank.covenantLevelRoot.activeInHierarchy) line += " " + Text(rank.covenantLevelLabel);
                 return System.Text.RegularExpressions.Regex.Replace(line, @"\s+", " ").Trim();
             };
@@ -209,7 +209,7 @@ namespace MonsterTrainAccessibility.Module.Nodes
         internal static string HeaderOf(Component widget)
         {
             foreach (var text in widget.GetComponentsInChildren<TMP_Text>(false))
-                if (text.gameObject.name == "Text Header" && !string.IsNullOrWhiteSpace(text.text)) return text.text;
+                if (text.gameObject.name == "Text Header" && !string.IsNullOrWhiteSpace(text.Content())) return text.Content();
             return null;
         }
 
@@ -231,6 +231,6 @@ namespace MonsterTrainAccessibility.Module.Nodes
         }
 
         private static string Text(TMP_Text text)
-            => text != null && text.gameObject.activeInHierarchy && !string.IsNullOrWhiteSpace(text.text) ? text.text : null;
+            => text != null && text.gameObject.activeInHierarchy && !string.IsNullOrWhiteSpace(text.Content()) ? text.Content() : null;
     }
 }

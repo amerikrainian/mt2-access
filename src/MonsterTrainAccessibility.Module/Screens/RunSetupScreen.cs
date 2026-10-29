@@ -148,9 +148,9 @@ namespace MonsterTrainAccessibility.Module.Screens
                 int i = 0;
                 foreach (var text in screen.covenantDisabledRoot.GetComponentsInChildren<TMP_Text>(false))
                 {
-                    if (string.IsNullOrWhiteSpace(text.text)) continue;
+                    if (string.IsNullOrWhiteSpace(text.Content())) continue;
                     var shown = text;
-                    b.AddItem(ControlId.Structural("setup:noprogress:" + i++), GameNodes.Text(() => shown.text));
+                    b.AddItem(ControlId.Structural("setup:noprogress:" + i++), GameNodes.Text(() => shown.Content()));
                 }
             }
             WinStreak(b, "streak", screen.winStreakUI);
@@ -175,7 +175,7 @@ namespace MonsterTrainAccessibility.Module.Screens
                 new NodeAnnouncement(() =>
                 {
                     var names = new List<string>();
-                    foreach (var item in Chosen(screen)) names.Add(item.nameLabel.text);
+                    foreach (var item in Chosen(screen)) names.Add(item.nameLabel.Content());
                     return names.Count > 0 ? string.Join(", ", names) : null;
                 }, kind: AnnouncementKinds.Value));
             vt.Details = () =>
@@ -183,8 +183,8 @@ namespace MonsterTrainAccessibility.Module.Screens
                 var lines = new List<string>();
                 foreach (var item in Chosen(screen))
                 {
-                    string description = item.descriptionLabel != null ? item.descriptionLabel.text : null;
-                    lines.Add(string.IsNullOrWhiteSpace(description) ? item.nameLabel.text : item.nameLabel.text + ": " + description);
+                    string description = item.descriptionLabel != null ? item.descriptionLabel.Content() : null;
+                    lines.Add(string.IsNullOrWhiteSpace(description) ? item.nameLabel.Content() : item.nameLabel.Content() + ": " + description);
                 }
                 return lines;
             };
@@ -196,7 +196,7 @@ namespace MonsterTrainAccessibility.Module.Screens
         {
             if (screen.mutatorPreviewListRoot == null) yield break;
             foreach (var item in screen.mutatorPreviewListRoot.GetComponentsInChildren<MutatorPreviewItemUI>(true))
-                if (item.gameObject.activeSelf && item.nameLabel != null && !string.IsNullOrWhiteSpace(item.nameLabel.text)) yield return item;
+                if (item.gameObject.activeSelf && item.nameLabel != null && !string.IsNullOrWhiteSpace(item.nameLabel.Content())) yield return item;
         }
 
         private static void Button(GraphBuilder b, string key, GameUISelectableButton button, System.Func<string> label)
@@ -215,6 +215,6 @@ namespace MonsterTrainAccessibility.Module.Screens
         }
 
         private static string Text(TMP_Text text)
-            => text != null && text.gameObject.activeInHierarchy && !string.IsNullOrWhiteSpace(text.text) ? text.text : null;
+            => text != null && text.gameObject.activeInHierarchy && !string.IsNullOrWhiteSpace(text.Content()) ? text.Content() : null;
     }
 }

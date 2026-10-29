@@ -49,7 +49,7 @@ namespace MonsterTrainAccessibility.Module.Screens
             {
                 if (root == null || !root.gameObject.activeInHierarchy) continue;
                 var text = root.GetComponentInChildren<TMP_Text>(false);
-                if (text != null && !string.IsNullOrWhiteSpace(text.text)) return text.text;
+                if (text != null && !string.IsNullOrWhiteSpace(text.Content())) return text.Content();
             }
             return null;
         }

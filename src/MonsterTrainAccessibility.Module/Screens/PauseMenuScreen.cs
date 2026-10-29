@@ -60,8 +60,8 @@ namespace MonsterTrainAccessibility.Module.Screens
             }
             var build = dialog.GetComponentInChildren<BuildNumberLabel>(false);
             var buildText = build != null ? build.GetComponent<TMP_Text>() : null;
-            if (buildText != null && !string.IsNullOrWhiteSpace(buildText.text))
-                b.AddItem(ControlId.Structural("pause:build"), GameNodes.Text(() => buildText.text));
+            if (buildText != null && !string.IsNullOrWhiteSpace(buildText.Content()))
+                b.AddItem(ControlId.Structural("pause:build"), GameNodes.Text(() => buildText.Content()));
             b.PopContext();
         }
 
@@ -83,7 +83,7 @@ namespace MonsterTrainAccessibility.Module.Screens
         internal static string DialogTitle(UnityEngine.Component dialog)
         {
             foreach (var text in dialog.GetComponentsInChildren<TMP_Text>(false))
-                if (text.gameObject.name == "Title" && !string.IsNullOrWhiteSpace(text.text)) return text.text;
+                if (text.gameObject.name == "Title" && !string.IsNullOrWhiteSpace(text.Content())) return text.Content();
             return null;
         }
 
@@ -92,8 +92,8 @@ namespace MonsterTrainAccessibility.Module.Screens
         {
             foreach (var text in button.GetComponentsInChildren<TMP_Text>(false))
             {
-                if (string.IsNullOrWhiteSpace(text.text) || text.GetComponentInParent<GameUIControlMapping>() != null) continue;
-                return text.text;
+                if (string.IsNullOrWhiteSpace(text.Content()) || text.GetComponentInParent<GameUIControlMapping>() != null) continue;
+                return text.Content();
             }
             return null;
         }

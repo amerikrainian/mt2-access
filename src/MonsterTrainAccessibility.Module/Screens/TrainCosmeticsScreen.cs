@@ -54,9 +54,9 @@ namespace MonsterTrainAccessibility.Module.Screens
         {
             var button = room != null ? room.EditCosmeticButton : null;
             if (button == null || !button.gameObject.activeInHierarchy) return;
-            var vt = GameWidgets.Button(button, () => room.HeaderText != null ? room.HeaderText.text : null,
+            var vt = GameWidgets.Button(button, () => room.HeaderText != null ? room.HeaderText.Content() : null,
                 () => data()?.GetDescription(),
-                new NodeAnnouncement(() => room.CosmeticName != null ? room.CosmeticName.text : null,
+                new NodeAnnouncement(() => room.CosmeticName != null ? room.CosmeticName.Content() : null,
                     live: true, kind: AnnouncementKinds.Value));
             vt.ControlType = ControlTypes.ComboBox;
             b.AddItem(ControlId.Structural("depot:" + key), vt);
@@ -66,7 +66,7 @@ namespace MonsterTrainAccessibility.Module.Screens
         private static string Header(global::TrainCosmeticsScreen screen)
         {
             foreach (var text in screen.GetComponentsInChildren<TMPro.TMP_Text>(false))
-                if (text.gameObject.name == "Text header" && !string.IsNullOrWhiteSpace(text.text)) return text.text;
+                if (text.gameObject.name == "Text header" && !string.IsNullOrWhiteSpace(text.Content())) return text.Content();
             return null;
         }
     }
@@ -99,7 +99,7 @@ namespace MonsterTrainAccessibility.Module.Screens
             var picker = screen.roomSelectionDialog;
             var editing = screen.selectedSelectionUI;
             string equipped = Equipped(screen, picker.RoomIndex)?.GetID();
-            b.PushContext(editing != null && editing.HeaderText != null ? editing.HeaderText.text : null, Strings.RoleList);
+            b.PushContext(editing != null && editing.HeaderText != null ? editing.HeaderText.Content() : null, Strings.RoleList);
             foreach (var item in picker.trainCosmeticsRoomSelectionItems)
             {
                 var look = item;

@@ -74,6 +74,20 @@ namespace MonsterTrainAccessibility.Tests
         }
 
         [Fact]
+        public void StrictGridGoesNowhereFromAColumnTheNextRowLacks()
+        {
+            var render = new GraphBuilder()
+                .StartRow("grid", strictColumns: true).AddItem(Id("a1"), Vt("A1")).AddItem(Id("a2"), Vt("A2")).AddItem(Id("a3"), Vt("A3")).EndRow()
+                .StartRow("grid", strictColumns: true).AddItem(Id("b1"), Vt("B1")).EndRow()
+                .Build();
+
+            // Column 3 does not exist below: no move at all, not a fall to the first item.
+            Assert.False(render.Nodes[Id("a3")].Transitions.ContainsKey(GraphDir.Down));
+            Assert.Equal(Id("b1"), render.Nodes[Id("a1")].Transitions[GraphDir.Down].Destination);
+            Assert.Equal(Id("a1"), render.Nodes[Id("b1")].Transitions[GraphDir.Up].Destination);
+        }
+
+        [Fact]
         public void ArrowsNeverCrossStops()
         {
             var render = new GraphBuilder()

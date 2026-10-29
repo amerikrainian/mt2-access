@@ -69,7 +69,7 @@ namespace MonsterTrainAccessibility.Module.Screens
             Func<string> name = () =>
             {
                 foreach (var text in button.GetComponentsInChildren<TMP_Text>(true))
-                    if (!string.IsNullOrWhiteSpace(text.text) && text.GetComponentInParent<GameUIControlMapping>() == null) return text.text;
+                    if (!string.IsNullOrWhiteSpace(text.Content()) && text.GetComponentInParent<GameUIControlMapping>() == null) return text.Content();
                 return null;
             };
             Action show = () => { if (!open() && button.gameObject.activeInHierarchy) GameInput.Submit(button); };

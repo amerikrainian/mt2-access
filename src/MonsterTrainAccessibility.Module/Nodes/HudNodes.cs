@@ -78,7 +78,7 @@ namespace MonsterTrainAccessibility.Module.Nodes
                 Announcements = new List<NodeAnnouncement>
                 {
                     GameNodes.LabelPart(label),
-                    new NodeAnnouncement(() => number.text, kind: AnnouncementKinds.Value),
+                    new NodeAnnouncement(() => number.Content(), kind: AnnouncementKinds.Value),
                 },
                 SearchText = label,
             };
@@ -96,8 +96,8 @@ namespace MonsterTrainAccessibility.Module.Nodes
             var texts = new List<string>();
             foreach (var text in widget.GetComponentsInChildren<TMP_Text>(false))
             {
-                if (string.IsNullOrWhiteSpace(text.text) || text.GetComponentInParent<GameUIControlMapping>() != null) continue;
-                foreach (var line in text.text.Split('\n'))
+                if (string.IsNullOrWhiteSpace(text.Content()) || text.GetComponentInParent<GameUIControlMapping>() != null) continue;
+                foreach (var line in text.Content().Split('\n'))
                     if (!string.IsNullOrWhiteSpace(line)) texts.Add(line.Trim());
             }
             return texts.Count > 0 ? string.Join(" / ", texts) : null;

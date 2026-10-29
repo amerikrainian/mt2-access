@@ -62,7 +62,7 @@ namespace MonsterTrainAccessibility.Module.Screens
             var selection = Selection(screen);
             if (selection != null && selection.availableChallenges != null)
             {
-                b.PushContext(screen.challengeSetTitleLabel != null ? screen.challengeSetTitleLabel.text : null, Strings.RoleList);
+                b.PushContext(screen.challengeSetTitleLabel != null ? screen.challengeSetTitleLabel.Content() : null, Strings.RoleList);
                 foreach (var node in selection.availableChallenges)
                 {
                     if (node == null || node.Challenge == null || !node.gameObject.activeInHierarchy) continue;
@@ -168,8 +168,8 @@ namespace MonsterTrainAccessibility.Module.Screens
 
         private static void Text(GraphBuilder b, string key, TMP_Text text, bool heading = false)
         {
-            if (text == null || !text.gameObject.activeInHierarchy || string.IsNullOrWhiteSpace(text.text)) return;
-            b.AddItem(ControlId.Structural("portal:" + key), heading ? GameNodes.Heading(() => text.text) : GameNodes.Text(() => text.text));
+            if (text == null || !text.gameObject.activeInHierarchy || string.IsNullOrWhiteSpace(text.Content())) return;
+            b.AddItem(ControlId.Structural("portal:" + key), heading ? GameNodes.Heading(() => text.Content()) : GameNodes.Text(() => text.Content()));
         }
 
         private static void Button(GraphBuilder b, string key, ShinyShoe.GameUISelectableButton button)
@@ -184,7 +184,7 @@ namespace MonsterTrainAccessibility.Module.Screens
         internal static string HeaderOf(Component root, string name)
         {
             foreach (var text in root.GetComponentsInChildren<TMP_Text>(false))
-                if (text.gameObject.name == name && !string.IsNullOrWhiteSpace(text.text)) return text.text;
+                if (text.gameObject.name == name && !string.IsNullOrWhiteSpace(text.Content())) return text.Content();
             return null;
         }
 
@@ -197,7 +197,7 @@ namespace MonsterTrainAccessibility.Module.Screens
             {
                 if (sibling == container.transform) continue;
                 var text = sibling.GetComponent<TMP_Text>();
-                if (text != null && sibling.gameObject.activeInHierarchy && !string.IsNullOrWhiteSpace(text.text)) return text.text;
+                if (text != null && sibling.gameObject.activeInHierarchy && !string.IsNullOrWhiteSpace(text.Content())) return text.Content();
             }
             return null;
         }
@@ -272,6 +272,6 @@ namespace MonsterTrainAccessibility.Module.Screens
         }
 
         private static string Text(TMP_Text text)
-            => text != null && !string.IsNullOrWhiteSpace(text.text) ? text.text : null;
+            => text != null && !string.IsNullOrWhiteSpace(text.Content()) ? text.Content() : null;
     }
 }

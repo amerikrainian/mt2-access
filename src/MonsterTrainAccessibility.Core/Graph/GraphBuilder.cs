@@ -39,6 +39,7 @@ namespace MonsterTrainAccessibility.Core.Graph
             public object Key;
             public object StopKey;
             public Func<int> Entry;
+            public bool StrictColumns;
         }
 
         private sealed class RawEdge
@@ -209,12 +210,15 @@ namespace MonsterTrainAccessibility.Core.Graph
         /// above/below get column-preserving vertical navigation. <paramref name="entry"/> is the index
         /// of the item a vertical move INTO the row lands on when no column says otherwise (the first
         /// by default): a row of tabs that select on landing names its selected one, so coming up from
-        /// the content under them does not switch tabs. Asked when the render is wired.</summary>
-        public GraphBuilder StartRow(object rowKey = null, Func<int> entry = null)
+        /// the content under them does not switch tabs. Asked when the render is wired.
+        /// <paramref name="strictColumns"/> makes keyed rows a true grid: a vertical move into a column
+        /// the neighbouring row does not reach (a short last row) goes nowhere, instead of falling to
+        /// that row's entry.</summary>
+        public GraphBuilder StartRow(object rowKey = null, Func<int> entry = null, bool strictColumns = false)
         {
             if (_currentRow != null) throw new InvalidOperationException("Cannot start a row while another is open");
             if (_currentColumn != null) throw new InvalidOperationException("Cannot start a row inside an open column");
-            _currentRow = new Row { Key = rowKey, StopKey = _stopKey, Entry = entry };
+            _currentRow = new Row { Key = rowKey, StopKey = _stopKey, Entry = entry, StrictColumns = strictColumns };
             return this;
         }
 
@@ -535,10 +539,10 @@ namespace MonsterTrainAccessibility.Core.Graph
                     for (int pos = 0; pos < row.Items.Count; pos++)
                     {
                         var node = row.Items[pos];
-                        if (r > 0)
-                            node.Transitions[GraphDir.Up] = new Transition(VerticalTarget(row, rows[r - 1], pos));
-                        if (r < rows.Count - 1)
-                            node.Transitions[GraphDir.Down] = new Transition(VerticalTarget(row, rows[r + 1], pos));
+                        var up = r > 0 ? VerticalTarget(row, rows[r - 1], pos) : null;
+                        if (up != null) node.Transitions[GraphDir.Up] = new Transition(up);
+                        var down = r < rows.Count - 1 ? VerticalTarget(row, rows[r + 1], pos) : null;
+                        if (down != null) node.Transitions[GraphDir.Down] = new Transition(down);
                         if (pos > 0)
                             node.Transitions[GraphDir.Left] = new Transition(row.Items[pos - 1].Id);
                         if (pos < row.Items.Count - 1)
@@ -549,11 +553,13 @@ namespace MonsterTrainAccessibility.Core.Graph
         }
 
         // Where vertical navigation from position pos lands in the adjacent row: the same position when
-        // the rows share a non-null key (column nav) and it exists there, else the first item.
+        // the rows share a non-null key (column nav) and it exists there, else the row's entry; nowhere
+        // (null) for a column a strict grid's row does not reach.
         private static ControlId VerticalTarget(Row from, Row to, int pos)
         {
-            if (from.Key != null && to.Key != null && Equals(from.Key, to.Key) && pos < to.Items.Count)
-                return to.Items[pos].Id;
+            bool sameGrid = from.Key != null && to.Key != null && Equals(from.Key, to.Key);
+            if (sameGrid && pos < to.Items.Count) return to.Items[pos].Id;
+            if (sameGrid && (from.StrictColumns || to.StrictColumns)) return null;
             return EntryOf(to).Id;
         }
     }

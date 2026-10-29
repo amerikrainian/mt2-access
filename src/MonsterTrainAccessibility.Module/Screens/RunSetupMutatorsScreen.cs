@@ -100,8 +100,8 @@ namespace MonsterTrainAccessibility.Module.Screens
 
         private static void Text(GraphBuilder b, string key, TMP_Text text)
         {
-            if (text == null || !text.gameObject.activeInHierarchy || string.IsNullOrWhiteSpace(text.text)) return;
-            b.AddItem(ControlId.Structural("mutators:" + key), GameNodes.Text(() => text.text));
+            if (text == null || !text.gameObject.activeInHierarchy || string.IsNullOrWhiteSpace(text.Content())) return;
+            b.AddItem(ControlId.Structural("mutators:" + key), GameNodes.Text(() => text.Content()));
         }
 
         // A button by its caption, else the game's term for it (these draw an icon and a key hint).

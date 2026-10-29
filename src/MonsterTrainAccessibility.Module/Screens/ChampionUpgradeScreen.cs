@@ -53,7 +53,7 @@ namespace MonsterTrainAccessibility.Module.Screens
                     if (option == null || !option.gameObject.activeInHierarchy || option.cardUI == null || option.upgradeData == null || !option.interactable) continue;
                     var choice = option;
                     b.AddItem(ControlId.Structural("forge:" + i++), CardNodes.Offer(
-                        () => choice._upgradeNameLabel != null ? choice._upgradeNameLabel.text : null,
+                        () => choice._upgradeNameLabel != null ? choice._upgradeNameLabel.Content() : null,
                         choice.cardUI, CardTooltipContainer.LoreTooltipSetting.Never,
                         () => GameInput.Hover(choice.SelectableUI),
                         () => GameInput.Submit(choice.SelectableUI)));
