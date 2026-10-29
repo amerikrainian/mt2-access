@@ -10,8 +10,9 @@ namespace MonsterTrainAccessibility.Module.Screens
 {
     /// <summary>
     /// The game's modal dialog (<see cref="global::DialogScreen"/>: Quit Game's and Erase all save
-    /// data's confirmations, notices), its top dialog read as Guildrun reads one: the message as a line,
-    /// landed on first, then the dialog's buttons in the game's captions. Enter presses through the
+    /// data's confirmations, notices, Bind Keys' conflicts), its top dialog: its message spoken as it
+    /// opens, and again as each dialog that follows it does (Bind Keys asks once per control a key is
+    /// taken from); its buttons in the game's captions the only controls. Enter presses through the
     /// game; Escape closes it when the game lets a key close it.
     /// </summary>
     public sealed class DialogScreen : Screen
@@ -30,15 +31,36 @@ namespace MonsterTrainAccessibility.Module.Screens
             }
         }
 
+        // The dialog whose message was said, and that message: a dialog that follows (or the same
+        // dialog shown again with another message) is said in turn.
+        private Dialog _said;
+        private string _saidText;
+
         public override bool IsActive() => Top != null;
+
+        public override void OnPush()
+        {
+            _said = null;
+            _saidText = null;
+        }
 
         public override void Build(GraphBuilder b)
         {
             var dialog = Top;
             if (dialog == null) return;
+            string message = dialog.contentLabel != null ? dialog.contentLabel.Content() : null;
+            if (!string.IsNullOrWhiteSpace(message) && (dialog != _said || message != _saidText))
+            {
+                // A dialog that follows keeps the buttons' places, so focus stays put: its button is
+                // read again after the message, as the first dialog's landing is.
+                bool follows = _said != null;
+                _said = dialog;
+                _saidText = message;
+                ScreenIntro.Say(message);
+                var focused = (Core.UI.Navigation.Active as GraphNavigator)?.FocusedNodeId;
+                if (follows && focused != null) Core.UI.Navigation.FocusNode(focused);
+            }
             b.PushContext(null, Strings.RoleDialog, positions: false);
-            if (dialog.contentLabel != null && !string.IsNullOrWhiteSpace(dialog.contentLabel.Content()))
-                b.AddItem(ControlId.Structural("dialog:message"), GameNodes.Text(() => dialog.contentLabel.Content()));
             Choice(b, "button1", dialog.button1, dialog.button1Label);
             Choice(b, "button2", dialog.button2, dialog.button2Label);
             b.PopContext();

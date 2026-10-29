@@ -246,6 +246,9 @@ namespace MonsterTrainAccessibility.Core.UI
                     {
                         _graph.Focus(_pendingFocus);
                         if (!_pendingAnnounce) { _lastSpokenKey = _pendingFocus; _lastSpokenNode = _graph.CurrentNode; _reannounce = false; }
+                        // Asked to be read: read even when it is the node already in focus (a row the
+                        // game rebuilt in place now holds something else).
+                        else _reannounce = true;
                     }
                     _pendingFocus = null;
                 }
