@@ -174,6 +174,8 @@ namespace MonsterTrainAccessibility.Core.Strings
             // Soul Savior's region choice: a region already cleared, and a reward a cleared region has
             // improved (the game draws both only as images).
             D("state.defeated", "defeated"),
+            // The game's Bind Keys waiting for the key to bind, which it shows nowhere.
+            D("keys.press", "Press a key."),
             D("state.upgraded", "upgraded"),
             // The Dragon's Hoard's loot levels, which the game shows as numbers; {0} = the level. "current"
             // marks the level the hoard is at, which the game shows only by a highlight.
@@ -592,6 +594,7 @@ namespace MonsterTrainAccessibility.Core.Strings
         public static string MapNoBackward => Get("map.no_backward");
         public static string StateVisited => Get("state.visited");
         public static string StateDefeated => Get("state.defeated");
+        public static string KeysPress => Get("keys.press");
         public static string StateUpgraded => Get("state.upgraded");
         public static string HoardLevel(int level) => F("hoard.level", level);
         public static string RewardAmount(string amount, string currency) => F("reward.amount", amount, currency);

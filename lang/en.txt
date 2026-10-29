@@ -111,6 +111,7 @@ map.no_forward=No forward map node.
 map.no_backward=No previous map node.
 state.visited=visited
 state.defeated=defeated
+keys.press=Press a key.
 state.upgraded=upgraded
 hoard.level=Level {0}
 reward.amount={0} {1}

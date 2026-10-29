@@ -190,7 +190,10 @@ A text field (the Logbook's searches) is edited with the game's own editor, star
 Escape end it with focus kept (Enter edits again), Tab and Shift+Tab end it and move on. A single-line
 field has no use for Up and Down, so they end it too and move to the control above or below: it sits
 on a line of its own among its stop's controls (Left and Right are the caret's). The pad has the same
-ways out (the shoulders, the D-pad and left stick, B as Escape).
+ways out (the shoulders, the D-pad and left stick, B as Escape). The game's Bind Keys waiting for a
+key reads it from Unity's legacy input itself: the mod's keys stand down the same way until that key
+is released (`Module/UI/KeyCapture`), and Bind/Add press a frame late so the Enter that pressed them is
+not the key bound.
 
 A key that is silent somewhere must say so with `.When(...)`, so the key help lists it only where it
 does something; a screen offers its own keys through `GetActions`.

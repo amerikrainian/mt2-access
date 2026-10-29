@@ -60,6 +60,48 @@ namespace MonsterTrainAccessibility.Module.Nodes
             };
         }
 
+        /// <summary>A soul offered in a draft (<see cref="SoulInfoUI"/>): read as <see cref="Info"/>, a
+        /// button; landing shows it as hovered, Enter takes it.</summary>
+        public static NodeVtable Offer(SoulInfoUI soul, Action hover, Action take)
+        {
+            var vt = Info(soul);
+            vt.ControlType = ControlTypes.Button;
+            vt.OnFocus = hover;
+            vt.OnActivate = take;
+            return vt;
+        }
+
+        /// <summary>A soul's progress at a run's end (<see cref="SoulProgressItemUI"/>): its name, the
+        /// game's word for what the run did to it ("Unlocked", "Level Up") where it did, "Locked" while
+        /// it is, the progress amount ("3/15"), then what unlocks or levels it and what it does, all as
+        /// the item draws them.</summary>
+        public static NodeVtable Progress(SoulProgressItemUI item, Func<GameOverScreen.SoulUnlockProgressInfo?> info)
+        {
+            Func<string> name = () => Drawn(item.soulName) ?? (info()?.unlockObj as SoulData)?.GetName();
+            return new NodeVtable
+            {
+                ControlType = ControlTypes.Item,
+                Announcements = new List<NodeAnnouncement>
+                {
+                    GameNodes.LabelPart(name),
+                    new NodeAnnouncement(() =>
+                    {
+                        var progress = info();
+                        return progress.HasValue && (progress.Value.isUnlock || progress.Value.isLevelUp) ? Drawn(item.soulStatusChangeText) : null;
+                    }, live: true, kind: AnnouncementKinds.Value),
+                    new NodeAnnouncement(() => item.soulLockedRoot != null && item.soulLockedRoot.activeSelf ? GameText.Term("Locked") : null,
+                        live: true, kind: AnnouncementKinds.Enabled),
+                    new NodeAnnouncement(() => Drawn(item.soulProgressionAmount), kind: AnnouncementKinds.Value),
+                    GameNodes.TooltipPart(() => Drawn(item.soulProgressionDetails)),
+                    GameNodes.TooltipPart(() => Drawn(item.soulDescription)),
+                },
+                SearchText = name,
+            };
+        }
+
+        private static string Drawn(TMP_Text text)
+            => text != null && text.gameObject.activeInHierarchy && !string.IsNullOrWhiteSpace(text.Content()) ? text.Content() : null;
+
         private static NodeVtable Build(TMP_Text label, Func<SoulState> state, Func<bool> locked, Func<bool> chosen,
             GameUISelectableButton button, TMP_Text panelName, ProgressionObjectiveUI panelProgress, bool choose)
         {

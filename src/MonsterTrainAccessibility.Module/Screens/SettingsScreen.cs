@@ -100,9 +100,13 @@ namespace MonsterTrainAccessibility.Module.Screens
         }
 
         // One of the section's entries, by the control it holds.
-        private static void Row(GraphBuilder b, SettingsTab tab, Transform row)
+        private static void Row(GraphBuilder b, SettingsTab tab, Transform row) => Row(b, "settings:" + tab.gameObject.name, row);
+
+        /// <summary>A settings entry (<see cref="SettingsEntry"/>: its "Label" and the control it holds),
+        /// wherever the game lays one out (Settings' sections, the first-time settings).</summary>
+        internal static void Row(GraphBuilder b, string key, Transform row)
         {
-            string id = "settings:" + tab.gameObject.name + ":" + row.gameObject.name;
+            string id = key + ":" + row.gameObject.name;
             System.Func<string> label = () => RowLabel(row);
 
             var volume = row.GetComponent<VolumeControl>();

@@ -52,7 +52,8 @@ namespace MonsterTrainAccessibility.Module
             NavInput.Current = new UnityNavInput();
             Navigation.FocusActive = () => FocusMode.Active;
             InputManager.FocusActive = () => FocusMode.Active;
-            InputManager.TextFieldFocused = () => TextEdit.OwnsKeyboard;
+            // A text field being edited, or Bind Keys waiting for a key, has the keyboard.
+            InputManager.TextFieldFocused = () => TextEdit.OwnsKeyboard || KeyCapture.OwnsKeyboard;
             GraphAnnouncer.PositionText = (i, n) => host.Settings.SpeakPositions ? Strings.Position(i, n) : null;
             GraphAnnouncer.ExpandedStateText = Strings.ExpandedState;
             // The control buffer completes a node's tooltips with the definitions they mention.
@@ -242,6 +243,7 @@ namespace MonsterTrainAccessibility.Module
         private static void RegisterScreens()
         {
             ScreenManager.Register(new Screens.IntroStartScreen());
+            ScreenManager.Register(new Screens.FirstTimeSettingsScreen());
             ScreenManager.Register(new Screens.MainMenuScreen());
             ScreenManager.Register(new Screens.StartRunOptionsDialog());
             ScreenManager.Register(new Screens.SoulSaviorScreen());
@@ -266,6 +268,13 @@ namespace MonsterTrainAccessibility.Module
             ScreenManager.Register(new Screens.DraftScreen(global::ScreenName.RelicChoice, "game.draft.artifact"));
             ScreenManager.Register(new Screens.DraftScreen(global::ScreenName.Elixir, "game.draft.elixir"));
             ScreenManager.Register(new Screens.DraftScreen(global::ScreenName.Draft, "game.draft.cards"));
+            ScreenManager.Register(new Screens.DraftScreen(global::ScreenName.SoulChoice, "game.draft.soul"));
+            ScreenManager.Register(new Screens.DraftScreen(global::ScreenName.EndlessMutatorDraft, "game.draft.endless_mutators"));
+            ScreenManager.Register(new Screens.MinimapScreen());
+            ScreenManager.Register(new Screens.CardDetailsScreen());
+            ScreenManager.Register(new Screens.CreditsScreen());
+            ScreenManager.Register(new Screens.KeyMappingScreen());
+            ScreenManager.Register(new Screens.SoulProgressionScreen());
             ScreenManager.Register(new Screens.BattleIntroScreen());
             ScreenManager.Register(new Screens.RewardScreen());
             ScreenManager.Register(new Screens.BattleScreen());
@@ -300,6 +309,7 @@ namespace MonsterTrainAccessibility.Module
             }
             FocusMode.Tick();
             Safe(TextEdit.Tick, "text edit");
+            Safe(KeyCapture.Tick, "key capture");
             InputManager.Tick();
             // The game's events, heard before the focus the same frame moves (a unit died, then the
             // unit now in its place).
@@ -309,7 +319,7 @@ namespace MonsterTrainAccessibility.Module
             // While the game reloads the run (a restart, an undo) it passes through the main menu: the
             // screens hold still and say nothing until it is back.
             if (!Combat.CombatEvents.Reloading) ScreenManager.Tick();
-            if (!TextEdit.OwnsKeyboard) Navigation.TickTypeahead();
+            if (!TextEdit.OwnsKeyboard && !KeyCapture.OwnsKeyboard) Navigation.TickTypeahead();
             Safe(Later.Tick, "later");
             Safe(Buffers.Tick, "buffers");
         }

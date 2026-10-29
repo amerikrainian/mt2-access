@@ -17,7 +17,8 @@ namespace MonsterTrainAccessibility.Module.Screens
     /// it is registered for (the artifact draft so far). Opening it says the draft's header and the
     /// game's instructions ("Herzal's Hoard. Choose an artifact."); then the items side by side as the
     /// game lays them out, each read by its kind (an artifact by <see cref="RelicNodes"/>, a card by
-    /// <see cref="CardNodes"/>), then Skip with what skipping gives. Nothing is declared while the game
+    /// <see cref="CardNodes"/>, a soul by <see cref="SoulNodes.Offer"/>, an endless pair of mutators by
+    /// its title and each half's description), then Skip with what skipping gives. Nothing is declared while the game
     /// deals the items in, and an item the game has taken out of play (all of them, once one is
     /// chosen) is not declared. Landing on an item shows it as hovered; Enter takes it through the
     /// game. Escape is the game's: the Menu.
@@ -106,6 +107,25 @@ namespace MonsterTrainAccessibility.Module.Screens
                 var button = relic.GetComponent<GameUISelectableButton>();
                 if (button == null || !button.interactable) return null;
                 return RelicNodes.Offer(relic, () => GameInput.Hover(button), () => GameInput.Submit(button));
+            }
+            if (item is SoulInfoUI soul)
+            {
+                var button = soul.SelectableUI;
+                if (soul.GetSoulData() == null || button == null) return null;
+                return SoulNodes.Offer(soul, () => GameInput.Hover(button), () => GameInput.Submit(button));
+            }
+            if (item is EndlessMutatorPairUI pair)
+            {
+                var button = pair.SelectableUI;
+                if (pair.MutatorPair == null || button == null) return null;
+                var vt = GameNodes.Button(() => Shown(pair.titleText), () => GameInput.Submit(button));
+                vt.Announcements = new List<NodeAnnouncement>(vt.Announcements)
+                {
+                    GameNodes.TooltipPart(() => Shown(pair.GetEndlessMutatorUIPositive().descriptionLabel)),
+                    GameNodes.TooltipPart(() => Shown(pair.GetEndlessMutatorUINegative().descriptionLabel)),
+                };
+                vt.OnFocus = () => GameInput.Hover(button);
+                return vt;
             }
             if (item is CardUI card)
             {
