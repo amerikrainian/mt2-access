@@ -109,7 +109,17 @@ namespace MonsterTrainAccessibility.Module.Screens
                     // landing: said only where picking is apart from focusing.
                     if (!screen.ShouldSelectOnFocus())
                         vt.Announcements = new List<NodeAnnouncement>(vt.Announcements) { GameNodes.SelectedPart(() => screen._selectedIndices.Contains(index)) };
-                    vt.OnActivate = () => GameInput.Submit(card.SelectableUI);
+                    // A card the game holds out (a full slot, an ineligible card) takes no click: the game
+                    // turns its button off. Its Submit would still select it, so it is refused here.
+                    vt.OnActivate = () =>
+                    {
+                        if (Refused(screen, index))
+                        {
+                            Core.Speech.Say(CardNodes.Refused(card) ?? Strings.StateDisabled, interrupt: true);
+                            return;
+                        }
+                        GameInput.Submit(card.SelectableUI);
+                    };
                 }
                 b.AddItem(ControlId.Structural("deck:card:" + i), vt);
                 if (++column == columns)
@@ -120,6 +130,15 @@ namespace MonsterTrainAccessibility.Module.Screens
                 }
             }
             if (open) b.EndRow();
+        }
+
+        // The game holds the card out of the pick: its state says why (a full slot, not eligible).
+        private static bool Refused(global::DeckScreen screen, int index)
+        {
+            var info = index < screen.cardInfos.Count ? screen.cardInfos[index] : null;
+            if (info == null) return true;
+            var state = info.cardStateApplied ?? info.cardState;
+            return state == null || state.IsCurrentlyDisabled() || (info.cardState != null && info.cardState.IsCurrentlyDisabled());
         }
 
         // The game deals the cards in a column at a time, each blank until it is set up: nothing on the

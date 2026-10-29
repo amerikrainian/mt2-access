@@ -15,7 +15,8 @@ namespace MonsterTrainAccessibility.Module.Nodes
     /// data, in the game's own terms:
     /// <list type="bullet">
     /// <item>the focus line: the name, the card's type in the game's word for it in the role word's
-    /// place ("Spell", "Friendly Unit"), then the face's own text objects: the cost, the type plate where
+    /// place ("Spell", "Friendly Unit"), why the screen will not take it where the face says so
+    /// (<see cref="Refused"/>: "Slots Full"), then the face's own text objects: the cost, the type plate where
     /// it adds to the type (a unit's subtypes), attack and health while the face shows them, the size a
     /// unit's pips draw, the soul attached to it (<see cref="Soul"/>), then the card
     /// text as rendered (its inline icons read as words at the speech
@@ -39,6 +40,7 @@ namespace MonsterTrainAccessibility.Module.Nodes
                 GameNodes.LabelPart(name),
                 // The card's type in the role word's place: "Firestarter, Spell", not "item".
                 new NodeAnnouncement(() => TypeOf(card), kind: AnnouncementKinds.Role) { Spoken = !elixir },
+                new NodeAnnouncement(() => Refused(card), kind: AnnouncementKinds.Enabled),
                 new NodeAnnouncement(() => Face(card), kind: AnnouncementKinds.Value) { Spoken = !elixir || !FreeToPlay(card) },
                 new NodeAnnouncement(() => Soul(card), kind: AnnouncementKinds.Value),
             };
@@ -63,6 +65,7 @@ namespace MonsterTrainAccessibility.Module.Nodes
             var parts = new List<NodeAnnouncement> { GameNodes.LabelPart(title) };
             parts.Add(new NodeAnnouncement(() => Name(card), kind: AnnouncementKinds.Value));
             parts.Add(new NodeAnnouncement(() => TypeOf(card), kind: AnnouncementKinds.Value) { Spoken = !elixir });
+            parts.Add(new NodeAnnouncement(() => Refused(card), kind: AnnouncementKinds.Enabled));
             parts.Add(new NodeAnnouncement(() => Face(card), kind: AnnouncementKinds.Value) { Spoken = !elixir || !FreeToPlay(card) });
             parts.Add(new NodeAnnouncement(() => Soul(card), kind: AnnouncementKinds.Value));
             parts.AddRange(TextParts(card, elixir));
@@ -122,6 +125,15 @@ namespace MonsterTrainAccessibility.Module.Nodes
                 OnFocus = hover,
                 Details = () => GameNodes.Lines(TooltipReader.Lines(card.Tooltips)),
             };
+        }
+
+        /// <summary>Why the screen will not take the card, as its face says while the game holds it out
+        /// ("Slots Full", "Not Eligible"); null while it would.</summary>
+        public static string Refused(CardUI card)
+        {
+            var label = card.filteredReasonLabel;
+            return label != null && label.enabled && label.gameObject.activeInHierarchy && !string.IsNullOrWhiteSpace(label.Content())
+                ? label.Content() : null;
         }
 
         /// <summary>Whether the card's face is drawn yet (a card being dealt has no name on it).</summary>
