@@ -161,6 +161,19 @@ namespace MonsterTrainAccessibility.Module.Screens
                 items.Add(Item("randomize", vt));
             }
             Button(items, "back", screen.backButton);
+            // A challenge being made: one under another, Randomize All above Submit Challenge, Back last.
+            if (screen.editable)
+            {
+                int random = items.FindIndex(i => i.Key.Equals(Item("randomize", null).Key));
+                if (random > 0)
+                {
+                    var moved = items[random];
+                    items.RemoveAt(random);
+                    items.Insert(0, moved);
+                }
+                foreach (var item in items) b.AddItem(item.Key, item.Value);
+                return;
+            }
             Row(b, null, items);
         }
 
