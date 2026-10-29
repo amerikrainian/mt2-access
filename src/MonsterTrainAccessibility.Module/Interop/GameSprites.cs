@@ -61,6 +61,22 @@ namespace MonsterTrainAccessibility.Module.Interop
             });
         }
 
+        private static readonly Regex AnyTag = new Regex("<[^>]*>", RegexOptions.Compiled);
+
+        /// <summary>The text without an icon whose word it already says: a keyword drawn beside its own
+        /// icon ("[Shift icon] Shift", a tooltip's title), which read as a word would say the keyword
+        /// twice ("Shift Shift"). An icon saying something the text does not ("[ember] 2") stays.</summary>
+        public static string WithoutEchoedIcons(string text)
+        {
+            if (string.IsNullOrEmpty(text) || text.IndexOf("<sprite", StringComparison.OrdinalIgnoreCase) < 0) return text;
+            string said = AnyTag.Replace(SpriteTag.Replace(text, " "), " ");
+            return SpriteTag.Replace(text, m =>
+            {
+                string word = Word(m.Groups["name"].Value);
+                return !string.IsNullOrWhiteSpace(word) && said.IndexOf(word.Trim(), StringComparison.OrdinalIgnoreCase) >= 0 ? "" : m.Value;
+            });
+        }
+
         private static string Word(string sprite)
         {
             if (string.IsNullOrWhiteSpace(sprite)) return null;
@@ -122,10 +138,11 @@ namespace MonsterTrainAccessibility.Module.Interop
         }
 
         // A card effect's name: its tooltip title, else its card text term, else the term itself.
+        // Through GameText, which leaves the term's parse cache to the game's own context.
         private static string CardEffectName(string id)
         {
             foreach (string key in new[] { id + "_TooltipTitle", id + "_CardText", id })
-                if (key.HasTranslation()) return key.Localize();
+                if (key.HasTranslation()) return GameText.Term(key);
             return null;
         }
     }

@@ -23,12 +23,8 @@ namespace MonsterTrainAccessibility.Module.Screens
     {
         private static bool s_open;
 
-        public static void Toggle()
-        {
-            s_open = !s_open;
-            if (!s_open) return;
-            Core.Speech.Say(Strings.ScreenModMenu, interrupt: true);
-        }
+        // Opening speaks nothing of its own: the first focus readout names the menu (its context).
+        public static void Toggle() => s_open = !s_open;
 
         public static void Close() => s_open = false;
 
@@ -52,12 +48,11 @@ namespace MonsterTrainAccessibility.Module.Screens
         }
     }
 
-    /// <summary>The mod's settings: each a toggle; Enter flips it and speaks the new state. Values live
+    /// <summary>The mod's settings: each a toggle; Enter flips it, the new state spoken once. Values live
     /// in the host's settings store (the BepInEx config), so they survive reloads and restarts.</summary>
     public sealed class ModSettingsScreen : Screen
     {
         public override string Key => "mod.settings";
-        public override string ScreenName => Strings.ModSettings;
         public override bool IsActive() => false; // only ever a child of the mod menu
 
         public override void Build(GraphBuilder b)
@@ -77,23 +72,21 @@ namespace MonsterTrainAccessibility.Module.Screens
             b.PopContext();
         }
 
+        // The new state is spoken once, through StateText, as the game's own toggles speak theirs.
         private static NodeVtable Toggle(Func<string> label, Func<bool> get, Action<bool> set)
         {
+            Func<string> state = () => get() ? Strings.StateOn : Strings.StateOff;
             return new NodeVtable
             {
                 ControlType = ControlTypes.Toggle,
                 Announcements = new List<NodeAnnouncement>
                 {
                     GameNodes.LabelPart(label),
-                    new NodeAnnouncement(() => get() ? Strings.StateOn : Strings.StateOff, live: true, kind: AnnouncementKinds.Value),
+                    new NodeAnnouncement(state, live: true, kind: AnnouncementKinds.Value),
                 },
                 SearchText = label,
-                OnActivate = () =>
-                {
-                    bool next = !get();
-                    set(next);
-                    Core.Speech.Say(next ? Strings.StateOn : Strings.StateOff, interrupt: true);
-                },
+                OnActivate = () => set(!get()),
+                StateText = state,
             };
         }
 
@@ -108,7 +101,6 @@ namespace MonsterTrainAccessibility.Module.Screens
     public sealed class KeyHelpScreen : Screen
     {
         public override string Key => "mod.keys";
-        public override string ScreenName => Strings.ModKeyHelp;
         public override bool IsActive() => false; // only ever a child of the mod menu
 
         public override void Build(GraphBuilder b)

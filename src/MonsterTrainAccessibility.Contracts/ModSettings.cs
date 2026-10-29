@@ -26,10 +26,10 @@ namespace MonsterTrainAccessibility.Contracts
             set => _store.SetBool("focus_mode_on_launch", value);
         }
 
-        /// <summary>Whether list items append their position ("3 of 10").</summary>
+        /// <summary>Whether list items append their position ("3 of 10"). Off unless asked for.</summary>
         public bool SpeakPositions
         {
-            get => _store.GetBool("speak_positions", true);
+            get => _store.GetBool("speak_positions", false);
             set => _store.SetBool("speak_positions", value);
         }
     }

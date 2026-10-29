@@ -99,9 +99,10 @@ namespace MonsterTrainAccessibility.Module.Nodes
             return lines;
         }
 
+        // A title's keyword icon goes when the title already names it (Valor's icon beside "Valor").
         private static string Line(string title, string body)
         {
-            title = title?.Trim();
+            title = Interop.GameSprites.WithoutEchoedIcons(title)?.Trim();
             body = body?.Trim();
             if (string.IsNullOrEmpty(title)) return string.IsNullOrEmpty(body) ? null : body;
             return string.IsNullOrEmpty(body) ? title : title + ": " + body;
