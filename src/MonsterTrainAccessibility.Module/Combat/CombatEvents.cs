@@ -58,6 +58,47 @@ namespace MonsterTrainAccessibility.Module.Combat
             return screens != null && screens.GetScreenActive(global::ScreenName.Game) && managers.GetCombatManager() != null;
         }
 
+        private static bool s_reloadSawMenu;
+
+        /// <summary>The game is reloading the run (a battle restarted, a turn undone): from the press until
+        /// the run is back in its battle, by way of the main menu, none of which is the player's to hear.
+        /// The game keeps its own flag up longer, through the battle's start (its popups included).</summary>
+        public static bool Reloading
+        {
+            get
+            {
+                var managers = AllGameManagers.Instance;
+                var save = managers != null ? managers.GetSaveManager() : null;
+                var screens = managers != null ? managers.GetScreenManager() : null;
+                var reload = save != null ? save.restartBattleCoroutine : null;
+                if (save == null || screens == null || !(save.IsInRestartBattleMode || (reload != null && reload.IsRunning())))
+                {
+                    s_reloadSawMenu = false;
+                    return false;
+                }
+                bool menu = screens.GetScreenActive(global::ScreenName.MainMenu);
+                if (menu) s_reloadSawMenu = true;
+                return !(s_reloadSawMenu && !menu && screens.GetScreenActive(global::ScreenName.Game));
+            }
+        }
+
+        /// <summary>A battle setting itself up (reloading, or not yet past its start): its pyre arriving,
+        /// its ember and armor set from nothing. Only its turn and phase are said.</summary>
+        public static bool SettingUp
+        {
+            get
+            {
+                if (Reloading) return true;
+                var managers = AllGameManagers.Instance;
+                var combat = managers != null ? managers.GetCombatManager() : null;
+                var screens = managers != null ? managers.GetScreenManager() : null;
+                return combat != null && screens != null && screens.GetScreenActive(global::ScreenName.Game)
+                    && combat.GetCombatPhase() == CombatManager.Phase.Start;
+            }
+        }
+
+        public static bool Muted(EventKind kind) => kind != EventKinds.Turn && kind != EventKinds.Phase && SettingUp;
+
         /// <summary>Whether the game is replaying what was done (an undo, a run continued): its events
         /// are logged, not spoken.</summary>
         public static bool Replaying()
@@ -193,6 +234,8 @@ namespace MonsterTrainAccessibility.Module.Combat
 
         private void OnPhase(CombatManager.Phase phase)
         {
+            if (phase == CombatManager.Phase.Start || phase == CombatManager.Phase.PreCombat || phase == CombatManager.Phase.BossActionPreCombat)
+                Screens.BattleScreen.TurnOpening();
             if (_phase == phase) return;
             var previous = _phase;
             _phase = phase;

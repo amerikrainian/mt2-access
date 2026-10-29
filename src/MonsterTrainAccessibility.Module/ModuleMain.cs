@@ -57,6 +57,7 @@ namespace MonsterTrainAccessibility.Module
             GraphAnnouncer.ExpandedStateText = Strings.ExpandedState;
             Core.Events.GameEvents.Store = () => host.Settings.Store;
             Core.Events.GameEvents.Suppressed = Combat.CombatEvents.Replaying;
+            Core.Events.GameEvents.Muted = Combat.CombatEvents.Muted;
             InputBinding.RegisterType("keyboard", KeyboardBinding.Deserialize);
             InputBinding.RegisterType("controller", ControllerBinding.Deserialize);
 
@@ -285,7 +286,9 @@ namespace MonsterTrainAccessibility.Module
             Safe(Combat.RunEvents.Tick, "run events");
             Safe(Combat.CombatEvents.Tick, "combat events");
             Safe(Core.Events.GameEvents.Flush, "events");
-            ScreenManager.Tick();
+            // While the game reloads the run (a restart, an undo) it passes through the main menu: the
+            // screens hold still and say nothing until it is back.
+            if (!Combat.CombatEvents.Reloading) ScreenManager.Tick();
             if (!TextEdit.OwnsKeyboard) Navigation.TickTypeahead();
             Safe(Later.Tick, "later");
             Safe(Buffers.Tick, "buffers");

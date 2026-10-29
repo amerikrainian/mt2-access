@@ -71,7 +71,7 @@ namespace MonsterTrainAccessibility.Module.Screens
         {
             var screen = Game;
             var rooms = Rooms;
-            if (screen == null || rooms == null) return;
+            if (screen == null || rooms == null || Dealing) return;
             var selection = Selection;
             if (selection == null || !selection.Active) _selectionPrompted = false;
             else if (!selection.Hidden)
@@ -98,6 +98,72 @@ namespace MonsterTrainAccessibility.Module.Screens
             }
             Hand(b);
             if (land != null) b.SetStart(land);
+        }
+
+        // A turn opening (the battle setting up, its pre-combat, the draw) until the player has control
+        // and the dealt cards have settled: nothing is declared, so the first landing is on the hand
+        // as dealt, not on an empty hand or a card face half redrawn.
+        // Once the screen is back and focus restored (a few frames), read the focus if it is where the
+        // turn's opening found it.
+        private static void AnnounceIfStill(ControlId before, int tries)
+        {
+            Later.Frames(1, () =>
+            {
+                var now = Navigation.FocusedNode?.Id;
+                if (now == null && tries > 0) AnnounceIfStill(before, tries - 1);
+                else if (Equals(now, before)) Navigation.AnnounceCurrent();
+            }, "battle: turn start");
+        }
+
+
+        private static bool s_opening;
+        private static ControlId s_focusAtOpening;
+
+        /// <summary>A turn opening (its pre-combat, the battle's start), told by the game's phase signal:
+        /// the screen may not rebuild during so short a phase.</summary>
+        internal static void TurnOpening()
+        {
+            if (!s_opening) s_focusAtOpening = Navigation.FocusedNode?.Id;
+            s_opening = true;
+        }
+
+        private static bool Dealing
+        {
+            get
+            {
+                var combat = Managers != null ? Managers.GetCombatManager() : null;
+                if (combat == null || Combat.CombatEvents.Reloading) return true;
+                // The game asking for a card from the dealt hand (Judge's Scales): the hand is ready.
+                var selection = Selection;
+                if (selection != null && selection.Active)
+                {
+                    s_opening = false;
+                    return false;
+                }
+                switch (combat.GetCombatPhase())
+                {
+                    case CombatManager.Phase.Start:
+                    case CombatManager.Phase.PreCombat:
+                    case CombatManager.Phase.BossActionPreCombat:
+                        TurnOpening();
+                        return true;
+                }
+                if (s_opening)
+                {
+                    var hand = HandUi;
+                    var cards = Managers.GetCardManager();
+                    bool settled = Ready && hand != null && !hand.AreAnyCardsAnimating() && cards != null && !cards.isAddingCardsToHand;
+                    // Control can come back elsewhere than the player's turn (a battle won): not dealing.
+                    if (settled || combat.GetCombatPhase() != CombatManager.Phase.MonsterTurn)
+                    {
+                        s_opening = false;
+                        // Control back where focus was left (End Turn, a floor): said again, as the turn
+                        // starts; a focus that moved to a card dealt is read by the landing itself.
+                        if (s_focusAtOpening != null) AnnounceIfStill(s_focusAtOpening, 10);
+                    }
+                }
+                return s_opening;
+            }
         }
 
         private bool _targeted;

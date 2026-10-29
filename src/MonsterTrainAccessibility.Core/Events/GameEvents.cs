@@ -60,9 +60,13 @@ namespace MonsterTrainAccessibility.Core.Events
         /// <summary>Whether the game is replaying (speech held back).</summary>
         public static Func<bool> Suppressed = () => false;
 
+        /// <summary>Whether an event of a kind is dropped altogether (a battle setting itself up says
+        /// nothing but its turn and phase).</summary>
+        public static Func<EventKind, bool> Muted = _ => false;
+
         public static void Raise(EventKind kind, string text, EventSide side = EventSide.None)
         {
-            if (kind == null || string.IsNullOrWhiteSpace(text)) return;
+            if (kind == null || string.IsNullOrWhiteSpace(text) || Muted(kind)) return;
             _pending.Add(new Pending { Kind = kind, Text = text, Side = side });
         }
 
