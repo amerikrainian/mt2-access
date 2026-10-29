@@ -186,6 +186,11 @@ namespace MonsterTrainAccessibility.Module
             ScreenManager.Register(new Screens.IntroStartScreen());
             ScreenManager.Register(new Screens.MainMenuScreen());
             ScreenManager.Register(new Screens.StartRunOptionsDialog());
+            ScreenManager.Register(new Screens.RunSetupScreen());
+            ScreenManager.Register(new Screens.RunSetupClanPickerScreen());
+            ScreenManager.Register(new Screens.RunSetupPyreHeartPickerScreen());
+            ScreenManager.Register(new Screens.RunSetupMutatorsScreen());
+            ScreenManager.Register(new Screens.RunSetupFtueCovenantScreen());
             ScreenManager.Register(new Screens.PauseMenuScreen());
             ScreenManager.Register(new Screens.SettingsScreen());
             ScreenManager.Register(new Screens.DialogScreen());

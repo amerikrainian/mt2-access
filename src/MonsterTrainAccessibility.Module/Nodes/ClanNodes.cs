@@ -60,6 +60,39 @@ namespace MonsterTrainAccessibility.Module.Nodes
             };
         }
 
+        /// <summary>A clan in the run setup's picker (<see cref="RunSetupClanSelectionItemUI"/>): its name
+        /// (or the game's Random title), "selected" on the one in use, the game's "Locked" with its
+        /// unlock condition and progress, else its level ("Level: 9", then the meter's "120/300" or
+        /// its max-level word) and the description the picker shows for it; the level meter's tooltips
+        /// (what the next level unlocks) in the buffer. Enter picks it through the game, which closes
+        /// the picker; a locked one stays unpicked.</summary>
+        public static NodeVtable RunSetupOption(RunSetupClanSelectionItemUI item, Func<string> description)
+        {
+            Func<string> name = () => Shown(item.classTitleLabel) ?? Shown(item.classRandomTitleLabel);
+            var vt = GameWidgets.Button(item.Button, name,
+                () => item.IsLocked ? ProgressionReader.Line(item.progressionObjectiveUI) : description(),
+                GameNodes.SelectedPart(() => (item.selectedIndicator != null && item.selectedIndicator.activeSelf)
+                    || (item.randomSelectedIndicator != null && item.randomSelectedIndicator.activeSelf)),
+                new NodeAnnouncement(() => item.IsLocked ? GameText.Term("Locked") : null, kind: AnnouncementKinds.Enabled),
+                new NodeAnnouncement(() => item.IsLocked ? null : Level(item.classLevelMeter), kind: AnnouncementKinds.Value));
+            vt.Details = () => GameNodes.Lines(TooltipReader.Lines(item.classLevelMeter));
+            return vt;
+        }
+
+        // "Level: 9, 120/300": the meter's level, then its count or its message ("Max Level").
+        private static string Level(ClassLevelMeterUI meter)
+        {
+            if (meter == null || !meter.gameObject.activeInHierarchy) return null;
+            string level = Shown(meter.levelLabel);
+            if (level == null) return null;
+            string line = string.Format(GameText.Term("TextFormat_Colon"), GameText.Term("Leaderboard_Level"), level);
+            // The game sets the count or the message (on its own object) whether or not the panel
+            // holding them is on screen: it shows on hover.
+            var bar = meter.xpMeter;
+            string progress = bar != null ? Set(bar.countLabel) ?? Set(bar.messageLabel) : null;
+            return progress != null ? line + ", " + progress : line;
+        }
+
         /// <summary>The champion the game shows chosen.</summary>
         public static bool ChampionSelected(ChampionOptionButton champion)
             => champion.Button.state == GameUISelectableButton.State.Activated;
@@ -142,6 +175,9 @@ namespace MonsterTrainAccessibility.Module.Nodes
             var tips = provider?.Tooltips;
             return tips != null && tips.Count > 0 && !string.IsNullOrWhiteSpace(tips[0].body) ? CardTextHelper.ScrubUpgradeHighlights(tips[0].body) : null;
         }
+
+        private static string Set(TMP_Text text)
+            => text != null && text.gameObject.activeSelf && !string.IsNullOrWhiteSpace(text.text) ? text.text : null;
 
         private static string Shown(TMP_Text text)
             => text != null && text.gameObject.activeInHierarchy && !string.IsNullOrWhiteSpace(text.text) ? text.text : null;
