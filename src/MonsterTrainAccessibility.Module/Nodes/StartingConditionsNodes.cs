@@ -120,19 +120,21 @@ namespace MonsterTrainAccessibility.Module.Nodes
             return new List<TooltipContent> { new TooltipContent(title, body) };
         }
 
-        /// <summary>"Highly Reactive", then what it does.</summary>
+        /// <summary>"Highly Reactive", then what it does: as drawn, else (a challenge's details draw only
+        /// the icon) the mutator's own name and description.</summary>
         public static NodeVtable Mutator(MutatorButtonUI mutator)
         {
             var vt = Line(() => Text(mutator.titleLabel), null, mutator);
+            Func<string> name = () => Text(mutator.titleLabel) ?? mutator.MutatorState?.GetName();
             return new NodeVtable
             {
                 ControlType = vt.ControlType,
                 Announcements = new List<NodeAnnouncement>
                 {
-                    GameNodes.LabelPart(() => Text(mutator.titleLabel)),
-                    GameNodes.TooltipPart(() => Text(mutator.descriptionLabel)),
+                    GameNodes.LabelPart(name),
+                    GameNodes.TooltipPart(() => Text(mutator.descriptionLabel) ?? mutator.MutatorState?.GetDescription()),
                 },
-                SearchText = () => Text(mutator.titleLabel),
+                SearchText = name,
                 Details = vt.Details,
             };
         }
@@ -198,7 +200,7 @@ namespace MonsterTrainAccessibility.Module.Nodes
             };
         }
 
-        private static string CovenantTitle(ChallengeCovenantUI covenant, IReadOnlyList<DLC> dlcs)
+        internal static string CovenantTitle(ChallengeCovenantUI covenant, IReadOnlyList<DLC> dlcs)
         {
             var tips = CovenantTooltips(covenant, dlcs);
             return tips.Count > 0 && !string.IsNullOrWhiteSpace(tips[0].title) ? CardTextHelper.RemoveBold(tips[0].title) : null;

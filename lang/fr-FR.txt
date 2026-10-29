@@ -253,3 +253,7 @@ gameover.level=niveau {0}
 challenge.creator=par {0}
 challenge.entries={0} participations
 challenge.in_progress=partie en cours
+run.victory=Victoire
+run.clean=partie parfaite
+run.favorite=mis en favori
+run.unfavorite=retiré des favoris

@@ -15,8 +15,8 @@ namespace MonsterTrainAccessibility.Module.Screens
 {
     /// <summary>
     /// The community challenges (<see cref="global::ChallengeOverviewScreen"/>). Opening it says its title
-    /// and the game's line under it; then the two tabs (Featured, Recently Played; the one shown
-    /// "selected"), the challenges the shown tab lists (<see cref="Challenge"/>: its name, clans, Pyre
+    /// and the game's line under it; then the two tabs (Featured, Recently Played; landing on one shows
+    /// it), the challenges the shown tab lists (<see cref="Challenge"/>: its name, clans, Pyre
     /// Heart, covenant, mutators, creator, entries, the player's rank), or the game's note that there are
     /// none; then Join Challenge, Create Challenge, Back. Enter on a challenge opens it through the game.
     /// Join Challenge opens the game's share code entry, which replaces the list: the code (edited with
@@ -89,17 +89,19 @@ namespace MonsterTrainAccessibility.Module.Screens
                 _ => GameInput.Send(global::InputManager.Controls.Escape));
         }
 
-        // A tab: selected while it is the one shown (the game leaves that one unpressable).
+        // A tab: landing on it shows it, as with every tab (the game leaves the shown one unpressable).
         private static void Tab(GraphBuilder b, string key, GameUISelectableButton tab)
         {
             if (tab == null || !tab.gameObject.activeInHierarchy) return;
             System.Func<string> label = () => PauseMenuScreen.Caption(tab);
+            System.Action open = () => { if (tab.interactable) GameInput.Submit(tab); };
             b.AddItem(ControlId.Structural("challenges:tab:" + key), new NodeVtable
             {
                 ControlType = ControlTypes.Tab,
-                Announcements = new List<NodeAnnouncement> { GameNodes.LabelPart(label), GameNodes.SelectedPart(() => !tab.interactable) },
+                Announcements = new List<NodeAnnouncement> { GameNodes.LabelPart(label) },
                 SearchText = label,
-                OnActivate = () => { if (tab.interactable) GameInput.Submit(tab); },
+                OnActivate = open,
+                OnFocus = open,
             });
         }
 

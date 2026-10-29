@@ -121,7 +121,8 @@ namespace MonsterTrainAccessibility.Module.Nodes
                 if (keys.Contains(key) || keys.Contains(key.Replace("_CardText", ""))) continue;
                 keys.Add(key);
                 string line = Line(CardTextHelper.RemoveBold(tooltip.title), CardTextHelper.ScrubUpgradeHighlights(tooltip.body));
-                if (line != null) lines.Add(line);
+                // The game ships a few placeholders ("(WIP) Pyre Heart tooltip here", the Pyre Heart header's).
+                if (line != null && !line.StartsWith("(WIP)")) lines.Add(line);
             }
             return lines;
         }

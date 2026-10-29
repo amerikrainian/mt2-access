@@ -253,3 +253,7 @@ gameover.level=レベル{0}
 challenge.creator=作成者 {0}
 challenge.entries=エントリー {0}
 challenge.in_progress=進行中のラン
+run.victory=勝利
+run.clean=クリーンラン
+run.favorite=お気に入り済み
+run.unfavorite=お気に入り解除

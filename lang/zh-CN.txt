@@ -253,3 +253,7 @@ gameover.level=等级{0}
 challenge.creator=作者 {0}
 challenge.entries={0} 个参与
 challenge.in_progress=进行中的冒险
+run.victory=胜利
+run.clean=无重开通关
+run.favorite=已收藏
+run.unfavorite=已取消收藏

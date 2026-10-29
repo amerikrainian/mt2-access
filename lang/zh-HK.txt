@@ -253,3 +253,7 @@ gameover.level=等級{0}
 challenge.creator=作者 {0}
 challenge.entries={0} 個參與
 challenge.in_progress=進行中的冒險
+run.victory=勝利
+run.clean=乾淨通關
+run.favorite=已加入最愛
+run.unfavorite=已移除最愛

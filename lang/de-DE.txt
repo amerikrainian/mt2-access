@@ -253,3 +253,7 @@ gameover.level=Stufe {0}
 challenge.creator=von {0}
 challenge.entries={0} Einträge
 challenge.in_progress=Lauf im Gange
+run.victory=Sieg
+run.clean=sauberer Durchlauf
+run.favorite=favorisiert
+run.unfavorite=nicht mehr favorisiert

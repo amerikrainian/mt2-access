@@ -253,3 +253,7 @@ gameover.level=уровень {0}
 challenge.creator=автор {0}
 challenge.entries=участников: {0}
 challenge.in_progress=забег идёт
+run.victory=Победа
+run.clean=чистый забег
+run.favorite=в избранном
+run.unfavorite=убрано из избранного

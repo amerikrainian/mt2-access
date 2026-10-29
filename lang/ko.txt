@@ -253,3 +253,7 @@ gameover.level=레벨 {0}
 challenge.creator=제작자 {0}
 challenge.entries=참가 {0}
 challenge.in_progress=진행 중인 런
+run.victory=승리
+run.clean=클린 런
+run.favorite=즐겨찾기됨
+run.unfavorite=즐겨찾기 해제됨

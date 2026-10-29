@@ -274,6 +274,13 @@ namespace MonsterTrainAccessibility.Core.Strings
             D("challenge.entries", "{0} entries"),
             D("challenge.in_progress", "run in progress"),
 
+            // A run's marks, drawn as icons (a leaderboard entry, the run history): won; no restarts or undos.
+            D("run.victory", "Victory"),
+            D("run.clean", "clean run"),
+            // A run the player has starred in the run history; the star just taken off one.
+            D("run.favorite", "favorited"),
+            D("run.unfavorite", "unfavorited"),
+
             // A shop's good or service the player's coin does not cover.
             D("shop.unaffordable", "can't afford"),
 

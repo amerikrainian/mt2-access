@@ -36,7 +36,9 @@ namespace MonsterTrainAccessibility.Module.Screens
             }
         }
 
-        public override bool IsActive() => Dialog != null;
+        // Silent while the game loads the screen a choice opened (a challenge's details): it stays open
+        // under the load, and would be read again between the game's loading message and that screen.
+        public override bool IsActive() => Dialog != null && !ShinyShoe.Loading.LoadingScreen.IsWorking();
 
         // Opening speaks the dialog's header and its line ("Depart. Choose your run type."), once: not
         // again when focus comes back from the game's confirmation. The list is unnamed, so the first

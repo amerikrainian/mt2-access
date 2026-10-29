@@ -49,7 +49,7 @@ namespace MonsterTrainAccessibility.Module.Screens
             if (board.noFriendsMessage != null && board.noFriendsMessage.activeInHierarchy) Walk(b, board.noFriendsMessage.transform, id + ":nofriends");
             if (board.errorLabel != null && Spoken(board.errorLabel))
                 b.AddItem(ControlId.Structural(id + ":error"), GameNodes.Text(() => board.errorLabel.Content()));
-            if (board.paginationControls != null) Walk(b, board.paginationControls.transform, id + ":pages");
+            PaginationNodes.Add(b, id + ":pages", board.paginationControls);
         }
 
         // "Oleg P, Rank: 1, Win Streak: 2": the name, then each shown cell under its column's header
