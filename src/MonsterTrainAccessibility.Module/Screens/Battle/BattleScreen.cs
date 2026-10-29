@@ -83,11 +83,18 @@ namespace MonsterTrainAccessibility.Module.Screens
             if (targeting != null)
             {
                 _targeted = true;
+                // A card's targeting (not an ability's): where it sat in the hand, to come back to.
+                _targetedCard = targeting == HandUi.selectionBehaviour ? targeting.GetFocusedOrSelectedCardIndex() : -1;
                 BuildTargeting(b, targeting);
                 return;
             }
-            // A card played or dropped: focus stays on the floor it was aimed at.
-            if (_targeted) _landFloor = SelectedFloor;
+            // Targeting over: a card played or dropped lands back in the hand, where the card was (the
+            // card itself if dropped, its neighbour if played); an ability's, on the floor it was used on.
+            if (_targeted)
+            {
+                if (_targetedCard >= 0) _landHand = _targetedCard;
+                else _landFloor = SelectedFloor;
+            }
             _targeted = false;
             TopPanel(b, screen.battleHud);
             ControlId land = null;
@@ -96,9 +103,13 @@ namespace MonsterTrainAccessibility.Module.Screens
                 var first = Floor(b, room);
                 if (room == _landFloor) land = first;
             }
-            Hand(b);
+            var card = Hand(b, _landHand);
+            if (_landHand >= 0) land = card;
             if (land != null) b.SetStart(land);
         }
+
+        private int _targetedCard = -1;
+        private int _landHand = -1;
 
         // A turn opening (the battle setting up, its pre-combat, the draw) until the player has control
         // and the dealt cards have settled: nothing is declared, so the first landing is on the hand
@@ -187,6 +198,7 @@ namespace MonsterTrainAccessibility.Module.Screens
                 vt.OnFocus = () =>
                 {
                     _landFloor = -1;
+                    _landHand = -1;
                     _lastInRow[key] = id;
                     enter?.Invoke();
                     focus?.Invoke();
@@ -234,7 +246,9 @@ namespace MonsterTrainAccessibility.Module.Screens
             return items[0].Key;
         }
 
-        private void Hand(GraphBuilder b)
+        // The hand's row; returns the card at `at` (the last when the hand is shorter now), or the row's
+        // only item when it is empty.
+        private ControlId Hand(GraphBuilder b, int at = -1)
         {
             var hand = HandUi;
             var cards = Managers.GetCardManager();
@@ -256,6 +270,7 @@ namespace MonsterTrainAccessibility.Module.Screens
             if (items.Count == 0) items.Add(Item("hand:empty", GameNodes.Text(() => Strings.Battle("hand_empty"))));
             Row(b, "hand", Strings.Battle("hand"), items, () => _focusFloor = -1);
             b.SetStart(items[0].Key);
+            return items[System.Math.Max(0, System.Math.Min(at, items.Count - 1))].Key;
         }
 
         // ---- the hand ----
