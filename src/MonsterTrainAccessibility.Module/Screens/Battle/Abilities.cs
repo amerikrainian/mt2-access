@@ -9,9 +9,11 @@ using ShinyShoe;
 namespace MonsterTrainAccessibility.Module.Screens
 {
     // A unit's ability: Enter on a unit whose ability is ready selects it the way the game's keyboard
-    // play does (its own replay of an ability, HandUI.PlayAbility, up to the selection): the unit's
-    // floor, the train's view of its units, the unit, its ability. Targeting then takes over as for a
-    // card; an ability that is not ready says where it stands.
+    // play does (its own replay of an ability, HandUI.PlayAbility, up to the selection): keyboard mode,
+    // the unit's floor, the train's view of its units, the unit, its ability. Targeting then takes over
+    // as for a card; an ability that is not ready says where it stands. Keyboard mode first, as the
+    // replay forces it: the train's view of its units opens only for keyboard or pad, and the game
+    // leaves mouse mode on no key it does not hear (a nudged mouse puts it there for good).
     public sealed partial class BattleScreen
     {
         private static void UseAbility(CharacterState unit)
@@ -41,6 +43,7 @@ namespace MonsterTrainAccessibility.Module.Screens
             var spawn = unit.GetSpawnPoint();
             int room = unit.GetCurrentRoomIndex();
             if (spawn == null || room < 0) yield break;
+            InputManager.Inst.ForceInputDeviceMode(InputDeviceType.Keyboard);
             cards.UnFocusCard();
             ability.UnSelectCard();
             hand.roomAbilitySelectionBehavior.UnSelectCard();
@@ -71,8 +74,10 @@ namespace MonsterTrainAccessibility.Module.Screens
             {
                 ability.HandleSubmit();
                 yield return ManualCoroutine.WaitForSecondsOrBreak(delay);
-                // The game refused the ability and said why (not enough echoes): logged only.
-                if (!ability.IsCardSelected()) CoreLog.Info("battle: the game refused " + unit.GetName() + "'s ability");
+                // Not selected: used at once (one that needs no target), or refused by the game, which
+                // says why (not enough echoes): a refusal is logged only.
+                if (!ability.IsCardSelected() && unit.GetUnitAbilityAvailability(Managers.GetCombatManager()) == CharacterState.UnitAbilityAvailability.CanActivate)
+                    CoreLog.Info("battle: the game refused " + unit.GetName() + "'s ability");
             }
         }
 
@@ -129,12 +134,14 @@ namespace MonsterTrainAccessibility.Module.Screens
             hand.StartCoroutine(SelectRoomAbility(hand, room));
         }
 
-        // HandUI.PlayRoomAbility up to the selection: the floor, the train's view, its upgrade, its ability.
+        // HandUI.PlayRoomAbility up to the selection: keyboard mode, the floor, the train's view, its
+        // upgrade, its ability.
         private static IEnumerator SelectRoomAbility(HandUI hand, int room)
         {
             const float delay = 0.1f;
             var cards = hand.selectionBehaviour;
             var ability = hand.roomAbilitySelectionBehavior;
+            InputManager.Inst.ForceInputDeviceMode(InputDeviceType.Keyboard);
             cards.UnFocusCard();
             hand.unitAbilitySelectionBehavior.UnSelectCard();
             ability.UnSelectCard();
