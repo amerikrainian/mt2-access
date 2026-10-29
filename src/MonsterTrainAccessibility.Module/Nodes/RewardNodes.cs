@@ -36,6 +36,31 @@ namespace MonsterTrainAccessibility.Module.Nodes
                 };
         }
 
+        /// <summary>A reward panel as buffer lines: each reward's own line (what it is and does), then
+        /// its tooltips, one per line.</summary>
+        public static List<string> Lines(RewardDetailsUI details)
+        {
+            var lines = new List<string>();
+            foreach (var vt in Details(details))
+            {
+                var head = new List<string>();
+                foreach (var part in vt.Announcements)
+                {
+                    string text = part?.Text?.Invoke();
+                    if (!string.IsNullOrWhiteSpace(text)) head.Add(text.Trim());
+                }
+                if (head.Count > 0) lines.Add(string.Join(", ", head));
+                if (vt.Details != null)
+                    foreach (var line in vt.Details())
+                        if (!string.IsNullOrWhiteSpace(line) && !lines.Contains(line)) lines.Add(line);
+            }
+            // The tooltips the panel shows beside the reward (an ability's), as the game drew them.
+            foreach (var container in details.GetComponentsInChildren<CardTooltipContainer>(false))
+                foreach (var line in TooltipReader.Container(container))
+                    if (!string.IsNullOrWhiteSpace(line) && !lines.Contains(line)) lines.Add(line);
+            return lines;
+        }
+
         private static string Shown(TMP_Text text)
         {
             string content = text != null && text.gameObject.activeInHierarchy ? text.Content() : null;
