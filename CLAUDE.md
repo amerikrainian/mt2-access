@@ -47,6 +47,10 @@ and its open risks are in `docs/plan.md`.
   `input ui.down ui.activate`, `speech --tail 20`, `log --grep X`, `gui --grep RE --context 3`,
   `eval file.cs`, `wait "<bool expr>"`, `typeinfo Name`, `actions`, `module`, `screenshot out.png`,
   `click [x y]`. `gamelib.py` holds the shared constants (app id, exe, port).
+- `audit.py <check>` — the content audits (`Module/Dev/GlossaryAudit`) over every card and artifact:
+  `glossary [--all-languages]`, `titles` (no tooltip line says its name twice, titles still reading an
+  icon), `compare [--all-languages]` (against the earlier spelling rule), `screen` (what the open
+  screen's buffers gain); `--top N`, `--out FILE`. Cards need a screen with a card open (the Logbook).
 
 ## Build & deploy
 ```
@@ -215,9 +219,10 @@ another language's spelling is never guessed at, since its words can be another 
 mentions and does not show is appended to the control buffer, never spoken on focus. A panel declared a
 node per line (an enemy's details) sets `NodeVtable.Panel` on each line, so what one line defines is
 not added again to another's buffer.
-`Module/Dev/GlossaryAudit.Run()` (REPL) checks it against all content: every tooltip title the game
-draws must be an entry, and what each card and artifact gains is listed; `RunAllLanguages()` repeats
-it per language. Rerun it after a game patch or with new mods.
+`uv run python tools/python/audit.py glossary` checks it against all content: every tooltip title the
+game draws must be an entry, and what each card and artifact gains is listed; `--all-languages` repeats
+it per language, `titles` checks the lines as speech reads them. Rerun them after a game patch or with
+new mods.
 
 ## Languages (`Module/LanguageSync`, `Core/Strings`, `lang/`)
 The mod's own words follow the GAME's language, never the system's: I2's current language code,

@@ -106,7 +106,8 @@ namespace MonsterTrainAccessibility.Module.Nodes
         }
 
         // The abilities text as the game builds it: tooltip blocks (a title line, a body) apart by blank
-        // lines. Each block is one line.
+        // lines. Each block is one line, its title without the icon its name repeats (the Spikes icon
+        // before "Spikes"), as every tooltip title is read.
         private static List<string> Blocks(string text)
         {
             var blocks = new List<string>();
@@ -124,7 +125,8 @@ namespace MonsterTrainAccessibility.Module.Nodes
         private static void Flush(List<string> blocks, List<string> lines)
         {
             if (lines.Count == 0) return;
-            blocks.Add(lines.Count == 1 ? lines[0] : lines[0] + ": " + GameNodes.Sentences(lines.GetRange(1, lines.Count - 1)));
+            string title = GameSprites.WithoutEchoedIcons(lines[0]);
+            blocks.Add(lines.Count == 1 ? title : title + ": " + GameNodes.Sentences(lines.GetRange(1, lines.Count - 1)));
             lines.Clear();
         }
 

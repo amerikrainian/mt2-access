@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.RegularExpressions;
 using MonsterTrainAccessibility.Core;
 using MonsterTrainAccessibility.Core.Strings;
@@ -72,19 +73,40 @@ namespace MonsterTrainAccessibility.Module.Interop
 
         private static readonly Regex AnyTag = new Regex("<[^>]*>", RegexOptions.Compiled);
 
-        /// <summary>The text without an icon whose word it already says: a keyword drawn beside its own
+        /// <summary>A title without an icon whose word it already says: a keyword drawn beside its own
         /// icon ("[Shift icon] Shift", a tooltip's title), which read as a word would say the keyword
-        /// twice ("Shift Shift"). An icon saying something the text does not ("[ember] 2") stays.</summary>
+        /// twice ("Shift Shift"). An icon saying something the title does not ("[ember] 2", the ability
+        /// icon before an ability's name) stays; one nothing names (the Enchant effect's, a mod's) goes
+        /// when the title has words of its own, as its spelled-out sprite name would only be noise
+        /// ("Enchanted Enchant").</summary>
         public static string WithoutEchoedIcons(string text)
         {
             if (string.IsNullOrEmpty(text) || text.IndexOf("<sprite", StringComparison.OrdinalIgnoreCase) < 0) return text;
             string said = AnyTag.Replace(SpriteTag.Replace(text, " "), " ");
+            bool words = said.Any(char.IsLetter);
             return SpriteTag.Replace(text, m =>
             {
+                if (words && !Known(m.Groups["name"].Value)) return "";
+                // A name can carry markup of its own (a status named by a token: "<b>Troop</b>").
                 foreach (string word in Words(m.Groups["name"].Value, all: true))
-                    if (said.IndexOf(word.Trim(), StringComparison.OrdinalIgnoreCase) >= 0) return "";
+                {
+                    string plain = AnyTag.Replace(word, "").Trim();
+                    if (plain.Length > 0 && said.IndexOf(plain, StringComparison.OrdinalIgnoreCase) >= 0) return "";
+                }
                 return m.Value;
             });
+        }
+
+        // Whether the game (or the mod) names the icon, rather than its sprite's name standing in.
+        private static bool Known(string sprite)
+        {
+            if (string.IsNullOrWhiteSpace(sprite)) return false;
+            if (Termed.ContainsKey(sprite) || Fixed.ContainsKey(sprite)) return true;
+            var named = Named();
+            if (named == null || !named.TryGetValue(sprite, out var names)) return false;
+            foreach (var name in names)
+                if (!string.IsNullOrWhiteSpace(name())) return true;
+            return false;
         }
 
         private static string Word(string sprite)
@@ -159,12 +181,17 @@ namespace MonsterTrainAccessibility.Module.Interop
             var display = manager.displayData;
             if (display != null)
             {
+                // Triggers and card effects share icons too, with each other and with statuses (the
+                // generic trigger icon is Ascension's, Summon's and more; Hatch draws the Shell status's):
+                // every keyword drawing an icon is one of its names, so a title beside its own icon never
+                // says it twice, while the icon's word stays the first: a status's, else the first trigger's.
                 foreach (CharacterTriggerData.Trigger trigger in Enum.GetValues(typeof(CharacterTriggerData.Trigger)))
                 {
                     var icon = display.GetDisplayData(trigger, null).iconSprite;
-                    if (icon == null || named.ContainsKey(icon.name)) continue;
+                    if (icon == null) continue;
+                    if (!named.TryGetValue(icon.name, out var names)) named[icon.name] = names = new List<Func<string>>();
                     var t = trigger;
-                    named[icon.name] = new List<Func<string>> { () => CharacterTriggerData.GetKeywordText(t, inBold: false) };
+                    names.Add(() => CharacterTriggerData.GetKeywordText(t, inBold: false));
                 }
                 if (display.cardEffectDisplayData != null)
                 {
@@ -172,8 +199,9 @@ namespace MonsterTrainAccessibility.Module.Interop
                     {
                         string id = entry.Key;
                         var icon = entry.Value?.icon;
-                        if (string.IsNullOrWhiteSpace(id) || icon == null || named.ContainsKey(icon.name)) continue;
-                        named[icon.name] = new List<Func<string>> { () => CardEffectName(id) };
+                        if (string.IsNullOrWhiteSpace(id) || icon == null) continue;
+                        if (!named.TryGetValue(icon.name, out var names)) named[icon.name] = names = new List<Func<string>>();
+                        names.Add(() => CardEffectName(id));
                     }
                 }
             }
