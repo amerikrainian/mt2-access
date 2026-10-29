@@ -271,7 +271,7 @@ namespace MonsterTrainAccessibility.Module.Dev
             var data = AllGameManagers.Instance.GetAllGameData();
             foreach (var card in data.GetAllCardData()) AddName(content, card.GetName());
             foreach (var unit in data.GetAllCharacterData()) AddName(content, unit.GetName());
-            foreach (var upgrade in data.GetAllCardUpgradeData()) AddName(content, upgrade.GetUpgradeTitleKey().Localize());
+            foreach (var upgrade in data.GetAllCardUpgradeData()) AddName(content, Interop.GameText.TryTerm(upgrade.GetUpgradeTitleKey()));
             foreach (var relic in Relics(data)) AddName(content, relic.GetName());
 
             Items(item =>

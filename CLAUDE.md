@@ -241,6 +241,12 @@ English). Game terms are the game's own: read them from I2 (`LocalizationManager
 - **Never cache game state.** Hold live widgets and read them at speak time.
 - **Reuse game text** (already localized) wherever it exists; every mod-authored word lives in
   `Core/Strings/Strings.cs` (keyed, overridable by `lang/<code>.txt`), never inline in a Say call.
+- **Never look a term up through I2 directly** (`.Localize()`, `LocalizationManager.GetTranslation`),
+  in the module or in a REPL script: use `Module/Interop/GameText` (`Term`, `TryTerm`, `Source`). I2
+  caches a term's parsed parameters on the first lookup, and one without the game's context drops
+  `[effect0.power]` from that term's game text for the rest of the session ("Deal damage", no number,
+  on the card as drawn). `GameText` undoes its own parse. Calling the game's own functions is fine. A
+  poisoned session is cleared by setting every `TermData.ParsedCache` to null (or a restart).
 - **No silent failures**: every catch logs through `CoreLog` / the host logger.
 - **Announcements** (mod-authored text only; never reword game text): distinguishing word first, no
   nav hints, no fluff, never less information. Users are expert screen-reader users.

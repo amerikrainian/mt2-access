@@ -22,18 +22,30 @@ namespace MonsterTrainAccessibility.Module.Interop
 
         public static string Term(string key)
         {
-            var data = string.IsNullOrEmpty(key) ? null : I2.Loc.LocalizationManager.GetTermData(key);
+            string text = TryTerm(key);
+            if (text == null) CoreLog.Warning("GameText: no game term " + key);
+            return text;
+        }
+
+        /// <summary>The same, for a term that may well not exist (a key built by convention, probed):
+        /// null without a word in the log.</summary>
+        public static string TryTerm(string key) => Lookup(key, applyParameters: true, language: null);
+
+        /// <summary>A term's source text in a language (the I2 language name), its tokens unexpanded
+        /// (<c>[armor]</c>, <c>[effect0.power]</c>), or null. Even unexpanded, a lookup creates the term's
+        /// parse cache, so it too is undone.</summary>
+        public static string Source(string key, string language) => Lookup(key, applyParameters: false, language: language);
+
+        private static string Lookup(string key, bool applyParameters, string language)
+        {
+            if (string.IsNullOrEmpty(key)) return null;
+            var data = I2.Loc.LocalizationManager.GetTermData(key);
             var before = data != null ? data.ParsedCache : null;
             int forms = before != null ? before.pluralParsed.Count : 0;
             var unparsed = Unparsed(before);
-            string text = I2.Loc.LocalizationManager.GetTranslation(key);
+            string text = I2.Loc.LocalizationManager.GetTranslation(key, applyParameters: applyParameters, overrideLanguage: language);
             if (data != null) Restore(data, before, forms, unparsed);
-            if (string.IsNullOrWhiteSpace(text) || text.StartsWith(MissingPrefix, System.StringComparison.Ordinal))
-            {
-                CoreLog.Warning("GameText: no game term " + key);
-                return null;
-            }
-            return text;
+            return string.IsNullOrWhiteSpace(text) || text.StartsWith(MissingPrefix, System.StringComparison.Ordinal) ? null : text;
         }
 
         // The plural forms of a cache that are not parsed yet: absent, or created without their tokens.

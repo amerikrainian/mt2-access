@@ -6,6 +6,7 @@ using System.Text.RegularExpressions;
 using I2.Loc;
 using MonsterTrainAccessibility.Core;
 using MonsterTrainAccessibility.Core.Text;
+using MonsterTrainAccessibility.Module.Interop;
 
 namespace MonsterTrainAccessibility.Module.Nodes
 {
@@ -173,13 +174,10 @@ namespace MonsterTrainAccessibility.Module.Nodes
             return null;
         }
 
-        // A term's source text in a language, tokens unexpanded; null when it has none there.
-        private static string Raw(string key, string language)
-        {
-            if (string.IsNullOrEmpty(key)) return null;
-            string text = LocalizationManager.GetTranslation(key, applyParameters: false, overrideLanguage: language);
-            return Missing(text) ? null : text;
-        }
+        // A term's source text in a language, tokens unexpanded; null when it has none there. Every lookup
+        // here goes through GameText, which leaves the game's parse cache as it found it: a context-free
+        // lookup parsed first would drop a term's [effect0.power] for the game's own text all session.
+        private static string Raw(string key, string language) => GameText.Source(key, language);
 
         // A definition the game would draw, or none: a blank or missing text is not one.
         private static void Add(List<Found> found, string id, string title, string titleKey, string bodyKey, Func<string> body)
@@ -224,7 +222,7 @@ namespace MonsterTrainAccessibility.Module.Nodes
                 else
                 {
                     CoreLog.Info("Glossary: status " + id + " has no data; its definition is read from its keys");
-                    Add(found, "status:" + id, title, titleKey, bodyKey, () => bodyKey.Localize());
+                    Add(found, "status:" + id, title, titleKey, bodyKey, () => GameText.TryTerm(bodyKey));
                 }
             }
             return found.Count - n;
@@ -277,11 +275,11 @@ namespace MonsterTrainAccessibility.Module.Nodes
                     string titleKey = Has(name + TitleSuffix) ? name + TitleSuffix : CardTraitData.GetTraitCardTextLocalizationKey(name);
                     string bodyKey = CardTraitData.GetTraitTooltipTextLocalizationKey(name);
                     string title = Ask(bare, t => t.GetCardTooltipTitle());
-                    if (string.IsNullOrEmpty(title)) title = titleKey.Localize();
+                    if (string.IsNullOrEmpty(title)) title = GameText.TryTerm(titleKey);
                     bool own = !string.IsNullOrEmpty(Ask(bare, t => t.GetCardTooltipText()));
                     Add(found, "trait:" + name, CardTextHelper.RemoveBold(title ?? ""), Has(titleKey) ? titleKey : null, Has(bodyKey) ? bodyKey : null, own
                         ? (Func<string>)(() => bare.GetCardTooltipText())
-                        : () => bodyKey.Localize());
+                        : () => GameText.TryTerm(bodyKey));
                 }
             }
             return found.Count - n;
@@ -368,8 +366,8 @@ namespace MonsterTrainAccessibility.Module.Nodes
                     foreach (var suffix in bodySuffixes)
                         if (source.GetTermData(stem + suffix) != null) { bodyKey = stem + suffix; break; }
                     if (bodyKey == null) continue;
-                    Func<string> body = hud ? (Func<string>)(() => Unfilled.Replace(bodyKey.Localize(), "")) : () => bodyKey.Localize();
-                    Add(found, (hud ? "hud:" : "term:") + titleKey, titleKey.Localize(), titleKey, bodyKey, body);
+                    Func<string> body = hud ? (Func<string>)(() => Unfilled.Replace(GameText.TryTerm(bodyKey) ?? "", "")) : () => GameText.TryTerm(bodyKey);
+                    Add(found, (hud ? "hud:" : "term:") + titleKey, GameText.TryTerm(titleKey), titleKey, bodyKey, body);
                 }
             }
             return found.Count - n;
