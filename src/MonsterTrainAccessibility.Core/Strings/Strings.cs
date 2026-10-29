@@ -171,6 +171,10 @@ namespace MonsterTrainAccessibility.Core.Strings
             D("map.no_backward", "No previous map node."),
             // A map node already visited, in the ring the train is in.
             D("state.visited", "visited"),
+            // Soul Savior's region choice: a region already cleared, and a reward a cleared region has
+            // improved (the game draws both only as images).
+            D("state.defeated", "defeated"),
+            D("state.upgraded", "upgraded"),
             // The Dragon's Hoard's loot levels, which the game shows as numbers; {0} = the level. "current"
             // marks the level the hoard is at, which the game shows only by a highlight.
             D("hoard.level", "Level {0}"),
@@ -587,6 +591,8 @@ namespace MonsterTrainAccessibility.Core.Strings
         public static string MapNoForward => Get("map.no_forward");
         public static string MapNoBackward => Get("map.no_backward");
         public static string StateVisited => Get("state.visited");
+        public static string StateDefeated => Get("state.defeated");
+        public static string StateUpgraded => Get("state.upgraded");
         public static string HoardLevel(int level) => F("hoard.level", level);
         public static string RewardAmount(string amount, string currency) => F("reward.amount", amount, currency);
         public static string StateCurrent => Get("state.current");
