@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using MonsterTrainAccessibility.Contracts;
 using MonsterTrainAccessibility.Core.Graph;
 using MonsterTrainAccessibility.Core.UI;
 using MonsterTrainAccessibility.Module.Interop;
@@ -88,6 +89,83 @@ namespace MonsterTrainAccessibility.Module.Nodes
         /// whether or not its page of the collection is on screen.</summary>
         public static NodeVtable Relic(RelicTooltipProvider icon)
             => TooltipReader.Item(() => TooltipReader.Lines(icon.Tooltips ?? new List<TooltipContent>()));
+
+        /// <summary>
+        /// A Soul Savior run's soul (<see cref="SoulHudItemUI"/>): "Ghastbud, button, Attached To: Greed
+        /// Dragon", then what it does; where it stands is the game's own tooltip lines after the soul's
+        /// ("Attached To: ...", that no card can take it), said again as it changes. The game's "Soul Not
+        /// Attached" is left out: no card named says as much.
+        /// Enter is a click, through the game: on the map it attaches the soul (the deck opens to choose
+        /// its card), in a battle it shows the deck while attached, else the game refuses; a press that
+        /// opens the deck calls <paramref name="leave"/> first. Backspace detaches it where the game offers
+        /// that (an attached soul, on the map), as the game's own detach does.
+        /// </summary>
+        public static NodeVtable Soul(SoulHudItemUI item, SoulEquipUI equip, Action leave)
+        {
+            var button = item.SoulItemButton;
+            Func<string> name = () => item.GetSoulState()?.GetName();
+            var vt = new NodeVtable
+            {
+                ControlType = ControlTypes.Button,
+                Announcements = new List<NodeAnnouncement>
+                {
+                    GameNodes.LabelPart(name),
+                    new NodeAnnouncement(() => Standing(item), live: true, kind: AnnouncementKinds.Value),
+                    GameNodes.TooltipPart(() => TooltipReader.FirstBody(item.tooltipProvider)),
+                },
+                SearchText = name,
+                OnFocus = () => GameInput.Hover(button),
+                OnActivate = () =>
+                {
+                    var action = PressAction(item, equip);
+                    if (action == SoulHudItemUI.SoulActionType.Attach || action == SoulHudItemUI.SoulActionType.ViewDeck) leave?.Invoke();
+                    GameInput.Submit(button);
+                },
+            };
+            if (CanDetach(item, equip))
+                vt.OnSecondary = () =>
+                {
+                    var state = item.GetSoulState();
+                    var save = AllGameManagers.Instance != null ? AllGameManagers.Instance.GetSaveManager() : null;
+                    if (state == null || save == null) return;
+                    SoulHelper.DetachSoulEffect(state, save);
+                    equip.OnSoulDetached.Dispatch(item);
+                };
+            return vt;
+        }
+
+        // The soul's tooltip lines after its own, less "Soul Not Attached": where it stands.
+        private static string Standing(SoulHudItemUI item)
+        {
+            var lines = TooltipReader.Lines(item.tooltipProvider);
+            string unattached = string.IsNullOrEmpty(item.notEquippedKey) ? null : TextFilter.Clean(GameText.Term(item.notEquippedKey));
+            var kept = new List<string>();
+            for (int i = 1; i < lines.Count; i++)
+                if (TextFilter.Clean(lines[i]) != unattached) kept.Add(lines[i]);
+            return kept.Count > 0 ? GameNodes.Sentences(kept) : null;
+        }
+
+        // What a click on the soul would do now, by the game's own test (which changes nothing).
+        private static SoulHudItemUI.SoulActionType PressAction(SoulHudItemUI item, SoulEquipUI equip)
+        {
+            var save = AllGameManagers.Instance != null ? AllGameManagers.Instance.GetSaveManager() : null;
+            if (save == null || item.SoulItemButton == null) return SoulHudItemUI.SoulActionType.None;
+            return item.TryGetAction(item.SoulItemButton, global::InputManager.Controls.Submit, save, CanEquip(equip, save), out var action)
+                ? action : SoulHudItemUI.SoulActionType.None;
+        }
+
+        // The game offers the detach (its preview key, a pad's context key) for an attached soul that
+        // could be attached again, where it shows the equip prompts (the map).
+        private static bool CanDetach(SoulHudItemUI item, SoulEquipUI equip)
+        {
+            var save = AllGameManagers.Instance != null ? AllGameManagers.Instance.GetSaveManager() : null;
+            var state = item.GetSoulState();
+            return save != null && state != null && CanEquip(equip, save)
+                && SoulHelper.GetIsSoulEffectAttached(state, save, out _) && SoulHelper.CanPlayerAttachSoulEffect(state, save);
+        }
+
+        private static bool CanEquip(SoulEquipUI equip, SaveManager save)
+            => equip.ShouldShowEquipUI(save.GetGameSequence(), AllGameManagers.Instance.GetScreenManager());
 
         // The texts a widget draws, in order: its number, however it is laid out. A current-over-maximum
         // count is two lines with the divider drawn between them ("50", "50"), read as "50 / 50".

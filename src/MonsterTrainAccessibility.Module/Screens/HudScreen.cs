@@ -15,7 +15,8 @@ namespace MonsterTrainAccessibility.Module.Screens
     /// <summary>
     /// The run's HUD (<see cref="global::Hud"/>) as one list, which Tab opens anywhere in a run (on any
     /// screen that declares the run keys) and Tab or Escape closes: the pyre, coin, deck and Dragon's
-    /// Hoard; the clans, Covenant and ring; the battle's own lines while in one; the train's stats; the
+    /// Hoard; the clans, Covenant (or Soul Savior's difficulty) and ring; the bosses ahead, a row; Soul
+    /// Savior's souls, a row (<see cref="HudNodes.Soul"/>); the battle's own lines while in one; the train's stats; the
     /// artifacts, then the enemy's, the mutators and the Titan essences when there are any; game speed,
     /// the map, settings. Each in the game's words, its tooltips in the buffer; the deck, the hoard,
     /// game speed, the map and settings press through the game.
@@ -77,6 +78,8 @@ namespace MonsterTrainAccessibility.Module.Screens
             Line(b, "difficulty", hud.difficultyTierUI);
             Line(b, "ring", hud.runDistanceUI);
             Line(b, "endless", hud.endlessRunDistanceUI);
+            Bosses(b, hud);
+            Souls(b, hud.soulEquipUI);
             Line(b, "moon", hud.lunaCovenUI);
             Line(b, "battle", hud.battleInfoUI);
             TrainStats(b, hud.trainStatsUI);
@@ -101,6 +104,46 @@ namespace MonsterTrainAccessibility.Module.Screens
         private static void Line(GraphBuilder b, string key, Component widget)
         {
             if (Shown(widget) && TooltipReader.Lines(widget).Count > 0) b.AddItem(Id(key), TooltipReader.Item(widget));
+        }
+
+        // The bosses the run is headed for, as the game marks them, in order, each by its tooltips: its
+        // name and story, then its power. The game fills one list of its marks by the kind of run (the
+        // two share widgets).
+        private static void Bosses(GraphBuilder b, global::Hud hud)
+        {
+            var save = AllGameManagers.Instance != null ? AllGameManagers.Instance.GetSaveManager() : null;
+            var list = save != null && save.IsRegionRun ? hud.soulSaviorBossTargetUis : hud.bossTargetUis;
+            var targets = new List<BossTargetUI>();
+            if (list != null)
+                foreach (var target in list)
+                    if (Shown(target) && TooltipReader.Lines(target).Count > 0) targets.Add(target);
+            if (targets.Count == 0) return;
+            b.StartRow();
+            for (int i = 0; i < targets.Count; i++) b.AddItem(Id("boss:" + i), TooltipReader.Item(targets[i]));
+            b.EndRow();
+        }
+
+        // Soul Savior's souls under the game's "Souls", a row; while the game has them folded away (its
+        // dropdown, as in a battle), its button that unfolds them.
+        private static void Souls(GraphBuilder b, SoulEquipUI equip)
+        {
+            if (!Shown(equip)) return;
+            string header = ChallengeProgressScreen.HeaderOf(equip, "Text souls");
+            var layout = equip.GetSoulHudItemsLayout();
+            var items = equip.GetSoulHudItems();
+            if (layout == null || !layout.gameObject.activeInHierarchy || items == null)
+            {
+                var dropdown = equip.GetDropdownButton();
+                if (Shown(dropdown)) b.AddItem(Id("souls"), GameWidgets.Button(dropdown, () => header));
+                return;
+            }
+            b.PushContext(header, Strings.RoleList);
+            b.StartRow();
+            for (int i = 0; i < items.Count; i++)
+                if (Shown(items[i]) && items[i].GetSoulState() != null)
+                    b.AddItem(Id("soul:" + items[i].GetSoulState().GetRelicDataID()), HudNodes.Soul(items[i], equip, () => s_open = false));
+            b.EndRow();
+            b.PopContext();
         }
 
         // The train's stats, which the game shows only on hover: their numbers are kept up regardless.

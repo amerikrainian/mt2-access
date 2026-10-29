@@ -15,15 +15,18 @@ namespace MonsterTrainAccessibility.Module.Map
     /// meets them; then the battle that ends the ring.</item>
     /// </list>
     /// The route itself: a battle leads into its ring, where the route forks into the branches; a
-    /// branch runs node by node into the shared nodes, and those run into the next battle.
+    /// branch runs node by node into the shared nodes, and those run into the next battle. A route may
+    /// end at a ring (Soul Savior's region): past the battle that closes it, nothing follows.
     /// </summary>
     internal sealed class TrainRoute : IRunRoute
     {
         private readonly global::MapScreen _map;
+        private readonly int _lastRing;
 
-        public TrainRoute(global::MapScreen map)
+        public TrainRoute(global::MapScreen map, int lastRing = int.MaxValue)
         {
             _map = map;
+            _lastRing = lastRing;
         }
 
         private SaveManager Save => _map.saveManager;
@@ -66,7 +69,7 @@ namespace MonsterTrainAccessibility.Module.Map
         {
             if (Save == null) return new List<MapStop>();
             if (from == null) return StartOf(CurrentRing);
-            if (from.IsBattle) return StartOf(from.Ring);
+            if (from.IsBattle) return from.Ring > _lastRing ? new List<MapStop>() : StartOf(from.Ring);
             var after = new List<MapStop>();
             var line = Nodes(from.Ring, from.Branch);
             int at = line.FindIndex(stop => stop.SameAs(from));

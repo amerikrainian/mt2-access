@@ -11,7 +11,8 @@ using Screen = MonsterTrainAccessibility.Core.Screens.Screen;
 namespace MonsterTrainAccessibility.Module.Screens
 {
     /// <summary>
-    /// The run's map (<see cref="global::MapScreen"/>), read through the run's route
+    /// The run's map (<see cref="global::MapScreen"/>, or Soul Savior's, the same map under its own
+    /// name), read through the run's route
     /// (<see cref="IRunRoute"/>, live from the game):
     /// <list type="bullet">
     /// <item>what the player may choose now, as real controls: the branches after a battle side by side
@@ -49,7 +50,8 @@ namespace MonsterTrainAccessibility.Module.Screens
         {
             get
             {
-                var map = GameScreens.Active<global::MapScreen>(global::ScreenName.Map);
+                var map = GameScreens.Active<global::MapScreen>(global::ScreenName.Map)
+                    ?? GameScreens.Active<global::MapScreen>(global::ScreenName.SoulSaviorMap);
                 return map != null && map.IsInteractable() ? map : null;
             }
         }
