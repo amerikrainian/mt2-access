@@ -100,12 +100,19 @@ namespace MonsterTrainAccessibility.Module.Screens
         {
             var route = Route;
             if (route == null) return;
-            var from = FocusedChoice() ?? route.Origin();
+            var focused = FocusedChoice();
+            var from = focused ?? route.Origin();
             string fromKey = from != null ? from.Key : "start";
             if (_preview == null || _previewFrom != fromKey)
             {
                 _preview = new RouteCursor<MapStop>(route.Next);
-                _preview.Reset(from);
+                // From the choice in focus, its fellow choices are the fork Ctrl+Left/Right walk.
+                var choices = focused != null ? route.Choices() : null;
+                MapStop origin = null;
+                if (choices != null)
+                    foreach (var c in choices)
+                        if (c.Key == focused.Key) origin = c;
+                _preview.Reset(origin ?? from, origin != null ? choices : null);
                 _previewFrom = fromKey;
             }
             var result = step(_preview);

@@ -61,12 +61,24 @@ namespace MonsterTrainAccessibility.Core.UI
         public int Depth => _path.Count;
 
         /// <summary>Start over at a stop (the one the player stands on): no path, no siblings.</summary>
-        public void Reset(T origin)
+        public void Reset(T origin) => Reset(origin, null);
+
+        /// <summary>Start over at a stop that is one of several to choose among now (the choice in
+        /// focus): cycling walks them, as at any fork ahead.</summary>
+        public void Reset(T origin, IReadOnlyList<T> siblings)
         {
             Current = origin;
             _path.Clear();
-            _siblings = Array.Empty<T>();
-            _index = 0;
+            int index = siblings != null ? IndexOf(siblings, origin) : -1;
+            _siblings = index >= 0 ? siblings : Array.Empty<T>();
+            _index = index >= 0 ? index : 0;
+        }
+
+        private static int IndexOf(IReadOnlyList<T> list, T item)
+        {
+            for (int i = 0; i < list.Count; i++)
+                if (ReferenceEquals(list[i], item) || Equals(list[i], item)) return i;
+            return -1;
         }
 
         /// <summary>On to what follows the current stop: the first of them when the route forks.</summary>

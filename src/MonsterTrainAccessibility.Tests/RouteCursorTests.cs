@@ -90,6 +90,20 @@ namespace MonsterTrainAccessibility.Tests
         }
 
         [Fact]
+        public void StartingAmongTheChoicesCyclesThemAndGoesOnFromTheOneCycledTo()
+        {
+            var cursor = new RouteCursor<string>(stop => Route[stop]);
+            cursor.Reset("a1", new[] { "a1", "b1" });
+            Assert.Equal(RouteMove.Edge, cursor.Cycle(-1).Move);
+            var step = cursor.Cycle(1);
+            Assert.Equal("b1", step.Stop);
+            Assert.Equal(1, step.Index);
+            Assert.Equal(RouteMove.Edge, cursor.Cycle(1).Move);
+            Assert.Equal("s", cursor.Forward().Stop);
+            Assert.Equal("b1", cursor.Back().Stop);
+        }
+
+        [Fact]
         public void ResetForgetsThePath()
         {
             var cursor = Make();
