@@ -35,6 +35,57 @@ namespace MonsterTrainAccessibility.Tests
 
         private static InputAction Action(string key) => new InputAction(key, key) { Category = InputCategory.UI };
 
+        // Two rows that keep Home and End to themselves (a battle's floor and hand).
+        private sealed class EdgeRowsScreen : Screen
+        {
+            public override string Key => "test.edgerows";
+            public override bool IsActive() => true;
+            public override void Build(GraphBuilder b)
+            {
+                foreach (var row in new[] { new[] { "a1", "a2", "a3" }, new[] { "b1", "b2", "b3" } })
+                {
+                    b.StartRow(edges: true);
+                    foreach (var item in row)
+                    {
+                        var label = item;
+                        b.AddItem(ControlId.Structural(label), new NodeVtable
+                        {
+                            Announcements = new[] { new NodeAnnouncement(() => label, kind: AnnouncementKinds.Label) },
+                        });
+                    }
+                    b.EndRow();
+                }
+            }
+        }
+
+        [Fact]
+        public void HomeAndEndStayInARowThatKeepsThem()
+        {
+            Speech.Speak = (t, i) => { };
+            NavInput.Current = new FakeNavInput { FrameCount = 1 };
+            try
+            {
+                var nav = new GraphNavigator();
+                nav.Attach(new EdgeRowsScreen());
+                nav.EnsureFocus();
+                nav.OnInputJustPressed(Action(UiActions.Down));
+                nav.OnInputJustPressed(Action(UiActions.Right));
+                Assert.Equal(ControlId.Structural("b2"), nav.FocusedNodeId);
+
+                Assert.True(nav.OnInputJustPressed(Action(UiActions.End)));
+                Assert.Equal(ControlId.Structural("b3"), nav.FocusedNodeId);
+                Assert.True(nav.OnInputJustPressed(Action(UiActions.Home)));
+                Assert.Equal(ControlId.Structural("b1"), nav.FocusedNodeId);
+                // At the row's edge: not consumed, as at a stop's.
+                Assert.False(nav.OnInputJustPressed(Action(UiActions.Home)));
+                Assert.Equal(ControlId.Structural("b1"), nav.FocusedNodeId);
+            }
+            finally
+            {
+                Speech.Speak = (t, i) => { };
+            }
+        }
+
         // A screen answering a key of its own (the run HUD's Shift+arrow moves) at screen level.
         private sealed class OwnKeyScreen : Screen
         {

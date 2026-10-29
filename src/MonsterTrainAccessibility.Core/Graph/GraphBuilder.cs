@@ -40,6 +40,7 @@ namespace MonsterTrainAccessibility.Core.Graph
             public object StopKey;
             public Func<int> Entry;
             public bool StrictColumns;
+            public bool Edges;
         }
 
         private sealed class RawEdge
@@ -214,11 +215,13 @@ namespace MonsterTrainAccessibility.Core.Graph
         /// <paramref name="strictColumns"/> makes keyed rows a true grid: a vertical move into a column
         /// the neighbouring row does not reach (a short last row) goes nowhere, instead of falling to
         /// that row's entry.</summary>
-        public GraphBuilder StartRow(object rowKey = null, Func<int> entry = null, bool strictColumns = false)
+        /// <param name="edges">Home and End go to the row's first and last item rather than the stop's
+        /// (a screen made of several rows, each a line of its own: a battle's floors and hand).</param>
+        public GraphBuilder StartRow(object rowKey = null, Func<int> entry = null, bool strictColumns = false, bool edges = false)
         {
             if (_currentRow != null) throw new InvalidOperationException("Cannot start a row while another is open");
             if (_currentColumn != null) throw new InvalidOperationException("Cannot start a row inside an open column");
-            _currentRow = new Row { Key = rowKey, StopKey = _stopKey, Entry = entry, StrictColumns = strictColumns };
+            _currentRow = new Row { Key = rowKey, StopKey = _stopKey, Entry = entry, StrictColumns = strictColumns, Edges = edges };
             return this;
         }
 
@@ -239,7 +242,16 @@ namespace MonsterTrainAccessibility.Core.Graph
             if (_currentRow == null) throw new InvalidOperationException("No row to end");
             if (_currentRow.Items.Count == 0 && !Suppressed)
                 throw new InvalidOperationException("Row cannot be empty");
-            if (_currentRow.Items.Count > 0) _rows.Add(_currentRow);
+            if (_currentRow.Items.Count > 0)
+            {
+                _rows.Add(_currentRow);
+                if (_currentRow.Edges)
+                    foreach (var item in _currentRow.Items)
+                    {
+                        item.RowFirst = _currentRow.Items[0].Id;
+                        item.RowLast = _currentRow.Items[_currentRow.Items.Count - 1].Id;
+                    }
+            }
             _currentRow = null;
             return this;
         }

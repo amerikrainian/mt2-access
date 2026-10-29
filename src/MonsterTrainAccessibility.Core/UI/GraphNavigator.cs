@@ -693,6 +693,10 @@ namespace MonsterTrainAccessibility.Core.UI
             var focusNode = _graph?.CurrentNode;
             if (focusNode == null) return false;
 
+            // In a row that keeps them: its first/last item. Already there: not consumed, as at an edge.
+            if (focusNode.RowFirst != null)
+                return MoveTo(first ? focusNode.RowFirst : focusNode.RowLast);
+
             // In a tree: first/last sibling at the current depth.
             if (KeyGraph.InTree(focusNode))
             {

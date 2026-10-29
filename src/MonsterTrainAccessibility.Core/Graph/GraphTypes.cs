@@ -257,6 +257,11 @@ namespace MonsterTrainAccessibility.Core.Graph
         /// tree operations (expand/collapse/descend/ascend) key off this.</summary>
         public bool Expandable;
 
+        /// <summary>The first and last item of the node's row, for a row whose Home and End stay in it
+        /// (<see cref="GraphBuilder.StartRow"/>'s <c>edges</c>: a battle's floor, its hand); null elsewhere,
+        /// where Home and End travel the stop.</summary>
+        public ControlId RowFirst, RowLast;
+
         /// <summary>An <see cref="Expandable"/> group's state AT THIS RENDER (stamped by the builder from
         /// the persistent expansion set, or the explicit value the declarer passed).</summary>
         public bool Expanded;

@@ -204,7 +204,8 @@ namespace MonsterTrainAccessibility.Module.Screens
             foreach (var item in items) ids.Add(item.Key);
             _rowLanding[key] = _lastInRow.TryGetValue(key, out var left) && ids.Contains(left) ? left : ids[0];
             b.PushContext(label, null, positions);
-            b.StartRow(null, () => _lastInRow.TryGetValue(key, out var last) ? ids.IndexOf(last) : 0);
+            // Each row its own line: Home and End go to its first and last item.
+            b.StartRow(null, () => _lastInRow.TryGetValue(key, out var last) ? ids.IndexOf(last) : 0, edges: true);
             foreach (var item in items)
             {
                 var id = item.Key;
