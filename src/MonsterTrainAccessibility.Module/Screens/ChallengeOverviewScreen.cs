@@ -60,7 +60,8 @@ namespace MonsterTrainAccessibility.Module.Screens
                 return;
             }
             b.PushContext(null);
-            b.StartRow();
+            // Coming up from the list lands on the tab shown (the one the game leaves unpressable).
+            b.StartRow(entry: () => Visible(screen.recentlyViewedButton) && !screen.recentlyViewedButton.interactable && Visible(screen.featuredChallengesButton) ? 1 : 0);
             Tab(b, "featured", screen.featuredChallengesButton);
             Tab(b, "recent", screen.recentlyViewedButton);
             b.EndRow();

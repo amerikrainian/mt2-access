@@ -163,7 +163,15 @@ namespace MonsterTrainAccessibility.Module.Screens
             Tab(tabs, "global", board.allEntriesButton);
             Tab(tabs, "friends", board.friendsOnlyButton);
             b.PushContext(title, Strings.RoleList);
-            Row(b, null, tabs);
+            // Coming up from the entries lands on the tab shown (the game's activated one), not the first.
+            if (tabs.Count > 0)
+            {
+                var shown = new List<GameUISelectableButton>();
+                foreach (var button in new[] { board.allEntriesButton, board.friendsOnlyButton }) if (Visible(button)) shown.Add(button);
+                b.StartRow(entry: () => System.Math.Max(0, shown.FindIndex(t => t.state == GameUISelectableButton.State.Activated)));
+                foreach (var tab in tabs) b.AddItem(tab.Key, tab.Value);
+                b.EndRow();
+            }
             if (!fetching && board.currentRows != null)
             {
                 foreach (var row in board.currentRows)
