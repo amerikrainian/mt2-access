@@ -84,8 +84,8 @@ namespace MonsterTrainAccessibility.Module.Screens
                 _ => GameInput.Send(global::InputManager.Controls.Escape));
             yield return new ElementAction(RouteForward, Strings.Get("bind." + RouteForward), _ => Preview(c => c.Forward()));
             yield return new ElementAction(RouteBack, Strings.Get("bind." + RouteBack), _ => Preview(c => c.Back()));
-            yield return new ElementAction(RoutePrev, Strings.Get("bind." + RoutePrev), _ => Preview(c => c.Cycle(-1), cycle: true));
-            yield return new ElementAction(RouteNext, Strings.Get("bind." + RouteNext), _ => Preview(c => c.Cycle(1), cycle: true));
+            yield return new ElementAction(RoutePrev, Strings.Get("bind." + RoutePrev), _ => Preview(c => c.Cycle(-1)));
+            yield return new ElementAction(RouteNext, Strings.Get("bind." + RouteNext), _ => Preview(c => c.Cycle(1)));
         }
 
         private static int CurrentRing()
@@ -96,8 +96,7 @@ namespace MonsterTrainAccessibility.Module.Screens
 
         // One preview step, from the choice in focus (or where the player stands when none is): a new
         // focus starts the preview over.
-        // Walking a fork from the choice itself goes nowhere (the arrows walk the choices): silent.
-        private void Preview(System.Func<RouteCursor<MapStop>, RouteStep<MapStop>> step, bool cycle = false)
+        private void Preview(System.Func<RouteCursor<MapStop>, RouteStep<MapStop>> step)
         {
             var route = Route;
             if (route == null) return;
@@ -109,7 +108,6 @@ namespace MonsterTrainAccessibility.Module.Screens
                 _preview.Reset(from);
                 _previewFrom = fromKey;
             }
-            if (cycle && _preview.Depth == 0) return;
             var result = step(_preview);
             switch (result.Move)
             {
@@ -118,6 +116,9 @@ namespace MonsterTrainAccessibility.Module.Screens
                     return;
                 case RouteMove.NoBackward:
                     Core.Speech.Say(Strings.MapNoBackward, interrupt: true);
+                    return;
+                // No other choice that way at this fork (or no fork: the choice itself): nothing to say.
+                case RouteMove.Edge:
                     return;
             }
             if (result.Stop == null) return;
