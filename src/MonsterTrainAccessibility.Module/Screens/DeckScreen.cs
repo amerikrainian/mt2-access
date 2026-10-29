@@ -70,7 +70,8 @@ namespace MonsterTrainAccessibility.Module.Screens
                 b.AddItem(ControlId.Structural("deck:sort"), GameWidgets.Dropdown(screen.sortDropdown, () => PauseMenuScreen.Caption(screen.sortDropdownRoot)));
             if (screen.selectionConfirmRoot != null && screen.selectionConfirmRoot.gameObject.activeInHierarchy)
                 Button(b, "confirm", screen.confirmButton, () => Shown(screen.selectionConfirmButtonLabel));
-            Button(b, "cancel", screen.cancelButton, () => PauseMenuScreen.Caption(screen.cancelButton));
+            // The cancel button is a bare X where a soul chooses its card: the game's "Cancel" there.
+            Button(b, "cancel", screen.cancelButton, () => PauseMenuScreen.Caption(screen.cancelButton) ?? GameText.Term("Cancel"));
             Text(b, "empty", screen.noCardsMessage);
             b.PopContext();
         }

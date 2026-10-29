@@ -17,7 +17,8 @@ namespace MonsterTrainAccessibility.Module.Nodes
     /// <item>the focus line: the name, the card's type in the game's word for it in the role word's
     /// place ("Spell", "Friendly Unit"), then the face's own text objects: the cost, the type plate where
     /// it adds to the type (a unit's subtypes), attack and health while the face shows them, the size a
-    /// unit's pips draw, then the card text as rendered (its inline icons read as words at the speech
+    /// unit's pips draw, the soul attached to it (<see cref="Soul"/>), then the card
+    /// text as rendered (its inline icons read as words at the speech
     /// seam), what an upgrade adds marked;</item>
     /// <item>the buffer's head line ends with the card's type and rarity ("Firestarter, cost 1, Spell,
     /// Common"), the rarity never spoken on landing;</item>
@@ -39,6 +40,7 @@ namespace MonsterTrainAccessibility.Module.Nodes
                 // The card's type in the role word's place: "Firestarter, Spell", not "item".
                 new NodeAnnouncement(() => TypeOf(card), kind: AnnouncementKinds.Role) { Spoken = !elixir },
                 new NodeAnnouncement(() => Face(card), kind: AnnouncementKinds.Value) { Spoken = !elixir || !FreeToPlay(card) },
+                new NodeAnnouncement(() => Soul(card), kind: AnnouncementKinds.Value),
             };
             parts.AddRange(TextParts(card, elixir));
             parts.Add(new NodeAnnouncement(() => RarityOf(card), kind: AnnouncementKinds.Review));
@@ -62,6 +64,7 @@ namespace MonsterTrainAccessibility.Module.Nodes
             parts.Add(new NodeAnnouncement(() => Name(card), kind: AnnouncementKinds.Value));
             parts.Add(new NodeAnnouncement(() => TypeOf(card), kind: AnnouncementKinds.Value) { Spoken = !elixir });
             parts.Add(new NodeAnnouncement(() => Face(card), kind: AnnouncementKinds.Value) { Spoken = !elixir || !FreeToPlay(card) });
+            parts.Add(new NodeAnnouncement(() => Soul(card), kind: AnnouncementKinds.Value));
             parts.AddRange(TextParts(card, elixir));
             parts.Add(new NodeAnnouncement(() => RarityOf(card), kind: AnnouncementKinds.Review));
             return new NodeVtable
@@ -178,6 +181,34 @@ namespace MonsterTrainAccessibility.Module.Nodes
             if (state != null && state.GetCardType() == CardType.Monster)
                 Add(parts, state.GetSize(false).ToString(), Strings.CardSize);
             return parts.Count > 0 ? string.Join(", ", parts) : null;
+        }
+
+        // The soul a Soul Savior run's card carries, as its face draws it in the soul slot ("Ghastbud
+        // attached"); an empty slot says nothing. The card's soul upgrade names the soul, as the run's
+        // chosen soul whose upgrade it is.
+        private static string Soul(CardUI card)
+        {
+            var slots = card._cardUpgradeAuxDisplayContainer;
+            if (slots == null || !slots.gameObject.activeInHierarchy) return null;
+            bool filled = false;
+            foreach (var slot in slots.GetComponentsInChildren<CardUpgradeDisplayElement>(false))
+                if (slot.upgradeIcon != null && slot.upgradeIcon.enabled) filled = true;
+            if (!filled) return null;
+            var state = card.GetCardState();
+            return state != null && state.TryGetSoulUpgrade(out var upgrade) ? Strings.CardSoulAttached(SoulName(upgrade)) : null;
+        }
+
+        private static string SoulName(CardUpgradeState upgrade)
+        {
+            var save = AllGameManagers.Instance != null ? AllGameManagers.Instance.GetSaveManager() : null;
+            if (save != null)
+                foreach (var soul in save.GetSelectedSouls())
+                {
+                    var data = soul != null ? soul.GetSoulData() : null;
+                    var soulUpgrade = data != null ? data.GetSoulCardUpgrade() : null;
+                    if (soulUpgrade != null && soulUpgrade.GetID() == upgrade.GetCardUpgradeDataId()) return soul.GetName();
+                }
+            return upgrade.GetUpgradeTitle();
         }
 
         // An elixir (an infusion, a crafted spike): its focus line is its name and what it does, the
