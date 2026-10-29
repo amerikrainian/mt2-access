@@ -186,6 +186,35 @@ namespace MonsterTrainAccessibility.Module.Nodes
             return vt;
         }
 
+        /// <summary>A pyre heart in a challenge's pyre heart picker (<see cref="PyreHeartInfoButtonUI"/>):
+        /// "Proto Heartcage, button[, selected], Pyre attack 45, Pyre health 80", then what it does (the
+        /// description the picker shows on hover). Enter picks it through the game.</summary>
+        public static NodeVtable PyreHeartDropdownOption(PyreHeartInfoButtonUI option)
+        {
+            var button = option.GetComponent<GameUISelectableButton>();
+            Func<string> name = () => Text(option.titleLabel) ?? option.PyreHeartCharacterData?.GetName();
+            Func<string> description = () =>
+            {
+                var artifact = option.PyreHeartCharacterData?.GetPyreHeartData()?.GetPyreArtifact();
+                return artifact != null ? GameText.Term(artifact.GetDescriptionKey()) : null;
+            };
+            return GameWidgets.Button(button, name, description,
+                GameNodes.SelectedPart(() => button.state == GameUISelectableButton.State.Activated),
+                new NodeAnnouncement(() => Commas(Stat(Strings.PyreAttack, AttackOf(option.abilityUI)), Stat(Strings.PyreHealth, Text(option.healthUILabel))),
+                    kind: AnnouncementKinds.Value));
+        }
+
+        /// <summary>A mutator in a challenge's mutator picker: "Cheap Trick, button[, selected]" (selected:
+        /// already in the challenge, which the game will not take twice), then what it does. Enter puts it
+        /// in the slot being changed, or adds it, through the game.</summary>
+        public static NodeVtable MutatorDropdownOption(MutatorButtonUI mutator)
+        {
+            Func<string> name = () => Text(mutator.titleLabel) ?? mutator.MutatorState?.GetName();
+            return GameWidgets.Button(mutator.Button, name,
+                () => Text(mutator.descriptionLabel) ?? mutator.MutatorState?.GetDescription(),
+                GameNodes.SelectedPart(() => mutator.Chosen));
+        }
+
         // A read-only line: a label, a value, and the widget's tooltips as its details.
         private static NodeVtable Line(Func<string> label, Func<string> value, Component widget)
         {

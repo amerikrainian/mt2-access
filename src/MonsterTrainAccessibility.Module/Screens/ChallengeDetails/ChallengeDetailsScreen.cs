@@ -28,9 +28,9 @@ namespace MonsterTrainAccessibility.Module.Screens
     /// game allows, then the page buttons (<see cref="PaginationNodes"/>); a new page says itself
     /// ("Page 2 of 6") once the game has it.</item>
     /// </list>
-    /// Escape is the game's: back.
+    /// Escape is the game's: back. A challenge being made reads as <see cref="Editable"/> lays out.
     /// </summary>
-    public sealed class ChallengeDetailsScreen : Screen
+    public sealed partial class ChallengeDetailsScreen : Screen
     {
         private static readonly InputCategory[] Categories = { InputCategory.UI };
 
@@ -72,13 +72,21 @@ namespace MonsterTrainAccessibility.Module.Screens
                 ScreenIntro.Say(Shown(screen.titleLabel), screen.detailsRoot != null && screen.detailsRoot.activeInHierarchy ? Shown(screen.detailsLabel) : null,
                     Visible(screen.creatorRoot) ? Shown(screen.creatorLabel) : null);
             }
+            // A picker the challenge being made has open is all there is until it closes.
+            if (screen.editable && Picker(b, screen.detailsUI)) return;
             b.PushContext(null);
-            Settings(b, screen.detailsUI);
+            if (screen.editable) Editable(b, screen.detailsUI);
+            else Settings(b, screen.detailsUI);
             Actions(b, screen);
             Leaderboard(b, screen.leaderboard);
             b.PopContext();
-            // Focus lands on starting the run.
-            if (Visible(screen.submitButton)) b.SetStart(ControlId.Structural("challenge:submit"));
+            // Focus lands on starting the run, or back on what opened the picker just closed.
+            if (_opener != null)
+            {
+                b.SetStart(_opener);
+                _opener = null;
+            }
+            else if (Visible(screen.submitButton)) b.SetStart(ControlId.Structural("challenge:submit"));
         }
 
         public override IEnumerable<ElementAction> GetActions()
@@ -139,7 +147,19 @@ namespace MonsterTrainAccessibility.Module.Screens
                 Button(items, "customize", sharing.customizeChallengeButton);
                 Button(items, "copy", sharing.copySharecodeButton);
             }
-            Button(items, "randomize", screen.randomizeDetailsButton);
+            // Randomize All says what it rolled.
+            var randomize = screen.randomizeDetailsButton;
+            if (Visible(randomize) && PauseMenuScreen.Caption(randomize) != null)
+            {
+                var details = screen.detailsUI;
+                var vt = GameWidgets.Button(randomize, () => PauseMenuScreen.Caption(randomize));
+                vt.OnActivate = () =>
+                {
+                    GameInput.Submit(randomize);
+                    Speech.Say(Rolled(details));
+                };
+                items.Add(Item("randomize", vt));
+            }
             Button(items, "back", screen.backButton);
             Row(b, null, items);
         }

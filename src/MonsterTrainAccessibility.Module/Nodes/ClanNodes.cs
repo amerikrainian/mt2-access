@@ -93,6 +93,38 @@ namespace MonsterTrainAccessibility.Module.Nodes
             return progress != null ? line + ", " + progress : line;
         }
 
+        /// <summary>A clan in a challenge's clan picker (<see cref="ClassInfoButtonUI"/>): "Banished,
+        /// button[, selected]", the game's "Locked" and its reason while its DLC is missing, then what the
+        /// clan is (the description the picker shows on hover). Enter picks it through the game.</summary>
+        public static NodeVtable DropdownOption(ClassInfoButtonUI option)
+        {
+            var button = option.GetComponent<GameUISelectableButton>();
+            Func<string> name = () => option.classData != null ? option.classData.GetTitle() : null;
+            Func<bool> locked = () => option.lockedRoot != null && option.lockedRoot.activeSelf;
+            return new NodeVtable
+            {
+                ControlType = ControlTypes.Button,
+                Announcements = new List<NodeAnnouncement>
+                {
+                    GameNodes.LabelPart(name),
+                    GameNodes.SelectedPart(() => DropdownChosen(option)),
+                    new NodeAnnouncement(() => locked() ? GameText.Term("Locked") : null, kind: AnnouncementKinds.Enabled),
+                    GameNodes.TooltipPart(() => locked() ? TooltipBody(option.tooltipProvider)
+                        : option.classData != null ? GameText.Term(option.classData.GetDescriptionKey()) : null),
+                },
+                SearchText = name,
+                OnFocus = () => GameInput.Hover(button),
+                OnActivate = () => GameInput.Submit(button),
+            };
+        }
+
+        /// <summary>The clan the picker shows in use for the slot it edits (the game's activated one).</summary>
+        public static bool DropdownChosen(ClassInfoButtonUI option)
+        {
+            var button = option.GetComponent<GameUISelectableButton>();
+            return button != null && button.state == GameUISelectableButton.State.Activated;
+        }
+
         /// <summary>The champion the game shows chosen.</summary>
         public static bool ChampionSelected(ChampionOptionButton champion)
             => champion.Button.state == GameUISelectableButton.State.Activated;
