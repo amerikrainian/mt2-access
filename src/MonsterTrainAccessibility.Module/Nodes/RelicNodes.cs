@@ -36,6 +36,24 @@ namespace MonsterTrainAccessibility.Module.Nodes
             };
         }
 
+        /// <summary>An artifact shown for reading (a battle's enemy artifact): "Tough as Nails, Enemy units
+        /// enter with Titanskin 1."; the keywords it uses in the buffer.</summary>
+        public static NodeVtable Info(RelicInfoUI relic)
+        {
+            Func<string> name = () => Shown(relic.titleLabel);
+            return new NodeVtable
+            {
+                ControlType = ControlTypes.Text,
+                Announcements = new List<NodeAnnouncement>
+                {
+                    GameNodes.LabelPart(name),
+                    GameNodes.TooltipPart(() => Shown(relic.descriptionLabel)),
+                },
+                SearchText = name,
+                Details = () => GameNodes.Lines(TooltipReader.Lines(relic.Tooltips ?? new List<TooltipContent>())),
+            };
+        }
+
         private static string Shown(TMP_Text text)
         {
             string content = text != null && text.gameObject.activeInHierarchy ? text.Content() : null;

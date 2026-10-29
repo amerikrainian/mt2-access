@@ -11,7 +11,7 @@ using TMPro;
 namespace MonsterTrainAccessibility.Module.Nodes
 {
     /// <summary>
-    /// The Logbook's enemies:
+    /// Enemies: a battle intro's (<see cref="Preview"/>), and the Logbook's:
     /// <list type="bullet">
     /// <item>an enemy in the list (<see cref="CharacterButtonUI"/>) is a radio button by the name the
     /// game draws ("???" until discovered), chosen by landing on it through the game's own press, which
@@ -124,6 +124,32 @@ namespace MonsterTrainAccessibility.Module.Nodes
         }
 
         private static bool Active(UnityEngine.GameObject root) => root != null && root.activeInHierarchy;
+
+        /// <summary>An enemy a battle's intro shows (<see cref="BattleIntroEnemy"/>), by the game's own
+        /// preview of it (<c>TooltipGenerator.GetCharacterPreviewTooltips</c>): "Astreal the Lost, Sap 6.
+        /// Relentless. 8 attack 180 health"; the keywords it uses, the rest of the preview, in the
+        /// buffer.</summary>
+        public static NodeVtable Preview(BattleIntroEnemy enemy)
+        {
+            var preview = enemy.tooltipProvider;
+            Func<string> name = () => TooltipReader.FirstTitle(preview);
+            return new NodeVtable
+            {
+                ControlType = ControlTypes.Text,
+                Announcements = new List<NodeAnnouncement>
+                {
+                    GameNodes.LabelPart(name),
+                    new NodeAnnouncement(() => TooltipReader.FirstBody(preview), kind: AnnouncementKinds.Value),
+                },
+                SearchText = name,
+                // The preview's first tooltip is the line itself: the buffer holds the rest.
+                Details = () =>
+                {
+                    var lines = TooltipReader.Lines(preview);
+                    return GameNodes.Lines(lines.Count > 1 ? lines.GetRange(1, lines.Count - 1) : new List<string>());
+                },
+            };
+        }
 
         private static string Shown(TMP_Text text)
             => text != null && text.gameObject.activeInHierarchy && !string.IsNullOrWhiteSpace(text.Content()) ? text.Content().Trim() : null;

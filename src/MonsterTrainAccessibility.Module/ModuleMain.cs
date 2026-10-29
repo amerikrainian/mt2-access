@@ -223,6 +223,7 @@ namespace MonsterTrainAccessibility.Module
             ScreenManager.Register(new Screens.DragonsHoardScreen());
             ScreenManager.Register(new Screens.DragonsHoardLevelsScreen());
             ScreenManager.Register(new Screens.DraftScreen(global::ScreenName.RelicChoice, "game.draft.artifact"));
+            ScreenManager.Register(new Screens.BattleIntroScreen());
             ScreenManager.Register(new Screens.PauseMenuScreen());
             ScreenManager.Register(new Screens.SettingsScreen());
             ScreenManager.Register(new Screens.DialogScreen());

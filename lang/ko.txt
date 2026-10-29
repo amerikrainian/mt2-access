@@ -133,3 +133,4 @@ mod.category.map=지도
 card.upgraded=추가: {0}
 hoard.level=레벨 {0}
 state.current=현재
+reward.amount={0} {1}

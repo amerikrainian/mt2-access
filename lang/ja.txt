@@ -133,3 +133,4 @@ mod.category.map=マップ
 card.upgraded=追加: {0}
 hoard.level=レベル {0}
 state.current=現在
+reward.amount={0}{1}

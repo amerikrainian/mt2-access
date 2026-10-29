@@ -108,6 +108,7 @@ map.no_forward=No forward map node.
 map.no_backward=No previous map node.
 state.visited=visited
 hoard.level=Level {0}
+reward.amount={0} {1}
 state.current=current
 hud.title=Run info
 hud.train_stats=Train stats

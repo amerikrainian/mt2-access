@@ -133,3 +133,4 @@ mod.category.map=Mapa
 card.upgraded=novo: {0}
 hoard.level=Nível {0}
 state.current=atual
+reward.amount={0} {1}

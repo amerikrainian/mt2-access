@@ -170,6 +170,9 @@ namespace MonsterTrainAccessibility.Core.Strings
             // The Dragon's Hoard's loot levels, which the game shows as numbers; {0} = the level. "current"
             // marks the level the hoard is at, which the game shows only by a highlight.
             D("hoard.level", "Level {0}"),
+            // An amount of a currency, as a reward's short form: {0} = the amount, {1} = the game's word
+            // for the currency ("75 Coins").
+            D("reward.amount", "{0} {1}"),
             D("state.current", "current"),
             // The run's HUD, which Tab opens as a list anywhere in a run, and its groups the game
             // draws without a heading.
@@ -410,6 +413,7 @@ namespace MonsterTrainAccessibility.Core.Strings
         public static string MapNoBackward => Get("map.no_backward");
         public static string StateVisited => Get("state.visited");
         public static string HoardLevel(int level) => F("hoard.level", level);
+        public static string RewardAmount(string amount, string currency) => F("reward.amount", amount, currency);
         public static string StateCurrent => Get("state.current");
         public static string HudTitle => Get("hud.title");
         public static string HudTrainStats => Get("hud.train_stats");
