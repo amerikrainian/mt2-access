@@ -246,3 +246,5 @@ bind.battle.moon=Leer fase lunar
 event_kind.combat.phase=Fases del combate
 event_kind.combat.moon_phase=Cambios de fase lunar
 event_kind.resource.gold=Cambios de monedas
+shop.unaffordable=no te alcanza
+event_kind.merchant.chatter=Charla del mercader

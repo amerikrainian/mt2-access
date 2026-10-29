@@ -246,3 +246,5 @@ bind.battle.moon=月相を読む
 event_kind.combat.phase=戦闘フェーズ
 event_kind.combat.moon_phase=月相の変化
 event_kind.resource.gold=コインの変化
+shop.unaffordable=購入できない
+event_kind.merchant.chatter=商人のおしゃべり

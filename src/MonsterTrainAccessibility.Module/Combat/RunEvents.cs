@@ -3,6 +3,7 @@ using MonsterTrainAccessibility.Core;
 using MonsterTrainAccessibility.Core.Events;
 using MonsterTrainAccessibility.Core.Strings;
 using MonsterTrainAccessibility.Module.Interop;
+using MonsterTrainAccessibility.Module.UI;
 
 namespace MonsterTrainAccessibility.Module.Combat
 {
@@ -100,6 +101,25 @@ namespace MonsterTrainAccessibility.Module.Combat
                 ? Strings.Event("chatter", name, quote.Trim())
                 : Strings.Event("chatter_reason", name, reason, quote.Trim());
             GameEvents.Raise(kind, text, VitalsTracker.Side(character));
+        }
+    }
+
+    /// <summary>
+    /// A shopkeeper's lines as their speech bubble shows them (the greeting, thanks for a purchase, the
+    /// idle chatter, a reply when poked), spoken and kept with the monster quotes. The game shows every
+    /// one through <c>MerchantCharacterUI.ShowChatter</c>.
+    /// </summary>
+    [HarmonyPatch(typeof(MerchantCharacterUI), nameof(MerchantCharacterUI.ShowChatter))]
+    internal static class MerchantChatter
+    {
+        private static void Postfix(MerchantCharacterUI __instance)
+        {
+            try
+            {
+                string line = __instance.speechBubbleLabel != null ? __instance.speechBubbleLabel.Content() : null;
+                if (!string.IsNullOrWhiteSpace(line)) GameEvents.Raise(EventKinds.MerchantChatter, line.Trim());
+            }
+            catch (System.Exception e) { CoreLog.Warning("merchant chatter: " + e.Message); }
         }
     }
 }

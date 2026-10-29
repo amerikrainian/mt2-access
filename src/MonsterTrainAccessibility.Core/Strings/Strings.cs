@@ -265,6 +265,9 @@ namespace MonsterTrainAccessibility.Core.Strings
             D("event.chatter.slay", "slay"),
             D("event.chatter.idle", "idle"),
 
+            // A shop's good or service the player's coin does not cover.
+            D("shop.unaffordable", "can't afford"),
+
             // The battle. A unit: {0} = its size / attack.
             D("battle.size", "size {0}"),
             D("battle.attack", "{0} attack"),
@@ -361,6 +364,7 @@ namespace MonsterTrainAccessibility.Core.Strings
             D("event_kind.character.chatter.slay", "Unit slay chatter"),
             D("event_kind.character.chatter.idle", "Unit idle chatter"),
             D("event_kind.character.chatter.trigger", "Unit trigger chatter"),
+            D("event_kind.merchant.chatter", "Merchant chatter"),
         };
 
         private static readonly Dictionary<string, string> _defaults = BuildDefaults();

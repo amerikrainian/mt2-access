@@ -246,3 +246,5 @@ bind.battle.moon=讀取月相
 event_kind.combat.phase=戰鬥階段
 event_kind.combat.moon_phase=月相變化
 event_kind.resource.gold=金幣變化
+shop.unaffordable=買不起
+event_kind.merchant.chatter=商人閒聊

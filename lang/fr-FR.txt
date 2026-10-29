@@ -246,3 +246,5 @@ bind.battle.moon=Lire la phase lunaire
 event_kind.combat.phase=Phases du combat
 event_kind.combat.moon_phase=Changements de phase lunaire
 event_kind.resource.gold=Changements de pièces
+shop.unaffordable=trop cher
+event_kind.merchant.chatter=Bavardages du marchand

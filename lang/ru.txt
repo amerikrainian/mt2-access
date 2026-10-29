@@ -246,3 +246,5 @@ bind.battle.moon=Прочитать фазу луны
 event_kind.combat.phase=Фазы боя
 event_kind.combat.moon_phase=Смена фазы луны
 event_kind.resource.gold=Изменения монет
+shop.unaffordable=не хватает
+event_kind.merchant.chatter=Болтовня торговца

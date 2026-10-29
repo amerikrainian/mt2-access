@@ -246,3 +246,5 @@ bind.battle.moon=Mondphase lesen
 event_kind.combat.phase=Kampfphasen
 event_kind.combat.moon_phase=Mondphasenwechsel
 event_kind.resource.gold=Münzänderungen
+shop.unaffordable=zu teuer
+event_kind.merchant.chatter=Händlergeplauder

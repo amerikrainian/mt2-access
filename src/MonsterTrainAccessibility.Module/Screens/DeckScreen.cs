@@ -16,7 +16,8 @@ namespace MonsterTrainAccessibility.Module.Screens
     /// <summary>
     /// A pile of cards (<see cref="global::DeckScreen"/>): the deck, a battle's draw, discard and
     /// consumed piles, and the deck in the modes that pick from it (purge, upgrade, duplicate...).
-    /// Under the pile's own banner ("Deck"), the game's instructions when it gives any, then the cards
+    /// Under the pile's own banner ("Deck"), or, in a mode that picks, after the game's instructions
+    /// spoken as it opens ("Purge Card. Remove a card from your deck."), the cards
     /// as the grid the game draws (its own column count; Up and Down keep the column, and go nowhere
     /// from a column the next row does not reach), each through <see cref="CardNodes"/>, "selected"
     /// where the mode picks; then sort, confirm and cancel while the game shows them, or its message
@@ -43,16 +44,25 @@ namespace MonsterTrainAccessibility.Module.Screens
 
         public override bool IsActive() => Game != null;
 
+        private bool _prompted;
+
+        public override void OnPush() => _prompted = false;
+
         public override void Build(GraphBuilder b)
         {
             var screen = Game;
-            if (screen == null) return;
-            b.PushContext(Banner(screen), Strings.RoleList);
-            if (screen.instructionsRoot != null && screen.instructionsRoot.activeInHierarchy)
+            if (screen == null || !Dealt(screen)) return;
+            // A mode that picks from the deck says what it wants as it opens ("Purge Card. Remove a card
+            // from your deck."), not as items: the list starts on the cards.
+            bool instructed = screen.instructionsRoot != null && screen.instructionsRoot.activeInHierarchy
+                && Shown(screen.instructionsTitleLabel) != null;
+            if (instructed && !_prompted)
             {
-                Text(b, "instructions:title", screen.instructionsTitleLabel);
-                Text(b, "instructions", screen.instructionsDescriptionLabel);
+                _prompted = true;
+                ScreenIntro.Say(Shown(screen.instructionsTitleLabel), Shown(screen.instructionsDescriptionLabel));
             }
+            if (instructed) b.PushContext(null);
+            else b.PushContext(Banner(screen), Strings.RoleList);
             Cards(b, screen);
             if (screen.sortDropdownRoot != null && screen.sortDropdownRoot.gameObject.activeInHierarchy && screen.sortDropdown != null)
                 b.AddItem(ControlId.Structural("deck:sort"), GameWidgets.Dropdown(screen.sortDropdown, () => PauseMenuScreen.Caption(screen.sortDropdownRoot)));
@@ -74,11 +84,6 @@ namespace MonsterTrainAccessibility.Module.Screens
         {
             var cards = screen.cardInfos;
             if (cards == null || cards.Count == 0) return;
-            // The game deals the cards in a column at a time, each blank until it is set up: nothing is
-            // declared until all are in (the game's own test before it shows the sort), so the first
-            // landing reads a whole card and the grid never forms half-filled.
-            foreach (var info in cards)
-                if (info != null && !info.purged && !info.isDoneAnimatingIn) return;
             int columns = Mathf.Max(1, screen.columnCount);
             bool picks = screen.ModeAllowsSelect();
             bool open = false;
@@ -97,8 +102,10 @@ namespace MonsterTrainAccessibility.Module.Screens
                 var vt = CardNodes.Card(card, CardTooltipContainer.LoreTooltipSetting.Preferences, () => GameInput.Hover(card.SelectableUI));
                 if (picks)
                 {
-                    var parts = new List<NodeAnnouncement>(vt.Announcements) { GameNodes.SelectedPart(() => screen._selectedIndices.Contains(index)) };
-                    vt.Announcements = parts;
+                    // Where the game selects the card in focus (a purge), "selected" would only echo the
+                    // landing: said only where picking is apart from focusing.
+                    if (!screen.ShouldSelectOnFocus())
+                        vt.Announcements = new List<NodeAnnouncement>(vt.Announcements) { GameNodes.SelectedPart(() => screen._selectedIndices.Contains(index)) };
                     vt.OnActivate = () => GameInput.Submit(card.SelectableUI);
                 }
                 b.AddItem(ControlId.Structural("deck:card:" + i), vt);
@@ -110,6 +117,18 @@ namespace MonsterTrainAccessibility.Module.Screens
                 }
             }
             if (open) b.EndRow();
+        }
+
+        // The game deals the cards in a column at a time, each blank until it is set up: nothing on the
+        // screen is declared until all are in (the game's own test before it shows the sort), so the
+        // first landing reads a whole card, not the buttons under a grid still forming.
+        private static bool Dealt(global::DeckScreen screen)
+        {
+            var cards = screen.cardInfos;
+            if (cards == null) return true;
+            foreach (var info in cards)
+                if (info != null && !info.purged && !info.isDoneAnimatingIn) return false;
+            return true;
         }
 
         // The pile's name, off the banner the mode shows ("Deck", "Draw Pile").

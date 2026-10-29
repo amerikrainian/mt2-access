@@ -246,3 +246,5 @@ bind.run.gold=读取金币
 bind.battle.moon=读取月相
 event_kind.combat.phase=战斗阶段
 event_kind.resource.gold=金币变化
+shop.unaffordable=买不起
+event_kind.merchant.chatter=商人闲聊

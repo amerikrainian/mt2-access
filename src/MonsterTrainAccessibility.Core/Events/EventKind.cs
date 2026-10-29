@@ -103,5 +103,6 @@ namespace MonsterTrainAccessibility.Core.Events
         public static readonly EventKind ChatterSlay = K("character.chatter.slay", false, true, EventLogKind.Quotes);
         public static readonly EventKind ChatterIdle = K("character.chatter.idle", false, true, EventLogKind.Quotes);
         public static readonly EventKind ChatterTrigger = K("character.chatter.trigger", false, true, EventLogKind.Quotes);
+        public static readonly EventKind MerchantChatter = K("merchant.chatter", log: EventLogKind.Quotes);
     }
 }

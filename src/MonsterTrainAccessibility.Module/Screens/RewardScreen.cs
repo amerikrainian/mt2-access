@@ -57,7 +57,7 @@ namespace MonsterTrainAccessibility.Module.Screens
                 foreach (var details in screen.rewardDetailsUIs)
                 {
                     if (details == null || !details.gameObject.activeInHierarchy) continue;
-                    foreach (var vt in Rewards(details))
+                    foreach (var vt in RewardNodes.Details(details))
                         b.AddItem(ControlId.Structural("reward:" + i++), vt);
                 }
             Button(b, "collect", screen.collectButton);
@@ -69,28 +69,6 @@ namespace MonsterTrainAccessibility.Module.Screens
         {
             yield return new ElementAction(ActionIds.Back, Strings.Get("bind.ui.back"),
                 _ => GameInput.Send(global::InputManager.Controls.Escape));
-        }
-
-        // What one reward panel shows: its artifacts, its card, or the generic reward's title and text.
-        private static IEnumerable<NodeVtable> Rewards(RewardDetailsUI details)
-        {
-            foreach (var relic in new[] { details.relicUI, details.upgradeUI, details.sinRelicUI, details.mutatorUI })
-                if (relic != null && relic.gameObject.activeInHierarchy && Shown(relic.titleLabel) != null)
-                    yield return RelicNodes.Info(relic);
-            var card = details.cardUI;
-            if (card != null && card.gameObject.activeInHierarchy && card.GetCardState() != null)
-                yield return CardNodes.Card(card, CardTooltipContainer.LoreTooltipSetting.Preferences, () => GameInput.Hover(card.SelectableUI));
-            var generic = details.genericRewardUI;
-            if (generic != null && generic.gameObject.activeInHierarchy && Shown(generic.titleLabel) != null)
-                yield return new NodeVtable
-                {
-                    ControlType = ControlTypes.Text,
-                    Announcements = new List<NodeAnnouncement>
-                    {
-                        GameNodes.LabelPart(() => Shown(generic.titleLabel)),
-                        GameNodes.TooltipPart(() => Shown(generic.descriptionLabel)),
-                    },
-                };
         }
 
         private static void Button(GraphBuilder b, string key, GameUISelectableButton button)
