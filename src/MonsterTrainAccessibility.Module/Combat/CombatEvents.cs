@@ -330,11 +330,16 @@ namespace MonsterTrainAccessibility.Module.Combat
         }
 
         // An artifact firing, once per effect a phase of a turn; an artifact that only changes cards
-        // (a cost, a stat) fires on every look at the hand and is never reported. Not while replaying.
+        // (a cost, a stat) fires on every look at the hand and is never reported, nor a pyre attack
+        // bonus outside the combat itself. Not while replaying.
         private void OnRelic(RelicState relic, IRelicEffect effect)
         {
             if (relic == null || Replaying() || effect is ICardModifierRelicEffect) return;
             var combat = _managers.GetCombatManager();
+            // A bonus to the pyre's attack fires whenever the game works the attack out again, as it
+            // does on every change of coin (a victory's spoils): it means the pyre struck with it only
+            // while the combat is fought.
+            if (effect is ITowerDamageDealtModifiedRelicEffect && (combat == null || combat.GetCombatPhase() != CombatManager.Phase.Combat)) return;
             string key = relic.GetRelicDataID() + "|" + effect?.GetType().FullName + "|" + combat?.GetCombatPhase() + "|" + _turn + "|" + _turnModifier;
             if (!_relicsThisTurn.Add(key)) return;
             string name = relic.GetName();
