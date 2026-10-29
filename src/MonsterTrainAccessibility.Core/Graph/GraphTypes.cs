@@ -26,6 +26,9 @@ namespace MonsterTrainAccessibility.Core.Graph
         public const string Enabled = "enabled";
         public const string Tooltip = "tooltip";
         public const string Position = "position";
+        /// <summary>Read only on review, never spoken on landing: it ends the buffer's head line (a
+        /// card's rarity after its type).</summary>
+        public const string Review = "review";
     }
 
     /// <summary>

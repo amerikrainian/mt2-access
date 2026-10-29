@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using MonsterTrainAccessibility.Core.Graph;
 using MonsterTrainAccessibility.Core.Strings;
 using MonsterTrainAccessibility.Core.UI;
+using MonsterTrainAccessibility.Module.Interop;
 using MonsterTrainAccessibility.Module.UI;
 using TMPro;
 
@@ -10,12 +11,16 @@ namespace MonsterTrainAccessibility.Module.Nodes
 {
     /// <summary>
     /// A card as the game drew it, wherever a <see cref="CardUI"/> stands (the Logbook, later the
-    /// draft, the shop, the hand). Nothing is rebuilt from the card's data:
+    /// draft, the shop, the hand), from what its face draws; only its type and rarity are named from its
+    /// data, in the game's own terms:
     /// <list type="bullet">
-    /// <item>the focus line is the face's own text objects: the name, the cost, the type plate (the
-    /// card type, or a unit's subtypes), attack and health while the face shows them, the size a
+    /// <item>the focus line: the name, the card's type in the game's word for it in the role word's
+    /// place ("Spell", "Friendly Unit"), then the face's own text objects: the cost, the type plate where
+    /// it adds to the type (a unit's subtypes), attack and health while the face shows them, the size a
     /// unit's pips draw, then the card text as rendered (its inline icons read as words at the speech
-    /// seam);</item>
+    /// seam), what an upgrade adds marked;</item>
+    /// <item>the buffer's head line ends with the card's type and rarity ("Firestarter, cost 1, Spell,
+    /// Common"), the rarity never spoken on landing;</item>
     /// <item>the control buffer holds the card's tooltips, populated in the card's own
     /// <see cref="CardTooltipContainer"/> by the very call hover makes (<c>CardUI.UpdateTooltip</c>,
     /// with the lore setting the screen's hover uses) and read off what it instantiated.</item>
@@ -33,8 +38,11 @@ namespace MonsterTrainAccessibility.Module.Nodes
                 Announcements = new List<NodeAnnouncement>
                 {
                     GameNodes.LabelPart(name),
+                    // The card's type in the role word's place: "Firestarter, Spell", not "item".
+                    new NodeAnnouncement(() => TypeOf(card), kind: AnnouncementKinds.Role),
                     new NodeAnnouncement(() => Face(card), kind: AnnouncementKinds.Value),
                     GameNodes.TooltipPart(() => Text(card)),
+                    new NodeAnnouncement(() => RarityOf(card), kind: AnnouncementKinds.Review),
                 },
                 SearchText = name,
                 OnFocus = hover,
@@ -49,8 +57,10 @@ namespace MonsterTrainAccessibility.Module.Nodes
         {
             var parts = new List<NodeAnnouncement> { GameNodes.LabelPart(title) };
             parts.Add(new NodeAnnouncement(() => Name(card), kind: AnnouncementKinds.Value));
+            parts.Add(new NodeAnnouncement(() => TypeOf(card), kind: AnnouncementKinds.Value));
             parts.Add(new NodeAnnouncement(() => Face(card), kind: AnnouncementKinds.Value));
             parts.Add(GameNodes.TooltipPart(() => Text(card)));
+            parts.Add(new NodeAnnouncement(() => RarityOf(card), kind: AnnouncementKinds.Review));
             return new NodeVtable
             {
                 ControlType = ControlTypes.Button,
@@ -86,6 +96,22 @@ namespace MonsterTrainAccessibility.Module.Nodes
             return TooltipReader.Container(container);
         }
 
+        // The card's type in the game's word for it on a card ("Spell", "Friendly Unit", "Equipment").
+        private static string TypeOf(CardUI card)
+        {
+            var state = card.GetCardState();
+            if (state == null) return null;
+            string type = state.GetCardType().GetCardText();
+            return string.IsNullOrWhiteSpace(type) ? null : type;
+        }
+
+        // The card's rarity in the game's word ("Common"): on review only, ending the buffer's head line.
+        private static string RarityOf(CardUI card)
+        {
+            var state = card.GetCardState();
+            return state != null && state.GetRarity() != CollectableRarity.Unset ? GameText.Term("CardRarity_" + state.GetRarity()) : null;
+        }
+
         // The name label the frame draws for the card's type (the frame keeps both; the game picks one).
         private static string Name(CardUI card)
         {
@@ -102,7 +128,9 @@ namespace MonsterTrainAccessibility.Module.Nodes
             var parts = new List<string>();
             if (card.countRoot != null && card.countRoot.activeSelf) Add(parts, Shown(card.countLabel), null);
             Add(parts, Shown(card._costLabel), Strings.CardCost);
-            Add(parts, card._cardFrame != null ? Shown(card._cardFrame.factionLabel) : null, null);
+            // The type plate: a unit's subtypes ("Steward"); a spell's says "Spell" again, dropped.
+            string plate = card._cardFrame != null ? Shown(card._cardFrame.factionLabel) : null;
+            if (!string.Equals(plate?.Trim(), TypeOf(card)?.Trim(), StringComparison.OrdinalIgnoreCase)) Add(parts, plate, null);
             var ability = card._abilityDisplay;
             if (ability != null && ability.gameObject.activeInHierarchy)
                 Add(parts, Shown(ability.abilityLabel), Strings.CardAttack);

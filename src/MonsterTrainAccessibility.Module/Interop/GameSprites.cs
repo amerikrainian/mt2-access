@@ -48,7 +48,9 @@ namespace MonsterTrainAccessibility.Module.Interop
             ["CorruptionSlot"] = "charged_echo_slot",
         };
 
-        private static Dictionary<string, Func<string>> _named;
+        // Each named icon's names: several statuses can share one icon (Pyregel and Pyrestain both draw
+        // StatusPyregel), its own status first.
+        private static Dictionary<string, List<Func<string>>> _named;
         private static readonly HashSet<string> Unknown = new HashSet<string>(StringComparer.Ordinal);
 
         private static readonly Regex LineBreakTag = new Regex(@"<br\s*/?>", RegexOptions.Compiled | RegexOptions.IgnoreCase);
@@ -79,40 +81,65 @@ namespace MonsterTrainAccessibility.Module.Interop
             string said = AnyTag.Replace(SpriteTag.Replace(text, " "), " ");
             return SpriteTag.Replace(text, m =>
             {
-                string word = Word(m.Groups["name"].Value);
-                return !string.IsNullOrWhiteSpace(word) && said.IndexOf(word.Trim(), StringComparison.OrdinalIgnoreCase) >= 0 ? "" : m.Value;
+                foreach (string word in Words(m.Groups["name"].Value, all: true))
+                    if (said.IndexOf(word.Trim(), StringComparison.OrdinalIgnoreCase) >= 0) return "";
+                return m.Value;
             });
         }
 
         private static string Word(string sprite)
         {
-            if (string.IsNullOrWhiteSpace(sprite)) return null;
+            foreach (string word in Words(sprite, all: false)) return word;
+            return null;
+        }
+
+        // An icon's word (the first), or every word it could stand for (an icon several statuses share
+        // is echoed by any of their names).
+        private static IEnumerable<string> Words(string sprite, bool all)
+        {
+            if (string.IsNullOrWhiteSpace(sprite)) yield break;
             // The few icons the game never names first: a lookup through its tables can come back with
             // the icon's raw id ("Xcost") for those.
             if (Termed.TryGetValue(sprite, out string term))
             {
                 string termed = GameText.Term(term);
-                if (!string.IsNullOrWhiteSpace(termed)) return termed;
+                if (!string.IsNullOrWhiteSpace(termed))
+                {
+                    yield return termed;
+                    yield break;
+                }
             }
-            if (Fixed.TryGetValue(sprite, out string key)) return Strings.Icon(key);
-            var named = Named();
-            if (named != null && named.TryGetValue(sprite, out Func<string> name))
+            if (Fixed.TryGetValue(sprite, out string key))
             {
-                string word = name();
-                if (!string.IsNullOrWhiteSpace(word)) return word;
+                yield return Strings.Icon(key);
+                yield break;
             }
+            var named = Named();
+            bool any = false;
+            if (named != null && named.TryGetValue(sprite, out var names))
+            {
+                foreach (var name in names)
+                {
+                    string word = name();
+                    if (string.IsNullOrWhiteSpace(word)) continue;
+                    any = true;
+                    yield return word;
+                    if (!all) yield break;
+                }
+            }
+            if (any) yield break;
             if (Unknown.Add(sprite)) CoreLog.Info("GameSprites: no word for the icon " + sprite + ", read by its own name");
-            return Speech.SpriteName(sprite);
+            yield return Speech.SpriteName(sprite);
         }
 
         // The icons the game names, gathered once its status effect manager exists: the names
         // themselves are read at speak time, so they follow the game's language.
-        private static Dictionary<string, Func<string>> Named()
+        private static Dictionary<string, List<Func<string>>> Named()
         {
             if (_named != null) return _named;
             var manager = StatusEffectManager.Instance;
             if (manager == null) return null;
-            var named = new Dictionary<string, Func<string>>(StringComparer.Ordinal);
+            var named = new Dictionary<string, List<Func<string>>>(StringComparer.Ordinal);
             var statuses = manager.GetAllStatusEffectsData()?.GetStatusEffectData();
             if (statuses != null)
             {
@@ -121,7 +148,12 @@ namespace MonsterTrainAccessibility.Module.Interop
                     string sprite = status?.GetIcon()?.name;
                     string id = status?.GetStatusId();
                     if (string.IsNullOrWhiteSpace(sprite) || string.IsNullOrWhiteSpace(id)) continue;
-                    named[sprite] = () => StatusEffectManager.GetLocalizedName(id, 1, inBold: false, showStacks: false);
+                    if (!named.TryGetValue(sprite, out var names)) named[sprite] = names = new List<Func<string>>();
+                    Func<string> name = () => StatusEffectManager.GetLocalizedName(id, 1, inBold: false, showStacks: false);
+                    // The status the icon is named for ("StatusPyregel": pyregel) speaks for it.
+                    bool own = string.Equals(sprite.Replace(" ", ""), "Status" + id.Replace(" ", "").Replace("_", ""), StringComparison.OrdinalIgnoreCase);
+                    if (own) names.Insert(0, name);
+                    else names.Add(name);
                 }
             }
             var display = manager.displayData;
@@ -132,7 +164,7 @@ namespace MonsterTrainAccessibility.Module.Interop
                     var icon = display.GetDisplayData(trigger, null).iconSprite;
                     if (icon == null || named.ContainsKey(icon.name)) continue;
                     var t = trigger;
-                    named[icon.name] = () => CharacterTriggerData.GetKeywordText(t, inBold: false);
+                    named[icon.name] = new List<Func<string>> { () => CharacterTriggerData.GetKeywordText(t, inBold: false) };
                 }
                 if (display.cardEffectDisplayData != null)
                 {
@@ -141,7 +173,7 @@ namespace MonsterTrainAccessibility.Module.Interop
                         string id = entry.Key;
                         var icon = entry.Value?.icon;
                         if (string.IsNullOrWhiteSpace(id) || icon == null || named.ContainsKey(icon.name)) continue;
-                        named[icon.name] = () => CardEffectName(id);
+                        named[icon.name] = new List<Func<string>> { () => CardEffectName(id) };
                     }
                 }
             }

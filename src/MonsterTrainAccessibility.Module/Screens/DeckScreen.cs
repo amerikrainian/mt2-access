@@ -74,6 +74,11 @@ namespace MonsterTrainAccessibility.Module.Screens
         {
             var cards = screen.cardInfos;
             if (cards == null || cards.Count == 0) return;
+            // The game deals the cards in a column at a time, each blank until it is set up: nothing is
+            // declared until all are in (the game's own test before it shows the sort), so the first
+            // landing reads a whole card and the grid never forms half-filled.
+            foreach (var info in cards)
+                if (info != null && !info.purged && !info.isDoneAnimatingIn) return;
             int columns = Mathf.Max(1, screen.columnCount);
             bool picks = screen.ModeAllowsSelect();
             bool open = false;

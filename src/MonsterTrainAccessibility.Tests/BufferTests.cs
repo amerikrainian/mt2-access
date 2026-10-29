@@ -179,6 +179,41 @@ namespace MonsterTrainAccessibility.Tests
         }
 
         [Fact]
+        public void ARoleTheNodeSuppliesItselfEndsTheHead()
+        {
+            var node = Build(new NodeVtable
+            {
+                ControlType = ControlTypes.Item,
+                Announcements = new[]
+                {
+                    new NodeAnnouncement(() => "Firestarter", kind: AnnouncementKinds.Label),
+                    new NodeAnnouncement(() => "Spell", kind: AnnouncementKinds.Role),
+                    new NodeAnnouncement(() => "cost 1", kind: AnnouncementKinds.Value),
+                },
+            });
+            // The type's own role word ("item") is replaced, and the node's role closes the head line.
+            Assert.Equal(new[] { "Firestarter, cost 1, Spell" }, NodeLines.Lines(node).ToArray());
+        }
+
+        [Fact]
+        public void AReviewPartEndsTheHeadButIsNeverSpoken()
+        {
+            var node = Build(new NodeVtable
+            {
+                ControlType = ControlTypes.Item,
+                Announcements = new[]
+                {
+                    new NodeAnnouncement(() => "Firestarter", kind: AnnouncementKinds.Label),
+                    new NodeAnnouncement(() => "Common", kind: AnnouncementKinds.Review),
+                    new NodeAnnouncement(() => "Spell", kind: AnnouncementKinds.Role),
+                    new NodeAnnouncement(() => "cost 1", kind: AnnouncementKinds.Value),
+                },
+            });
+            Assert.Equal(new[] { "Firestarter, cost 1, Spell, Common" }, NodeLines.Lines(node).ToArray());
+            Assert.DoesNotContain("Common", GraphAnnouncer.LeafText(node));
+        }
+
+        [Fact]
         public void DescriptionPartsAndDetailsAreSeparateLines()
         {
             var node = Build(new NodeVtable
