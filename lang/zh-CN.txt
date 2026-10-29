@@ -250,3 +250,6 @@ shop.unaffordable=买不起
 event_kind.merchant.chatter=商人闲聊
 gameover.battle=战斗{0}
 gameover.level=等级{0}
+challenge.creator=作者 {0}
+challenge.entries={0} 个参与
+challenge.in_progress=进行中的冒险

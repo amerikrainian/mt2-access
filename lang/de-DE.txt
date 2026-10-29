@@ -250,3 +250,6 @@ shop.unaffordable=zu teuer
 event_kind.merchant.chatter=Händlergeplauder
 gameover.battle=Kampf {0}
 gameover.level=Stufe {0}
+challenge.creator=von {0}
+challenge.entries={0} Einträge
+challenge.in_progress=Lauf im Gange

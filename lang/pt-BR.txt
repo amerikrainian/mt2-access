@@ -250,3 +250,6 @@ shop.unaffordable=sem moedas suficientes
 event_kind.merchant.chatter=Conversa do mercador
 gameover.battle=Batalha {0}
 gameover.level=nível {0}
+challenge.creator=por {0}
+challenge.entries={0} participações
+challenge.in_progress=partida em andamento

@@ -269,6 +269,11 @@ namespace MonsterTrainAccessibility.Core.Strings
             D("gameover.battle", "Battle {0}"),
             D("gameover.level", "level {0}"),
 
+            // A community challenge: {0} = who made it; {0} = how many have played it; a run of it under way.
+            D("challenge.creator", "by {0}"),
+            D("challenge.entries", "{0} entries"),
+            D("challenge.in_progress", "run in progress"),
+
             // A shop's good or service the player's coin does not cover.
             D("shop.unaffordable", "can't afford"),
 

@@ -250,3 +250,6 @@ shop.unaffordable=не хватает
 event_kind.merchant.chatter=Болтовня торговца
 gameover.battle=Бой {0}
 gameover.level=уровень {0}
+challenge.creator=автор {0}
+challenge.entries=участников: {0}
+challenge.in_progress=забег идёт

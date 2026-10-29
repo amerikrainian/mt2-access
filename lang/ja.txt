@@ -250,3 +250,6 @@ shop.unaffordable=購入できない
 event_kind.merchant.chatter=商人のおしゃべり
 gameover.battle=戦闘{0}
 gameover.level=レベル{0}
+challenge.creator=作成者 {0}
+challenge.entries=エントリー {0}
+challenge.in_progress=進行中のラン

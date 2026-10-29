@@ -250,3 +250,6 @@ shop.unaffordable=구매 불가
 event_kind.merchant.chatter=상인의 수다
 gameover.battle=전투 {0}
 gameover.level=레벨 {0}
+challenge.creator=제작자 {0}
+challenge.entries=참가 {0}
+challenge.in_progress=진행 중인 런

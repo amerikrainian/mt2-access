@@ -250,3 +250,6 @@ shop.unaffordable=no te alcanza
 event_kind.merchant.chatter=Charla del mercader
 gameover.battle=Batalla {0}
 gameover.level=nivel {0}
+challenge.creator=por {0}
+challenge.entries={0} entradas
+challenge.in_progress=partida en curso
