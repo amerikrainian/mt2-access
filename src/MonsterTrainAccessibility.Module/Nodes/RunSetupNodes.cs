@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using MonsterTrainAccessibility.Core.Buffers;
 using MonsterTrainAccessibility.Core.Graph;
 using MonsterTrainAccessibility.Core.UI;
 using MonsterTrainAccessibility.Module.Interop;
@@ -13,12 +15,13 @@ namespace MonsterTrainAccessibility.Module.Nodes
     /// What the two run setups share (the base one, <see cref="global::RunSetupScreen"/>, and Soul
     /// Savior's, <see cref="global::SoulSaviorRunSetupScreen"/>: the same clan and pyre heart widgets,
     /// pickers and buttons), laid out once in <see cref="Layout"/> so a change reaches both. The one
-    /// list, top to bottom as drawn: each clan as a button by its header ("Primary Clan, Pyreborne", the
-    /// description the game shows on hover, its header's tooltip in the buffer; Enter opens the clan
-    /// picker), its champion (Swap Champion with the champion's name, Enter swapping through the game;
-    /// the name alone while the other is locked) and the starter card the game previews for it; the pyre
-    /// heart (Enter opens its picker); then the mode's own part (the Covenant rank, or the difficulty)
-    /// and its extras (the mutators, or the souls); Depart; Settings and Back.
+    /// list, top to bottom as drawn: each clan a row, its button by its header ("Primary Clan, Pyreborne",
+    /// the description the game shows on hover, its header's tooltip in the buffer; Enter opens the clan
+    /// picker) with its champion to the right (Swap Champion with the champion's name, Enter swapping
+    /// through the game; the name alone while the other is locked), whose buffer holds the starter card
+    /// the game previews for the clan; the pyre heart (Enter opens its picker); then the mode's own part
+    /// (the Covenant rank, or the difficulty) and its extras (the mutators, or the souls); Depart;
+    /// Settings and Back.
     /// </summary>
     internal static class RunSetupNodes
     {
@@ -73,10 +76,11 @@ namespace MonsterTrainAccessibility.Module.Nodes
             b.PopContext();
         }
 
-        // A clan: its button, its champion, then the starter card the game previews for it.
+        // A clan: its button, its champion to the right.
         private static void Clan(GraphBuilder b, string key, RunSetupClassLevelInfoUI info)
         {
             if (info == null || !info.gameObject.activeInHierarchy) return;
+            b.StartRow();
             var button = info.editClassButton;
             if (button != null && button.gameObject.activeInHierarchy)
             {
@@ -86,15 +90,20 @@ namespace MonsterTrainAccessibility.Module.Nodes
                 b.AddItem(ControlId.Structural("setup:clan:" + key), vt);
             }
             Champion(b, key, info);
+            b.EndRow();
+        }
+
+        // The starter card the game previews for the clan, as a card's buffer reads it: its line, then its
+        // tooltips and what they mention.
+        private static IEnumerable<string> StarterCard(RunSetupClassLevelInfoUI info)
+        {
             var preview = info.externalCardPreviewTooltip;
-            if (preview != null && preview.gameObject.activeInHierarchy && !info.IsRandom)
+            if (preview == null || !preview.gameObject.activeInHierarchy || info.IsRandom) yield break;
+            foreach (var card in preview.GetComponentsInChildren<CardUI>(false))
             {
-                foreach (var card in preview.GetComponentsInChildren<CardUI>(false))
-                {
-                    var details = card.GetComponentInParent<RewardDetailsUI>();
-                    var lore = details != null ? details.loreTooltipSetting : CardTooltipContainer.LoreTooltipSetting.Always;
-                    b.AddItem(ControlId.Structural("setup:card:" + key), CardNodes.Card(card, lore, null));
-                }
+                var details = card.GetComponentInParent<RewardDetailsUI>();
+                var lore = details != null ? details.loreTooltipSetting : CardTooltipContainer.LoreTooltipSetting.Always;
+                foreach (var line in NodeLines.Lines(new GraphNode { Vtable = CardNodes.Card(card, lore, null) })) yield return line;
             }
         }
 
@@ -107,7 +116,7 @@ namespace MonsterTrainAccessibility.Module.Nodes
         }
 
         // The clan's champion: Swap Champion with the champion's name while the game offers the swap
-        // (the name re-read on the swap), else "Champion: name".
+        // (the name re-read on the swap), else "Champion: name"; the clan's starter card in its buffer.
         private static void Champion(GraphBuilder b, string key, RunSetupClassLevelInfoUI info)
         {
             if (info.ClassData == null) return;
@@ -123,11 +132,14 @@ namespace MonsterTrainAccessibility.Module.Nodes
                 var vt = GameWidgets.Button(swap, () => GameText.Term("ScreenMainMenu_SwapChampion"), null,
                     new NodeAnnouncement(name, live: true, kind: AnnouncementKinds.Value));
                 vt.StateText = name;
+                vt.Details = () => StarterCard(info);
                 b.AddItem(id, vt);
             }
             else if (name() != null)
             {
-                b.AddItem(id, GameNodes.Text(() => string.Format(GameText.Term("TextFormat_Colon"), GameText.Term("ScreenClassSelection_ChampionLabel"), name())));
+                var vt = GameNodes.Text(() => string.Format(GameText.Term("TextFormat_Colon"), GameText.Term("ScreenClassSelection_ChampionLabel"), name()));
+                vt.Details = () => StarterCard(info);
+                b.AddItem(id, vt);
             }
         }
 
