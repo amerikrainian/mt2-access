@@ -209,7 +209,6 @@ battle.hand_empty=No cards
 battle.top_panel=Top panel
 battle.selected_floor=Selected floor
 battle.spawn_point=Spawn point {0}
-battle.spawn_point_occupied={0}, {1}
 battle.outcome.eaten=eaten
 battle.outcome.burns_out=burns out
 battle.outcome.dies=dies

@@ -217,7 +217,6 @@ battle.hand_empty=Нет карт
 battle.top_panel=Верхняя панель
 battle.selected_floor=Выбранный этаж
 battle.spawn_point=Точка появления {0}
-battle.spawn_point_occupied={0}, {1}
 battle.outcome.eaten=съедено
 battle.outcome.burns_out=выгорает
 battle.outcome.dies=погибает

@@ -217,7 +217,6 @@ battle.hand_empty=Sin cartas
 battle.top_panel=Panel superior
 battle.selected_floor=Piso seleccionado
 battle.spawn_point=Punto de aparición {0}
-battle.spawn_point_occupied={0}, {1}
 battle.outcome.eaten=devorado
 battle.outcome.burns_out=se consume
 battle.outcome.dies=muere

@@ -218,7 +218,6 @@ battle.hand_empty=没有卡牌
 battle.top_panel=顶部面板
 battle.selected_floor=已选择楼层
 battle.spawn_point=位置 {0}
-battle.spawn_point_occupied={0}，{1}
 battle.outcome.eaten=被吞噬
 battle.outcome.burns_out=燃尽
 battle.outcome.dies=死亡

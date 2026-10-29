@@ -323,11 +323,9 @@ namespace MonsterTrainAccessibility.Core.Strings
             D("battle.hand", "Hand"),
             D("battle.hand_empty", "No cards"),
             D("battle.top_panel", "Top panel"),
-            // Targeting: a card that takes the whole floor; a place for a unit ({0} = 1 at the front),
-            // with the unit already standing there ({0} = the place, {1} = that unit).
+            // Targeting: a card that takes the whole floor; a place for a unit ({0} = 1 at the front).
             D("battle.selected_floor", "Selected floor"),
             D("battle.spawn_point", "Spawn point {0}"),
-            D("battle.spawn_point_occupied", "{0}, {1}"),
             // What the coming combat does to a unit (I, Ctrl+I, Ctrl+Shift+I).
             D("battle.outcome.eaten", "eaten"),
             D("battle.outcome.burns_out", "burns out"),

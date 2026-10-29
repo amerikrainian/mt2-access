@@ -12,7 +12,8 @@ namespace MonsterTrainAccessibility.Module.Screens
 {
     // Targeting: while the game holds a card (or an ability) selected, the screen is the selected
     // floor's targets as the game lists them for its keyboard play, one row under the floor's name:
-    // a unit by its readout, a place for a new unit as "Spawn point 2" (and who stands there), a card
+    // a unit by its readout, a place for a new unit as "Spawn point 2" (and the unit standing there,
+    // read as a unit is anywhere: "Spawn point 1, Shield Steward, Steward, size 3, ..."), a card
     // that takes the whole floor as "Selected floor". Landing on a target moves the game's own keyboard
     // target there; Up and Down select the floor above or below and land on the game's pick there;
     // Enter plays through the game's own submit; Escape drops the card as the game's cancel does.
@@ -39,7 +40,7 @@ namespace MonsterTrainAccessibility.Module.Screens
                     {
                         var spawn = point.GetParentSpawnPoint();
                         id = "target:" + room + ":point:" + (spawn != null ? spawn.GetIndexInRoom() : i);
-                        vt = Target(sel, i, () => SpawnPointLabel(point), null);
+                        vt = SpawnTarget(sel, i, spawn);
                     }
                     else if (unit != null)
                     {
@@ -70,15 +71,17 @@ namespace MonsterTrainAccessibility.Module.Screens
             return vt;
         }
 
-        // "Spawn point 2, Shield Steward": the place (1 at the front), and the unit standing there now,
-        // whom the new unit goes in front of.
-        private static string SpawnPointLabel(SpawnPointUI point)
+        // A place for a new unit: "Spawn point 2" (1 at the front); where a unit stands, whom the new one
+        // goes in front of, the place and then the unit as it reads anywhere (its buffer the unit's).
+        private static NodeVtable SpawnTarget(CommonSelectionBehavior sel, int index, SpawnPoint spawn)
         {
-            var spawn = point.GetParentSpawnPoint();
-            if (spawn == null) return null;
-            string place = Strings.Battle("spawn_point", spawn.GetIndexInRoom() + 1);
-            var occupant = spawn.GetCharacterState();
-            return occupant != null && !occupant.IsDestroyed ? Strings.Battle("spawn_point_occupied", place, occupant.GetName()) : place;
+            Func<string> place = () => spawn != null ? Strings.Battle("spawn_point", spawn.GetIndexInRoom() + 1) : null;
+            var occupant = spawn != null ? spawn.GetCharacterState() : null;
+            if (occupant == null || occupant.IsDestroyed) return Target(sel, index, place, null);
+            var vt = Target(sel, index, null, occupant);
+            vt.Announcements = new List<NodeAnnouncement>(vt.Announcements);
+            ((List<NodeAnnouncement>)vt.Announcements).Insert(0, GameNodes.LabelPart(place));
+            return vt;
         }
 
         // Play on the game's keyboard target, as its submit does; the target was moved by keyboard, which

@@ -217,7 +217,6 @@ battle.hand_empty=カードなし
 battle.top_panel=上部パネル
 battle.selected_floor=選択中のフロア
 battle.spawn_point=出現地点{0}
-battle.spawn_point_occupied={0}、{1}
 battle.outcome.eaten=捕食済み
 battle.outcome.burns_out=バーンアウト
 battle.outcome.dies=死亡
