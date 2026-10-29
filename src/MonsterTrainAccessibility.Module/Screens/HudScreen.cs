@@ -17,7 +17,8 @@ namespace MonsterTrainAccessibility.Module.Screens
     /// screen that declares the run keys) and Tab or Escape closes: the pyre, coin, deck and Dragon's
     /// Hoard; the clans, Covenant (or Soul Savior's difficulty) and ring; the bosses ahead, a row; Soul
     /// Savior's souls, a row (<see cref="HudNodes.Soul"/>); the battle's own lines while in one; the train's stats; the
-    /// artifacts, then the enemy's, the mutators and the Titan essences when there are any; game speed,
+    /// artifacts, then the enemy's, the mutators and the Titan essences when there are any, each a row
+    /// (as the train's stats are); game speed,
     /// the map, settings. Each in the game's words, its tooltips in the buffer; the deck, the hoard,
     /// game speed, the map and settings press through the game.
     /// </summary>
@@ -146,18 +147,22 @@ namespace MonsterTrainAccessibility.Module.Screens
             b.PopContext();
         }
 
-        // The train's stats, which the game shows only on hover: their numbers are kept up regardless.
+        // The train's stats, a row, which the game shows only on hover: their numbers are kept up regardless.
         private static void TrainStats(GraphBuilder b, TrainStatsUI stats)
         {
             if (!Shown(stats)) return;
-            b.PushContext(Strings.HudTrainStats, Strings.RoleList);
-            int i = 0;
+            var numbers = new List<TMPro.TMP_Text>();
             foreach (var number in new[] { stats.energyPerTurnLabel, stats.deploymentPhaseEnergyPerTurnLabel, stats.cardsPerTurnLabel, stats.capacityPerFloorLabel })
-                if (number != null && !string.IsNullOrWhiteSpace(number.Content())) b.AddItem(Id("train:" + i++), HudNodes.TrainStat(number));
+                if (number != null && !string.IsNullOrWhiteSpace(number.Content())) numbers.Add(number);
+            if (numbers.Count == 0) return;
+            b.PushContext(Strings.HudTrainStats, Strings.RoleList);
+            b.StartRow();
+            for (int i = 0; i < numbers.Count; i++) b.AddItem(Id("train:" + i), HudNodes.TrainStat(numbers[i]));
+            b.EndRow();
             b.PopContext();
         }
 
-        // A relic collection, all its pages: one line per relic.
+        // A relic collection, all its pages, a row: one item per relic.
         private static void Relics(GraphBuilder b, string key, string title, RelicCollectionUI collection)
         {
             if (!Shown(collection) || collection.relicIcons == null) return;
@@ -166,8 +171,10 @@ namespace MonsterTrainAccessibility.Module.Screens
                 if (icon != null && icon.CurrentRelicId != null && icon.Tooltips != null && icon.Tooltips.Count > 0) icons.Add(icon);
             if (icons.Count == 0) return;
             b.PushContext(title, Strings.RoleList);
+            b.StartRow();
             // By place, not by id: a run can hold two of the same artifact.
             for (int i = 0; i < icons.Count; i++) b.AddItem(Id(key + ":" + i), HudNodes.Relic(icons[i]));
+            b.EndRow();
             b.PopContext();
         }
 
