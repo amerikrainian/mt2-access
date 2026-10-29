@@ -61,12 +61,15 @@ namespace MonsterTrainAccessibility.Module.Combat
         private static bool s_reloadSawMenu;
 
         /// <summary>The game is reloading the run (a battle restarted, a turn undone): from the press until
-        /// the run is back in its battle, by way of the main menu, none of which is the player's to hear.
-        /// The game keeps its own flag up longer, through the battle's start (its popups included).</summary>
+        /// the run is back in its battle, by way of the main menu, and for an undo until the game has
+        /// replayed the turn up to where it is undone to (its undo mode, which it drops once settled);
+        /// none of which is the player's to hear. A restart's own flag stays up longer, through the
+        /// battle's start (its popups included), so it is followed only until the battle is back.</summary>
         public static bool Reloading
         {
             get
             {
+                if (SaveManager.IsInUndoModeStatic) return true;
                 var managers = AllGameManagers.Instance;
                 var save = managers != null ? managers.GetSaveManager() : null;
                 var screens = managers != null ? managers.GetScreenManager() : null;
@@ -97,7 +100,11 @@ namespace MonsterTrainAccessibility.Module.Combat
             }
         }
 
-        public static bool Muted(EventKind kind) => kind != EventKinds.Turn && kind != EventKinds.Phase && SettingUp;
+        /// <summary>An event dropped altogether: anything while the game replays (an undo, a continued
+        /// run: the log already holds what it replays), anything but the turn and phase while a battle
+        /// sets itself up.</summary>
+        public static bool Muted(EventKind kind)
+            => Replaying() || (kind != EventKinds.Turn && kind != EventKinds.Phase && SettingUp);
 
         /// <summary>Whether the game is replaying what was done (an undo, a run continued): its events
         /// are logged, not spoken.</summary>
@@ -127,8 +134,10 @@ namespace MonsterTrainAccessibility.Module.Combat
                 player.energyChangedSignal.AddListener(OnEmber);
                 player.moonPhaseChangedSignal.AddListener(OnMoon);
                 _moon = player.CurrentMoonPhase;
+                _ember = player.GetEnergy();
             }
             _managers.GetSaveManager()?.pyreHPChangedSignal.AddListener(OnPyreHp);
+            _managers.GetSaveManager()?.undoFinishedSignal.AddListener(OnUndone);
             RelicManager.RelicTriggered.AddListener(OnRelic);
             _managers.GetMonsterManager()?.AddCharactersNotification(this);
             _managers.GetHeroManager()?.AddCharactersNotification(this);
@@ -158,6 +167,7 @@ namespace MonsterTrainAccessibility.Module.Combat
                 player.moonPhaseChangedSignal.RemoveListener(OnMoon);
             }
             _managers.GetSaveManager()?.pyreHPChangedSignal.RemoveListener(OnPyreHp);
+            _managers.GetSaveManager()?.undoFinishedSignal.RemoveListener(OnUndone);
             RelicManager.RelicTriggered.RemoveListener(OnRelic);
             _managers.GetMonsterManager()?.RemoveCharactersNotification(this);
             _managers.GetHeroManager()?.RemoveCharactersNotification(this);
@@ -255,7 +265,17 @@ namespace MonsterTrainAccessibility.Module.Combat
             GameEvents.Raise(EventKinds.Phase, Strings.Event(key));
         }
 
-        private void OnPyreArmor(int armor) => GameEvents.Raise(EventKinds.PyreArmor, Strings.Event("pyre_armor", armor), EventSide.Friendly);
+        // Ember and the pyre's armor are totals the game sets again without changing them (an undo
+        // finishing): said only when they change.
+        private int? _ember;
+        private int? _pyreArmor;
+
+        private void OnPyreArmor(int armor)
+        {
+            if (_pyreArmor == armor) return;
+            _pyreArmor = armor;
+            GameEvents.Raise(EventKinds.PyreArmor, Strings.Event("pyre_armor", armor), EventSide.Friendly);
+        }
 
         private void OnAbilityReady(CharacterState c)
         {
@@ -280,7 +300,20 @@ namespace MonsterTrainAccessibility.Module.Combat
             if (!initial) GameEvents.Raise(EventKinds.DeckShuffled, Strings.Event("deck_shuffled"));
         }
 
-        private void OnEmber(int ember) => GameEvents.Raise(EventKinds.Ember, Strings.Event("ember", ember));
+        // An undo done: the replay set the totals without a word; what they are now is the baseline.
+        private void OnUndone()
+        {
+            var player = _managers.GetPlayerManager();
+            if (player != null) _ember = player.GetEnergy();
+            _pyreArmor = null;
+        }
+
+        private void OnEmber(int ember)
+        {
+            if (_ember == ember) return;
+            _ember = ember;
+            GameEvents.Raise(EventKinds.Ember, Strings.Event("ember", ember));
+        }
 
         private void OnMoon(PlayerManager.MoonPhase phase)
         {
