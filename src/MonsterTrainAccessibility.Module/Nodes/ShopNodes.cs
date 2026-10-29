@@ -12,8 +12,8 @@ namespace MonsterTrainAccessibility.Module.Nodes
     /// What a shop sells (<see cref="MerchantGoodUIBase"/>), each a button that buys it through the
     /// game's own buy button: a good as its reward panel shows it (<see cref="RewardNodes"/>: an
     /// artifact, a card), a service by its sign ("Purge Card", what it does); then the price as the buy
-    /// button draws it ("40 Coin", the game's "Sold" once bought), and "can't afford" while the coin is
-    /// short. Landing on it shows it as the pointer does, its tooltips with it.
+    /// button draws it ("40 Coin"), and "can't afford" while the coin is short (the shop leaves out what
+    /// is sold). Landing on it shows it as the pointer does, its tooltips with it.
     /// </summary>
     internal static class ShopNodes
     {
@@ -49,7 +49,7 @@ namespace MonsterTrainAccessibility.Module.Nodes
             return vt;
         }
 
-        // The buy button's label: the price, or the game's word once sold.
+        // The buy button's label: the price.
         private static string Price(MerchantGoodUIBase good)
         {
             var button = good.buyButton;

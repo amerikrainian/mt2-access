@@ -45,7 +45,7 @@ namespace MonsterTrainAccessibility.Module.Screens
             b.PushContext(null);
             var services = new List<MerchantGoodUIBase>();
             foreach (var service in content.GetComponentsInChildren<MerchantServiceUI>(false))
-                if (service.GoodState != null) services.Add(service);
+                if (service.GoodState != null && !service.Claimed) services.Add(service);
             Goods(b, content);
             Row(b, "service", services);
             var leave = content.BackButton;
@@ -69,7 +69,8 @@ namespace MonsterTrainAccessibility.Module.Screens
             foreach (Transform child in container.transform)
             {
                 var good = child.GetComponent<MerchantGoodUIBase>();
-                if (good != null && child.gameObject.activeInHierarchy && good.GoodState != null) goods.Add(good);
+                // A good bought stays on the shelf, sold: it is no longer for sale.
+                if (good != null && child.gameObject.activeInHierarchy && good.GoodState != null && !good.Claimed) goods.Add(good);
             }
             Row(b, "good", goods);
         }
