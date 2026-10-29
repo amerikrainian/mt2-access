@@ -130,3 +130,4 @@ bind.map.prev=Vorherige Routenwahl
 bind.map.next=Nächste Routenwahl
 bind.run.hud=Laufinfo
 mod.category.map=Karte
+card.upgraded=neu: {0}

@@ -86,6 +86,7 @@ card.cost=cost {0}
 card.attack={0} attack
 card.health={0} health
 card.size=size {0}
+card.upgraded=new: {0}
 enemy.variant=Variant {0}
 enemy.attack={0} attack
 enemy.heal={0} healing

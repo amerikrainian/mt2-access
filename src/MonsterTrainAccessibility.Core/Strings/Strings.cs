@@ -132,6 +132,9 @@ namespace MonsterTrainAccessibility.Core.Strings
             D("card.attack", "{0} attack"),
             D("card.health", "{0} health"),
             D("card.size", "size {0}"),
+            // What an upgrade adds to a card's text, which the game draws in its upgrade colour; {0} = that
+            // text ("new: Ability: Savior.").
+            D("card.upgraded", "new: {0}"),
             // The Logbook. An enemy's numbers beside their icons ({0} = the number), its variant buttons
             // (drawn as bare numbers), its artist credit ({0} = the name).
             D("enemy.variant", "Variant {0}"),
@@ -393,6 +396,7 @@ namespace MonsterTrainAccessibility.Core.Strings
         public static string CardAttack(string value) => F("card.attack", value);
         public static string CardHealth(string value) => F("card.health", value);
         public static string CardSize(string value) => F("card.size", value);
+        public static string CardUpgraded(string text) => F("card.upgraded", text);
 
         public static string PyreAttack(string value) => F("pyre.attack", value);
         public static string PyreHealth(string value) => F("pyre.health", value);

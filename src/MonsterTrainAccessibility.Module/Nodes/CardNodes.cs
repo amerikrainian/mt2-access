@@ -34,10 +34,30 @@ namespace MonsterTrainAccessibility.Module.Nodes
                 {
                     GameNodes.LabelPart(name),
                     new NodeAnnouncement(() => Face(card), kind: AnnouncementKinds.Value),
-                    GameNodes.TooltipPart(() => Shown(card._cardFrame != null ? card._cardFrame.cardTextLabel : null)),
+                    GameNodes.TooltipPart(() => Text(card)),
                 },
                 SearchText = name,
                 OnFocus = hover,
+                Details = () => GameNodes.Lines(Tooltips(card, lore)),
+            };
+        }
+
+        /// <summary>A card offered as a choice under a name of its own (a Light Forge upgrade path's):
+        /// "Savior, button, Fel, cost 0, Champion, 5x2 attack, 6 health, then the card text"; its tooltips
+        /// in the buffer as for any card. Landing shows it as hovered; Enter takes it.</summary>
+        public static NodeVtable Offer(Func<string> title, CardUI card, CardTooltipContainer.LoreTooltipSetting lore, Action hover, Action take)
+        {
+            var parts = new List<NodeAnnouncement> { GameNodes.LabelPart(title) };
+            parts.Add(new NodeAnnouncement(() => Name(card), kind: AnnouncementKinds.Value));
+            parts.Add(new NodeAnnouncement(() => Face(card), kind: AnnouncementKinds.Value));
+            parts.Add(GameNodes.TooltipPart(() => Text(card)));
+            return new NodeVtable
+            {
+                ControlType = ControlTypes.Button,
+                Announcements = parts,
+                SearchText = title,
+                OnFocus = hover,
+                OnActivate = take,
                 Details = () => GameNodes.Lines(Tooltips(card, lore)),
             };
         }
@@ -91,6 +111,42 @@ namespace MonsterTrainAccessibility.Module.Nodes
             if (state != null && state.GetCardType() == CardType.Monster)
                 Add(parts, state.GetSize(false).ToString(), Strings.CardSize);
             return parts.Count > 0 ? string.Join(", ", parts) : null;
+        }
+
+        // The card text as drawn, with what an upgrade adds marked ("Multistrike 1. new: Ability:
+        // Savior."): the game draws it in the card's upgrade colour (CardUI.UpdateUpgradeHighlightText),
+        // which speech cannot carry. A colour nested inside the span (an X cost's) does not end it.
+        private static string Text(CardUI card)
+        {
+            string text = Shown(card._cardFrame != null ? card._cardFrame.cardTextLabel : null);
+            if (text == null) return null;
+            string open = "<color=#" + ShinyShoe.ColorUtil.ToHtmlStringRGBACached(card.upgradedTextColor) + ">";
+            var sb = new System.Text.StringBuilder();
+            int at = 0;
+            while (true)
+            {
+                int start = text.IndexOf(open, at, StringComparison.OrdinalIgnoreCase);
+                if (start < 0) break;
+                int end = SpanEnd(text, start + open.Length);
+                if (end < 0) break;
+                sb.Append(text, at, start - at);
+                sb.Append(Strings.CardUpgraded(text.Substring(start + open.Length, end - start - open.Length)));
+                at = end + "</color>".Length;
+            }
+            sb.Append(text, at, text.Length - at);
+            return sb.ToString();
+        }
+
+        // Where the colour span opened before `from` closes: the "</color>" that balances it.
+        private static int SpanEnd(string text, int from)
+        {
+            int depth = 1;
+            for (int i = from; i < text.Length; i++)
+            {
+                if (string.Compare(text, i, "<color", 0, 6, StringComparison.OrdinalIgnoreCase) == 0) depth++;
+                else if (string.Compare(text, i, "</color>", 0, 8, StringComparison.OrdinalIgnoreCase) == 0 && --depth == 0) return i;
+            }
+            return -1;
         }
 
         private static void Add(List<string> parts, string value, Func<string, string> format)

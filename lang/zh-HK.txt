@@ -130,3 +130,4 @@ bind.map.prev=上一個路線選項
 bind.map.next=下一個路線選項
 bind.run.hud=本局資訊
 mod.category.map=地圖
+card.upgraded=新增: {0}
