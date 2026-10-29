@@ -31,7 +31,10 @@ namespace MonsterTrainAccessibility.Module.Screens
         public override int Layer => 5;
         public override IReadOnlyList<InputCategory> InputCategories => Categories;
 
+        // The page as last said, and the same with its markup and spacing dropped (the comparison): a
+        // page is said once. A new event's first page is never the last one said.
         private string _spoken;
+        private string _spokenKey;
 
         private static global::StoryEventScreen Game
         {
@@ -44,14 +47,17 @@ namespace MonsterTrainAccessibility.Module.Screens
 
         public override bool IsActive() => Game != null;
 
-        public override void OnPush() => _spoken = null;
-
         public override void Build(GraphBuilder b)
         {
             var screen = Game;
             if (screen == null) return;
             string text = Shown(screen.contentLabel);
             SpeakNew(text);
+            // The page is said as it appears; it is listed only once the choices (or Continue) are up,
+            // so focus lands on a choice, not on the page just said.
+            bool choices = screen.buttonsVisible && screen.currentChoiceItems != null && screen.currentChoiceItems.Count > 0;
+            bool done = screen.continueButton != null && screen.continueButton.gameObject.activeInHierarchy;
+            if (!choices && !done) return;
             b.PushContext(null);
             if (text != null) b.AddItem(ControlId.Structural("story:text"), GameNodes.Text(() => Shown(screen.contentLabel)));
             ControlId start = null;
@@ -85,11 +91,20 @@ namespace MonsterTrainAccessibility.Module.Screens
         // The page as it appears: all of it the first time, only what follows when the story adds to it.
         private void SpeakNew(string text)
         {
-            if (string.IsNullOrWhiteSpace(text) || text == _spoken) return;
+            if (string.IsNullOrWhiteSpace(text)) return;
+            string key = TextKey(text);
+            if (key == _spokenKey) return;
             string said = _spoken;
+            string saidKey = _spokenKey;
             _spoken = text;
-            Speech.Say(said != null && text.StartsWith(said, System.StringComparison.Ordinal) ? text.Substring(said.Length) : text);
+            _spokenKey = key;
+            Speech.Say(said != null && key.StartsWith(saidKey, System.StringComparison.Ordinal) && text.StartsWith(said, System.StringComparison.Ordinal)
+                ? text.Substring(said.Length) : text);
         }
+
+        private static readonly System.Text.RegularExpressions.Regex Markup = new System.Text.RegularExpressions.Regex(@"<[^>]*>|\s+");
+
+        private static string TextKey(string text) => Markup.Replace(text, "");
 
         // "Wrath, button, (Get Wrath ability.)": the choice and the game's note on it; disabled where
         // the game's conditions fail; its reward preview in the buffer.
