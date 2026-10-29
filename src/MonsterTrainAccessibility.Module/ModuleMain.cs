@@ -62,6 +62,7 @@ namespace MonsterTrainAccessibility.Module
             Core.Events.GameEvents.Suppressed = Combat.CombatEvents.Replaying;
             Core.Events.GameEvents.Muted = Combat.CombatEvents.Muted;
             InputBinding.RegisterType("keyboard", KeyboardBinding.Deserialize);
+            InputBinding.RegisterType("game", GameControlBinding.Deserialize);
             InputBinding.RegisterType("controller", ControllerBinding.Deserialize);
 
             // A per-load UNIQUE id so a reload's Dispose unpatches exactly this load's patches: the host
@@ -175,10 +176,10 @@ namespace MonsterTrainAccessibility.Module
             MapKey(Screens.MapScreen.RouteBack, "Preview previous stop", KeyCode.DownArrow, ControllerInput.RightStickDown);
             MapKey(Screens.MapScreen.RoutePrev, "Previous route choice", KeyCode.LeftArrow, ControllerInput.RightStickLeft);
             MapKey(Screens.MapScreen.RouteNext, "Next route choice", KeyCode.RightArrow, ControllerInput.RightStickRight);
-            // Tab anywhere in a run: the HUD as a list, opened and closed; on the pad, Y, the game's own
-            // HUD button.
+            // The game's Access HUD (Tab, or whatever the player bound it to in Bind Keys) anywhere in a
+            // run: the HUD as a list, opened and closed; on the pad, Y, the game's own HUD button.
             InputManager.Register(Screens.HudScreen.ActionKey, "Run info", InputCategory.Game, Screens.HudScreen.Toggle)
-                .AddBinding(new KeyboardBinding(KeyCode.Tab))
+                .AddBinding(new GameControlBinding(global::InputManager.Controls.AccessHud))
                 .AddBinding(new ControllerBinding(ControllerInput.Y))
                 .When(() => Screens.HudScreen.Available);
 
