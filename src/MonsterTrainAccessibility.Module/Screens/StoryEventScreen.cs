@@ -55,7 +55,10 @@ namespace MonsterTrainAccessibility.Module.Screens
             SpeakNew(text);
             // The page is said as it appears; it is listed only once the choices (or Continue) are up,
             // so focus lands on a choice, not on the page just said.
-            bool choices = screen.buttonsVisible && screen.currentChoiceItems != null && screen.currentChoiceItems.Count > 0;
+            // Every choice disabled at once: the game is carrying out the one made (a unit to pick, the
+            // next page coming); there is always one to take otherwise.
+            bool choices = screen.buttonsVisible && screen.currentChoiceItems != null
+                && screen.currentChoiceItems.Exists(c => c != null && c.button != null && c.button.interactable);
             bool done = screen.continueButton != null && screen.continueButton.gameObject.activeInHierarchy;
             if (!choices && !done) return;
             b.PushContext(null);
