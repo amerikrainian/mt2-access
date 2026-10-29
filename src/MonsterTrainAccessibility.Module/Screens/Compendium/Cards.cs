@@ -16,7 +16,8 @@ namespace MonsterTrainAccessibility.Module.Screens
         // ---- Cards ----
 
         // The filters, each option filter a row (clan, rarity, cost) and the two dropdowns one; the
-        // search on a line of its own (Left and Right are its caret's); then the page's cards as a row.
+        // search on a line of its own (Left and Right are its caret's); then the page's cards as a row,
+        // each by its place on the page: a page turn keeps focus on the same place, on the new card.
         private void Cards(GraphBuilder b, CompendiumSectionCards cards)
         {
             var toolbar = cards.filterToolbar;
@@ -42,18 +43,24 @@ namespace MonsterTrainAccessibility.Module.Screens
                 var hovered = selectable;
                 System.Action hover = () => GameInput.Hover(hovered);
                 var card = selectable.GetUISubComponent<CardUI>() ?? widget.GetComponentInParent<CardUI>();
+                var slot = CardSlot(items.Count);
                 if (card != null && card.GetCardState() != null)
                 {
-                    items.Add(new KeyValuePair<ControlId, NodeVtable>(ControlId.Structural("logbook:card:" + card.GetCardState().GetCardDataID()),
-                        CardNodes.Card(card, CardTooltipContainer.LoreTooltipSetting.Always, hover)));
+                    items.Add(new KeyValuePair<ControlId, NodeVtable>(slot, CardNodes.Card(card, CardTooltipContainer.LoreTooltipSetting.Always, hover)));
                     continue;
                 }
                 var locked = widget.GetComponent<LockedCardUI>() ?? widget.GetComponentInParent<LockedCardUI>();
                 if (locked != null)
-                    items.Add(new KeyValuePair<ControlId, NodeVtable>(ControlId.Structural("logbook:locked:" + locked.GetInstanceID()), CardNodes.Locked(locked, hover)));
+                    items.Add(new KeyValuePair<ControlId, NodeVtable>(slot, CardNodes.Locked(locked, hover)));
             }
             Row(b, GameText.Term("Compendium_Section_Cards"), items);
         }
+
+        private const string CardSlotKey = "logbook:card:";
+
+        private static ControlId CardSlot(int index) => ControlId.Structural(CardSlotKey + index);
+
+        private static bool IsCardSlot(ControlId id) => id?.StructuralKey is string key && key.StartsWith(CardSlotKey, System.StringComparison.Ordinal);
 
         // Items as a row in a context, or nothing when there are none (a row cannot be empty).
         private static void Row(GraphBuilder b, string label, List<KeyValuePair<ControlId, NodeVtable>> items)

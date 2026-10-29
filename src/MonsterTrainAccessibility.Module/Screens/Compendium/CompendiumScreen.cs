@@ -38,6 +38,8 @@ namespace MonsterTrainAccessibility.Module.Screens
     /// </summary>
     public sealed partial class CompendiumScreen : Screen
     {
+        private static readonly ControlId PageCountId = ControlId.Structural("logbook:pagecount");
+
         public const string PagePrev = "page.prev";
         public const string PageNext = "page.next";
 
@@ -97,7 +99,7 @@ namespace MonsterTrainAccessibility.Module.Screens
             if (count != null || Zone(screen, PageTurnZone.TurnDir.Left) != null || Zone(screen, PageTurnZone.TurnDir.Right) != null)
             {
                 b.StartRow();
-                if (count != null) b.AddItem(ControlId.Structural("logbook:pagecount"), GameNodes.Text(() => count.Content()));
+                if (count != null) b.AddItem(PageCountId, GameNodes.Text(() => count.Content()));
                 PageButton(b, screen, PageTurnZone.TurnDir.Left, "Leaderboard_Navigation_PreviousPage");
                 PageButton(b, screen, PageTurnZone.TurnDir.Right, "Leaderboard_Navigation_NextPage");
                 b.EndRow();
@@ -141,16 +143,26 @@ namespace MonsterTrainAccessibility.Module.Screens
         }
 
         // A page turn through the game's own page control, then the game's new page line ("Page 2 of
-        // 57") once it has redrawn it.
+        // 57") once it has redrawn it, and the card now in the place focus was on. A turn that takes away
+        // the button pressed (Previous Page on the first page) has focus fall on the page line, which is
+        // read as it lands: said once.
         private static void Turn(global::CompendiumScreen screen, PageTurnZone zone)
         {
+            var before = Core.UI.Navigation.FocusedNode?.Id;
             GameInput.Submit(zone);
             Later.Frames(2, () =>
             {
+                var now = Core.UI.Navigation.FocusedNode?.Id;
+                if (Equals(now, PageCountId) && !Equals(now, before)) return;
                 if (screen.pagesBySection.TryGetValue(screen.currentSection, out CompendiumSection page)
                     && page is PaginatedCompendiumSection paged && paged.pageCountLabel != null
                     && !string.IsNullOrWhiteSpace(paged.pageCountLabel.Content()))
+                {
                     Core.Speech.Say(paged.pageCountLabel.Content(), interrupt: true);
+                    // The card alone: focus has not moved, so the screen's path is not read again.
+                    var node = Core.UI.Navigation.FocusedNode;
+                    if (node != null && IsCardSlot(node.Id)) Core.Speech.Say(GraphAnnouncer.LeafText(node));
+                }
             }, "logbook page");
         }
 
