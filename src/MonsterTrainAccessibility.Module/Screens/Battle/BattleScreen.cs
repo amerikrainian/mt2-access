@@ -65,10 +65,15 @@ namespace MonsterTrainAccessibility.Module.Screens
         // Where each row was last left, so coming back lands there (the rows are rebuilt every frame).
         private readonly Dictionary<string, ControlId> _lastInRow = new Dictionary<string, ControlId>();
 
-        // A battle over (won: its victory panel, then the way out) is not the battle's to read.
+        // A battle over (won: its victory panel, then the way out) is not the battle's to read. Nor one
+        // the player is leaving (the Menu's Back to the Covenant Outpost or the Rift Station): the game
+        // closes the Menu and loads the next screen with the battle still up and no longer interactable,
+        // and the battle would be read again on the way out. A load while the battle is interactable is
+        // the battle's own and leaves it be.
         public override bool IsActive()
         {
             if (Game == null || HandUi == null) return false;
+            if (ShinyShoe.Loading.LoadingScreen.IsWorking() && !Game.IsInteractable()) return false;
             var combat = Managers.GetCombatManager();
             return combat == null || combat.GetCombatPhase() != CombatManager.Phase.EndOfCombat;
         }
