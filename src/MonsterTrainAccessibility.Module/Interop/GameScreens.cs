@@ -18,5 +18,22 @@ namespace MonsterTrainAccessibility.Module.Interop
             var screen = manager.GetScreen(name) as T;
             return screen != null && screen.gameObject.activeInHierarchy ? screen : null;
         }
+
+        // A load counts once it has lasted a few frames: opening a run dialog has the game report one for
+        // a single frame, which is no load to stand down for.
+        private const int LoadFrames = 5;
+        private static int _loadingSince = -1;
+
+        /// <summary>Whether the game's loading screen is up, and has been for a few frames.</summary>
+        public static bool Loading()
+        {
+            if (!ShinyShoe.Loading.LoadingScreen.IsWorking())
+            {
+                _loadingSince = -1;
+                return false;
+            }
+            if (_loadingSince < 0) _loadingSince = UnityEngine.Time.frameCount;
+            return UnityEngine.Time.frameCount - _loadingSince >= LoadFrames;
+        }
     }
 }

@@ -38,23 +38,8 @@ namespace MonsterTrainAccessibility.Module.Screens
 
         // Silent while the game loads the screen a choice opened (a challenge's details): it stays open
         // under the load, and would be read again between the game's loading message and that screen.
-        // A load counts once it has lasted a few frames: opening the dialog has the game report one for a
-        // single frame, which would close the dialog and open it again, each read in full.
-        private const int LoadFrames = 5;
-        private static int _loadingSince = -1;
-
-        public override bool IsActive() => Dialog != null && !Loading();
-
-        private static bool Loading()
-        {
-            if (!ShinyShoe.Loading.LoadingScreen.IsWorking())
-            {
-                _loadingSince = -1;
-                return false;
-            }
-            if (_loadingSince < 0) _loadingSince = Time.frameCount;
-            return Time.frameCount - _loadingSince >= LoadFrames;
-        }
+        // A one-frame load as the dialog opens is none (GameScreens.Loading).
+        public override bool IsActive() => Dialog != null && !GameScreens.Loading();
 
         // Opening speaks the dialog's header and its line ("Depart. Choose your run type."), once: not
         // again when focus comes back from the game's confirmation. The list is unnamed, so the first
@@ -71,12 +56,12 @@ namespace MonsterTrainAccessibility.Module.Screens
             var dialog = Dialog;
             if (dialog == null) return;
             b.PushContext(null);
-            var start = Option(b, "new", dialog.standardRunOption);
-            var resume = Option(b, "resume", dialog.continueGameOption);
-            if (resume != null) SavedRun(b, dialog.continueGameOption);
-            Option(b, "newgame", dialog.newGameOption);
-            Option(b, "daily", dialog.dailyChallengeOption);
-            Option(b, "community", dialog.customChallengeOption);
+            var start = RunOptionNodes.Option(b, "depart:new", dialog.standardRunOption);
+            var resume = RunOptionNodes.Option(b, "depart:resume", dialog.continueGameOption);
+            if (resume != null) RunOptionNodes.SavedRun(b, "depart", dialog.continueGameOption);
+            RunOptionNodes.Option(b, "depart:newgame", dialog.newGameOption);
+            RunOptionNodes.Option(b, "depart:daily", dialog.dailyChallengeOption);
+            RunOptionNodes.Option(b, "depart:community", dialog.customChallengeOption);
             var back = dialog.backButton;
             if (back != null && back.gameObject.activeInHierarchy)
                 b.AddItem(ControlId.Structural("depart:back"), GameWidgets.Button(back, () => PauseMenuScreen.Caption(back)));
@@ -89,42 +74,6 @@ namespace MonsterTrainAccessibility.Module.Screens
         {
             yield return new ElementAction(ActionIds.Back, Strings.Get("bind.ui.back"),
                 _ => GameInput.Send(global::InputManager.Controls.Escape));
-        }
-
-        // A run type: its panel's title ("Resume Run", "Daily Challenge") on the panel's play button.
-        private static ControlId Option(GraphBuilder b, string key, GameModeOption option)
-        {
-            if (option == null || !option.gameObject.activeInHierarchy || option.playButton == null) return null;
-            var button = option.playButton.Button;
-            if (button == null) return null;
-            var id = ControlId.Structural("depart:" + key);
-            b.AddItem(id, GameWidgets.Button(button, () => ChallengeProgressScreen.HeaderOf(option, "Title label")));
-            return id;
-        }
-
-        // The saved run as Resume Run's panel draws it: the mode label when there is one ("Endless
-        // Mode"), then each stat the game gives a tooltip, in the panel's order.
-        private static void SavedRun(GraphBuilder b, ContinueGameOption option)
-        {
-            ModeLabel(b, "endless", option.endlessModeLabel);
-            ModeLabel(b, "soulsavior", option.soulSaviorModeLabel);
-            int i = 0;
-            foreach (var provider in option.GetComponentsInChildren<ITooltipProvider>(false))
-            {
-                var widget = provider as Component;
-                if (widget == null || TooltipReader.Lines(widget).Count == 0) continue;
-                var id = ControlId.Structural("depart:run:" + widget.gameObject.name + ":" + i++);
-                var covenant = widget.GetComponent<ChallengeCovenantUI>();
-                b.AddItem(id, covenant != null ? StartingConditionsNodes.Covenant(covenant) : TooltipReader.Item(widget));
-            }
-        }
-
-        private static void ModeLabel(GraphBuilder b, string key, Transform label)
-        {
-            if (label == null || !label.gameObject.activeInHierarchy) return;
-            var text = label.GetComponentInChildren<TMP_Text>(false);
-            if (text == null || string.IsNullOrWhiteSpace(text.Content())) return;
-            b.AddItem(ControlId.Structural("depart:mode:" + key), GameNodes.Text(() => text.Content()));
         }
     }
 }

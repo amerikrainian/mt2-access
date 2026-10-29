@@ -3,6 +3,7 @@ using MonsterTrainAccessibility.Core.Graph;
 using MonsterTrainAccessibility.Core.Strings;
 using MonsterTrainAccessibility.Core.UI;
 using MonsterTrainAccessibility.Module.Interop;
+using MonsterTrainAccessibility.Module.Nodes;
 using MonsterTrainAccessibility.Module.UI;
 using ShinyShoe;
 using TMPro;
@@ -43,17 +44,17 @@ namespace MonsterTrainAccessibility.Module.Screens
             var screen = Game;
             if (screen == null) return;
             b.PushContext(GameText.Term("RichPresenceManager_DetailsDescriptionKey_NoRun"), Strings.RoleList);
-            Place(b, "depart", screen.startRunButton);
-            Place(b, "portal", screen.expertChallengesButton);
-            Place(b, "rift", screen.soulSaviorButton, () => RiftNote(screen));
-            Place(b, "depot", screen.trainCustomizationButton);
-            Place(b, "library", screen.compendiumButton);
-            Place(b, "dialogue1", screen.dialogueFirstButton);
-            Place(b, "dialogue2", screen.dialogueSecondButton);
-            Place(b, "dialogue3", screen.dialogueThirdButton);
-            Place(b, "dialogue4", screen.dialogueFourthButton);
-            Place(b, "settings", screen.settingsButton, label: () => GameText.Term("ScreenMainMenu_Settings"));
-            Account(b, screen);
+            MenuNodes.Place(b, "mainmenu:depart", screen.startRunButton);
+            MenuNodes.Place(b, "mainmenu:portal", screen.expertChallengesButton);
+            MenuNodes.Place(b, "mainmenu:rift", screen.soulSaviorButton, () => RiftNote(screen));
+            MenuNodes.Place(b, "mainmenu:depot", screen.trainCustomizationButton);
+            MenuNodes.Place(b, "mainmenu:library", screen.compendiumButton);
+            MenuNodes.Place(b, "mainmenu:dialogue1", screen.dialogueFirstButton);
+            MenuNodes.Place(b, "mainmenu:dialogue2", screen.dialogueSecondButton);
+            MenuNodes.Place(b, "mainmenu:dialogue3", screen.dialogueThirdButton);
+            MenuNodes.Place(b, "mainmenu:dialogue4", screen.dialogueFourthButton);
+            MenuNodes.Place(b, "mainmenu:settings", screen.settingsButton, label: () => GameText.Term("ScreenMainMenu_Settings"));
+            MenuNodes.Account(b, "mainmenu:user", screen.changeUserButton, screen.usernameLabel, screen.nonSwitchableUserButton, screen.nonSwitchableUsernameLabel);
             b.PopContext();
             b.SetStart(ControlId.Structural("mainmenu:depart"));
         }
@@ -64,32 +65,6 @@ namespace MonsterTrainAccessibility.Module.Screens
                 _ => GameInput.Send(global::InputManager.Controls.Escape));
         }
 
-        // A place on the menu: its caption (or the given label, for the captionless Settings), the
-        // button's state, then its hover line and any note.
-        private static void Place(GraphBuilder b, string key, MainMenuButton place,
-            System.Func<string> note = null, System.Func<string> label = null)
-        {
-            var button = place != null ? place.Button : null;
-            if (button == null || !button.gameObject.activeInHierarchy) return;
-            b.AddItem(ControlId.Structural("mainmenu:" + key), GameWidgets.Button(button,
-                label ?? (() => Caption(place)),
-                () => GameNodes.Sentences(HoverLine(place), note?.Invoke())));
-        }
-
-        private static string Caption(MainMenuButton place)
-            => place.label != null && !string.IsNullOrWhiteSpace(place.label.Content()) ? place.label.Content() : null;
-
-        // Every other text the place carries: the line the game fades in on hover ("Start a Run").
-        private static string HoverLine(MainMenuButton place)
-        {
-            foreach (var text in place.GetComponentsInChildren<TMP_Text>(true))
-            {
-                if (text == null || text == place.label || string.IsNullOrWhiteSpace(text.Content())) continue;
-                return text.Content();
-            }
-            return null;
-        }
-
         // The game's "Requires ... DLC" note, which it shows on hover over the Rift Station only while
         // the DLC is missing.
         private static string RiftNote(global::MainMenuScreen screen)
@@ -97,18 +72,6 @@ namespace MonsterTrainAccessibility.Module.Screens
             if (AppManager.PlatformServices.IsDlcInstalled(DLC.Railforged) || screen.dlcRequiredIndicator == null) return null;
             var text = screen.dlcRequiredIndicator.GetComponentInChildren<TMP_Text>(true);
             return text != null && !string.IsNullOrWhiteSpace(text.Content()) ? text.Content() : null;
-        }
-
-        // The signed-in account, where the platform has one: a button when the player may switch it,
-        // else the name alone.
-        private static void Account(GraphBuilder b, global::MainMenuScreen screen)
-        {
-            var change = screen.changeUserButton;
-            if (change != null && change.gameObject.activeInHierarchy)
-                b.AddItem(ControlId.Structural("mainmenu:user"), GameWidgets.Button(change, () => screen.usernameLabel != null ? screen.usernameLabel.Content() : null));
-            var fixedUser = screen.nonSwitchableUserButton;
-            if (fixedUser != null && fixedUser.gameObject.activeInHierarchy)
-                b.AddItem(ControlId.Structural("mainmenu:user"), GameNodes.Text(() => screen.nonSwitchableUsernameLabel != null ? screen.nonSwitchableUsernameLabel.Content() : null));
         }
     }
 }
