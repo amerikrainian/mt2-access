@@ -378,7 +378,7 @@ namespace MonsterTrainAccessibility.Core.UI
             return sb.ToString();
         }
 
-        public override void AnnounceCurrent()
+        public override void AnnounceCurrent(bool interrupt = false)
         {
             if (_graph == null) return;
             // An unfocused screen with nothing focused has nothing to announce, and Rerender would
@@ -388,7 +388,7 @@ namespace MonsterTrainAccessibility.Core.UI
             var node = _graph.CurrentNode;
             if (node == null) return;
             _quietLandingUntil = int.MinValue / 2; // read in full here: no landing is owed quiet any more
-            Speak(ComposeMove(null, node, entry: true));
+            Speak(ComposeMove(null, node, entry: true), interrupt);
             _lastSpokenKey = node.Id;
             _lastSpokenNode = node;
         }

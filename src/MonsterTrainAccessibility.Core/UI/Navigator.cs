@@ -52,7 +52,9 @@ namespace MonsterTrainAccessibility.Core.UI
 
         /// <summary>Announce the current focus in full (the container hierarchy down to the element),
         /// e.g. when focus mode engages.</summary>
-        public abstract void AnnounceCurrent();
+        /// <summary>Read the focus in full; <paramref name="interrupt"/> for a focus the player moved
+        /// (the screen answered a key), queued otherwise.</summary>
+        public abstract void AnnounceCurrent(bool interrupt = false);
 
         /// <summary>A screen closed (stack pop without <see cref="Screen.KeepStateOnPop"/>, or a child
         /// page removed): drop its per-screen state so reopening starts fresh.</summary>
@@ -117,7 +119,7 @@ namespace MonsterTrainAccessibility.Core.UI
         /// <summary>Feed typed characters to the active navigator's type-ahead search (per frame).</summary>
         public static void TickTypeahead() => Active?.TickTypeahead();
 
-        public static void AnnounceCurrent() => Active?.AnnounceCurrent();
+        public static void AnnounceCurrent(bool interrupt = false) => Active?.AnnounceCurrent(interrupt);
 
         public static bool WouldHandle(InputAction action) => Active != null && Active.WouldHandle(action);
 

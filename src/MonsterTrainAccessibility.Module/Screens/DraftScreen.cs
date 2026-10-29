@@ -48,7 +48,16 @@ namespace MonsterTrainAccessibility.Module.Screens
             }
         }
 
-        public override bool IsActive() => Game != null;
+        // An elixir being mixed can be put aside to look at the train (its Hide button): the draft is
+        // then out of the way, the battle in front with the game's Show button.
+        public override bool IsActive()
+        {
+            var draft = Game;
+            return draft != null && !(draft is ElixirDraftScreen elixir && !ElixirShown(elixir));
+        }
+
+        internal static bool ElixirShown(ElixirDraftScreen elixir)
+            => elixir.screenContentTransform != null && elixir.screenContentTransform.gameObject.activeSelf;
 
         public override void OnPush()
         {
@@ -76,6 +85,8 @@ namespace MonsterTrainAccessibility.Module.Screens
             var skip = draft.skipButton;
             if (skip != null && skip.gameObject.activeInHierarchy && skip.interactable && PauseMenuScreen.Caption(skip) != null)
                 b.AddItem(ControlId.Structural(_key + ":skip"), GameWidgets.Button(skip, () => PauseMenuScreen.Caption(skip)));
+            if (draft is ElixirDraftScreen elixir && elixir.hideButton != null && elixir.hideButton.gameObject.activeInHierarchy)
+                b.AddItem(ControlId.Structural(_key + ":hide"), GameWidgets.Button(elixir.hideButton, () => PauseMenuScreen.Caption(elixir.hideButton) ?? TooltipReader.FirstTitle(elixir.hideButton)));
             b.PopContext();
         }
 

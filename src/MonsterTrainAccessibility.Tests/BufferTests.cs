@@ -235,10 +235,10 @@ namespace MonsterTrainAccessibility.Tests
             var node = Build(new NodeVtable
             {
                 Announcements = new[] { new NodeAnnouncement(() => "Irini", kind: AnnouncementKinds.Label) },
-                SideLines = key => key == BufferKeys.Hero ? new[] { "Irini, Duelist", "", "health 650" } : null,
+                SideLines = key => key == "side" ? new[] { "Irini, Duelist", "", "health 650" } : null,
             });
-            Assert.Equal(new[] { "Irini, Duelist", "health 650" }, NodeLines.SideLines(node, BufferKeys.Hero).ToArray());
-            Assert.Empty(NodeLines.SideLines(node, BufferKeys.Item));
+            Assert.Equal(new[] { "Irini, Duelist", "health 650" }, NodeLines.SideLines(node, "side").ToArray());
+            Assert.Empty(NodeLines.SideLines(node, "other"));
         }
     }
 }

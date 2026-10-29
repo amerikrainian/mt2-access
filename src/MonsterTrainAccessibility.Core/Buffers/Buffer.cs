@@ -119,6 +119,13 @@ namespace MonsterTrainAccessibility.Core.Buffers
             return true;
         }
 
+        /// <summary>Lines went in on top of the source (a newest-first log): a cursor that has stepped
+        /// back keeps to the line it was on; one on the top line stays on top, at the newest.</summary>
+        public void LinesInserted(int count)
+        {
+            if (Position > 0) Position += count;
+        }
+
         public void MoveToEnd()
         {
             Refresh();

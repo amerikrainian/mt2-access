@@ -32,18 +32,20 @@ namespace MonsterTrainAccessibility.Module.Nodes
         public static NodeVtable Card(CardUI card, CardTooltipContainer.LoreTooltipSetting lore, Action hover)
         {
             Func<string> name = () => Name(card);
+            bool elixir = IsElixir(card);
+            var parts = new List<NodeAnnouncement>
+            {
+                GameNodes.LabelPart(name),
+                // The card's type in the role word's place: "Firestarter, Spell", not "item".
+                new NodeAnnouncement(() => TypeOf(card), kind: AnnouncementKinds.Role) { Spoken = !elixir },
+                new NodeAnnouncement(() => Face(card), kind: AnnouncementKinds.Value) { Spoken = !elixir || !FreeToPlay(card) },
+            };
+            parts.AddRange(TextParts(card, elixir));
+            parts.Add(new NodeAnnouncement(() => RarityOf(card), kind: AnnouncementKinds.Review));
             return new NodeVtable
             {
                 ControlType = ControlTypes.Item,
-                Announcements = new List<NodeAnnouncement>
-                {
-                    GameNodes.LabelPart(name),
-                    // The card's type in the role word's place: "Firestarter, Spell", not "item".
-                    new NodeAnnouncement(() => TypeOf(card), kind: AnnouncementKinds.Role),
-                    new NodeAnnouncement(() => Face(card), kind: AnnouncementKinds.Value),
-                    GameNodes.TooltipPart(() => Text(card)),
-                    new NodeAnnouncement(() => RarityOf(card), kind: AnnouncementKinds.Review),
-                },
+                Announcements = parts,
                 SearchText = name,
                 OnFocus = hover,
                 Details = () => GameNodes.Lines(Tooltips(card, lore)),
@@ -55,11 +57,12 @@ namespace MonsterTrainAccessibility.Module.Nodes
         /// in the buffer as for any card. Landing shows it as hovered; Enter takes it.</summary>
         public static NodeVtable Offer(Func<string> title, CardUI card, CardTooltipContainer.LoreTooltipSetting lore, Action hover, Action take)
         {
+            bool elixir = IsElixir(card);
             var parts = new List<NodeAnnouncement> { GameNodes.LabelPart(title) };
             parts.Add(new NodeAnnouncement(() => Name(card), kind: AnnouncementKinds.Value));
-            parts.Add(new NodeAnnouncement(() => TypeOf(card), kind: AnnouncementKinds.Value));
-            parts.Add(new NodeAnnouncement(() => Face(card), kind: AnnouncementKinds.Value));
-            parts.Add(GameNodes.TooltipPart(() => Text(card)));
+            parts.Add(new NodeAnnouncement(() => TypeOf(card), kind: AnnouncementKinds.Value) { Spoken = !elixir });
+            parts.Add(new NodeAnnouncement(() => Face(card), kind: AnnouncementKinds.Value) { Spoken = !elixir || !FreeToPlay(card) });
+            parts.AddRange(TextParts(card, elixir));
             parts.Add(new NodeAnnouncement(() => RarityOf(card), kind: AnnouncementKinds.Review));
             return new NodeVtable
             {
@@ -139,6 +142,43 @@ namespace MonsterTrainAccessibility.Module.Nodes
             if (state != null && state.GetCardType() == CardType.Monster)
                 Add(parts, state.GetSize(false).ToString(), Strings.CardSize);
             return parts.Count > 0 ? string.Join(", ", parts) : null;
+        }
+
+        // An elixir (an infusion, a crafted spike): its focus line is its name and what it does, the
+        // keywords every elixir carries and a cost of 0 left to the buffer, which keeps the card whole.
+        private static bool IsElixir(CardUI card)
+        {
+            var state = card.GetCardState();
+            return state != null && (state.HasTrait(typeof(CardTraitInfusion)) || state.HasTrait(typeof(CardTraitCraftedSpike)));
+        }
+
+        private static bool FreeToPlay(CardUI card) => Shown(card._costLabel)?.Trim() == "0";
+
+        // The card text: whole; for an elixir, whole in the buffer and spoken without its keyword
+        // paragraph (the text before the card's first paragraph break).
+        private static IEnumerable<NodeAnnouncement> TextParts(CardUI card, bool elixir)
+        {
+            var whole = GameNodes.TooltipPart(() => Text(card));
+            if (!elixir)
+            {
+                yield return whole;
+                yield break;
+            }
+            whole.Spoken = false;
+            yield return whole;
+            var effect = GameNodes.TooltipPart(() => WithoutKeywords(Text(card)));
+            effect.Buffered = false;
+            yield return effect;
+        }
+
+        private static readonly System.Text.RegularExpressions.Regex ParagraphBreak =
+            new System.Text.RegularExpressions.Regex(@"(<size=[^>]*>)?\s*<br\s*/?>\s*<br\s*/?>\s*(</size>)?", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+
+        private static string WithoutKeywords(string text)
+        {
+            if (text == null) return null;
+            var m = ParagraphBreak.Match(text);
+            return m.Success ? text.Substring(m.Index + m.Length) : text;
         }
 
         // The card text as drawn, with what an upgrade adds marked ("Multistrike 1. new: Ability:

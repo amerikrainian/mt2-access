@@ -72,6 +72,8 @@ namespace MonsterTrainAccessibility.Core.Strings
             // Buffer review (Ctrl plus arrows): the buffer names, the "name: line" readout on switching,
             // and the words when every buffer is empty.
             D("buffer.ui", "control"),
+            D("buffer.events", "events"),
+            D("buffer.quotes", "monster quotes"),
             D("buffer.none", "no buffer lines"),
             // {0} = the buffer's name, {1} = its current line.
             D("buffer.line", "{0}: {1}"),
@@ -211,6 +213,154 @@ namespace MonsterTrainAccessibility.Core.Strings
             D("help.row", "{0}: {1}"),
             // A jump key's row, by what it lands on here; {0} = that stop's name ("offers", "party").
             D("help.jump_to", "Jump to {0}"),
+
+            // Battle events, spoken as they happen (queued) and kept in the events buffer, newest first.
+            D("event.deployment", "Deployment."),
+            // {0} = the turn.
+            D("event.turn", "Turn {0}."),
+            // {0} = the turn, {1} = the battle's turns.
+            D("event.turn_of", "Turn {0}/{1}."),
+            D("event.player_action", "Player action."),
+            D("event.room_combat", "Combat."),
+            D("event.enemy_turn", "Enemy turn."),
+            D("event.combat_ended", "Combat ended."),
+            D("event.enemies_cleared", "Enemies cleared."),
+            D("event.deck_shuffled", "Deck shuffled."),
+            // {0} = the ember the player has now.
+            D("event.ember", "Ember {0}."),
+            // {0} = the forge points the player has now.
+            D("event.forge_points", "Forge {0}."),
+            // {0} = the game's word for the currency ("Coin"), {1} = the amount gained / lost.
+            D("event.gold_gained", "{0} +{1}."),
+            D("event.gold_lost", "{0} -{1}."),
+            // {0} = the health the pyre lost / gained.
+            D("event.pyre_damaged", "Pyre -{0} health."),
+            D("event.pyre_healed", "Pyre +{0} health."),
+            // {0} = the pyre's armor now.
+            D("event.pyre_armor", "Pyre armor {0}."),
+            // {0} = the unit, {1} = its floor's number.
+            D("event.spawned", "{0} spawned, floor {1}."),
+            D("event.moved", "{0} moved to floor {1}."),
+            // {0} = the unit.
+            D("event.died", "{0} died."),
+            // {0} = the unit, {1} = the amount.
+            D("event.damaged", "{0} took {1} damage."),
+            D("event.damaged_one", "{0} took damage."),
+            D("event.healed", "{0} healed {1}."),
+            D("event.healed_one", "{0} healed."),
+            // {0} = the unit, {1} = the status, {2} = the change in stacks.
+            D("event.status_increased", "{0} {1} +{2}."),
+            D("event.status_decreased", "{0} {1} -{2}."),
+            // {0} = the unit.
+            D("event.ability_ready", "{0} ability ready."),
+            D("event.ability_unavailable", "{0} ability unavailable."),
+            // {0} = the artifact.
+            D("event.relic_triggered", "{0} triggered."),
+            // A unit's quote: {0} = the unit, {1} = why it spoke, {2} = the quote.
+            D("event.chatter_reason", "{0} {1}, \"{2}\""),
+            // {0} = the unit, {1} = the quote.
+            D("event.chatter", "{0} \"{1}\""),
+            D("event.chatter.summoned", "summoned"),
+            D("event.chatter.attacking", "attacking"),
+            D("event.chatter.slay", "slay"),
+            D("event.chatter.idle", "idle"),
+
+            // The battle. A unit: {0} = its size / attack.
+            D("battle.size", "size {0}"),
+            D("battle.attack", "{0} attack"),
+            // {0} = health now, {1} = its maximum.
+            D("battle.hp", "{0} of {1} health"),
+            // {0} = armor, {1} = health now, {2} = its maximum.
+            D("battle.armor_hp", "{0} armor, {1} of {2} health"),
+            // A unit's ability and where it stands: {0} = the ability, {1} = its state.
+            D("battle.ability", "{0}, {1}"),
+            D("battle.ability.ready", "ready"),
+            // {0} = turns of cooldown left.
+            D("battle.ability.cooldown", "{0} turns"),
+            D("battle.ability.deployment", "deployment phase"),
+            D("battle.ability.hand_full", "hand full"),
+            D("battle.ability.disabled", "disabled"),
+            D("battle.ability.unavailable", "unavailable"),
+            // A boss's next action: {0} = the floor it targets / moves to.
+            D("battle.boss_targets", "targets floor {0}"),
+            D("battle.boss_moves", "moves to floor {0}"),
+            // A floor: {0} = its number (1 at the bottom).
+            D("battle.floor", "Floor {0}"),
+            // Its room for the player's units: {0} = space free, {1} = the floor's capacity.
+            D("battle.capacity", "{0}/{1}"),
+            // {0} = the capacity line, {1} = echoes, {2} = the most it holds.
+            D("battle.capacity_echo", "{0}, {1}/{2}"),
+            // Shift+B, one floor of the list: {0} = the floor, {1} = its capacity line.
+            D("battle.floor_capacity", "{0} {1}"),
+            D("battle.floor_empty", "No creatures"),
+            D("battle.hand", "Hand"),
+            D("battle.hand_empty", "No cards"),
+            D("battle.top_panel", "Top panel"),
+            // Targeting: a card that takes the whole floor; a place for a unit ({0} = 1 at the front),
+            // with the unit already standing there ({0} = the place, {1} = that unit).
+            D("battle.selected_floor", "Selected floor"),
+            D("battle.spawn_point", "Spawn point {0}"),
+            D("battle.spawn_point_occupied", "{0}, {1}"),
+            // What the coming combat does to a unit (I, Ctrl+I, Ctrl+Shift+I).
+            D("battle.outcome.eaten", "eaten"),
+            D("battle.outcome.burns_out", "burns out"),
+            D("battle.outcome.dies", "dies"),
+            D("battle.outcome.despawns", "despawns"),
+            // {0} = health / armor after the combat.
+            D("battle.outcome.health", "{0} health"),
+            D("battle.outcome.armor", "{0} armor"),
+            D("battle.outcome.no_change", "no change"),
+            D("battle.outcome.no_changes", "no changes"),
+            // Ctrl+I: {0} = the unit, {1} = its outcome. Ctrl+Shift+I: {0} = the floor, {1} = its outcomes.
+            D("battle.outcome.unit", "{0}, {1}"),
+            D("battle.outcome.floor", "{0}: {1}"),
+            // The read keys: {0} = ember / forge points; the pyre's health and its maximum.
+            D("battle.read.ember", "{0} ember"),
+            D("battle.read.forge_points", "{0} forge points"),
+            D("battle.read.pyre", "{0}/{1} hp"),
+            // {0} = the amount, {1} = the game's word for the currency.
+            D("battle.read.gold", "{0} {1}"),
+            // The keys' names in the key help.
+            D("bind.battle.ember", "Read ember"),
+            D("bind.battle.forge_points", "Read forge points"),
+            D("bind.run.gold", "Read coin"),
+            D("bind.run.pyre", "Read pyre health"),
+            D("bind.battle.moon", "Read moon phase"),
+            D("bind.battle.outcome", "Read unit outcome"),
+            D("bind.battle.floor_outcomes", "Read floor outcomes"),
+            D("bind.battle.all_outcomes", "Read all floor outcomes"),
+            D("bind.battle.capacity", "Read floor capacity and charged echoes"),
+            D("bind.battle.all_capacity", "Read all floor capacity and charged echoes"),
+            D("bind.battle.hand", "Jump to hand"),
+
+            // The event settings (mod menu): the list, its toggles, and each kind's name.
+            D("event_settings", "Event announcements"),
+            D("event_settings.announce", "Announce"),
+            D("event_settings.buffer", "Add to buffer"),
+            D("event_settings.friendly", "Friendly units"),
+            D("event_settings.enemy", "Enemy units"),
+            D("event_kind.combat.phase", "Combat phases"),
+            D("event_kind.combat.turn", "Combat turn"),
+            D("event_kind.combat.moon_phase", "Moon phase changes"),
+            D("event_kind.card.deck_shuffled", "Deck shuffled"),
+            D("event_kind.resource.energy", "Ember changes"),
+            D("event_kind.resource.gold", "Coin changes"),
+            D("event_kind.resource.forge_points", "Forge point changes"),
+            D("event_kind.pyre.hp", "Pyre health changes"),
+            D("event_kind.pyre.armor", "Pyre armor"),
+            D("event_kind.relic.triggered", "Artifact triggered"),
+            D("event_kind.character.spawned", "Unit spawned"),
+            D("event_kind.character.moved", "Unit movement"),
+            D("event_kind.character.died", "Unit death"),
+            D("event_kind.character.damage", "Unit damage"),
+            D("event_kind.character.hp", "Unit health changes"),
+            D("event_kind.character.status", "Unit status changes"),
+            D("event_kind.character.ability", "Unit ability availability"),
+            D("event_kind.character.chatter.summoned", "Unit summoned chatter"),
+            D("event_kind.character.chatter.attacking", "Unit attacking chatter"),
+            D("event_kind.character.chatter.slay", "Unit slay chatter"),
+            D("event_kind.character.chatter.idle", "Unit idle chatter"),
+            D("event_kind.character.chatter.trigger", "Unit trigger chatter"),
         };
 
         private static readonly Dictionary<string, string> _defaults = BuildDefaults();
@@ -368,6 +518,8 @@ namespace MonsterTrainAccessibility.Core.Strings
         public static string NoTooltip => Get("nav.no_tooltip");
         public static string NoDetails => Get("nav.no_details");
         public static string BufferUi => Get("buffer.ui");
+        public static string BufferEvents => Get("buffer.events");
+        public static string BufferQuotes => Get("buffer.quotes");
         public static string BufferNone => Get("buffer.none");
         public static string BufferLine(string name, string line) => F("buffer.line", name, line);
         public static string NoDragTarget => Get("drag.no_target");
@@ -436,5 +588,15 @@ namespace MonsterTrainAccessibility.Core.Strings
         public static string HelpNone => Get("help.none");
         public static string HelpRow(string label, string keys) => F("help.row", label, keys);
         public static string JumpTo(string stop) => F("help.jump_to", stop);
+
+        /// <summary>A battle event's line: "event.&lt;key&gt;" filled in ("Turn {0}.").</summary>
+        public static string Event(string key, params object[] args) => F("event." + key, args);
+        /// <summary>A battle line: "battle.&lt;key&gt;" filled in ("Floor {0}").</summary>
+        public static string Battle(string key, params object[] args) => F("battle." + key, args);
+        public static string EventSettings => Get("event_settings");
+        public static string EventAnnounce => Get("event_settings.announce");
+        public static string EventBuffer => Get("event_settings.buffer");
+        public static string EventFriendly => Get("event_settings.friendly");
+        public static string EventEnemy => Get("event_settings.enemy");
     }
 }

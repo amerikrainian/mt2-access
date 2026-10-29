@@ -55,6 +55,8 @@ namespace MonsterTrainAccessibility.Module
             InputManager.TextFieldFocused = () => TextEdit.OwnsKeyboard;
             GraphAnnouncer.PositionText = (i, n) => host.Settings.SpeakPositions ? Strings.Position(i, n) : null;
             GraphAnnouncer.ExpandedStateText = Strings.ExpandedState;
+            Core.Events.GameEvents.Store = () => host.Settings.Store;
+            Core.Events.GameEvents.Suppressed = Combat.CombatEvents.Replaying;
             InputBinding.RegisterType("keyboard", KeyboardBinding.Deserialize);
             InputBinding.RegisterType("controller", ControllerBinding.Deserialize);
 
@@ -176,6 +178,26 @@ namespace MonsterTrainAccessibility.Module
                 .AddBinding(new ControllerBinding(ControllerInput.Y))
                 .When(() => Screens.HudScreen.Available);
 
+            // The battle's read keys (main's set), answered by the battle screen while it is in front.
+            BattleKey(Screens.BattleScreen.KeyEmber, "Read ember", new KeyboardBinding(KeyCode.R), new ControllerBinding(ControllerInput.X, ControllerInput.LeftTrigger));
+            BattleKey(Screens.BattleScreen.KeyForge, "Read forge points", new KeyboardBinding(KeyCode.R, ctrl: true), new ControllerBinding(ControllerInput.X, ControllerInput.RightTrigger));
+            BattleKey(Screens.BattleScreen.KeyMoon, "Read moon phase", new KeyboardBinding(KeyCode.P), new ControllerBinding(ControllerInput.DpadDown, ControllerInput.RightTrigger));
+            BattleKey(Screens.BattleScreen.KeyOutcome, "Read unit outcome", new KeyboardBinding(KeyCode.I), new ControllerBinding(ControllerInput.Y, ControllerInput.RightTrigger));
+            BattleKey(Screens.BattleScreen.KeyFloorOutcomes, "Read floor outcomes", new KeyboardBinding(KeyCode.I, ctrl: true), new ControllerBinding(ControllerInput.B, ControllerInput.RightTrigger));
+            BattleKey(Screens.BattleScreen.KeyAllOutcomes, "Read all floor outcomes", new KeyboardBinding(KeyCode.I, ctrl: true, shift: true), new ControllerBinding(ControllerInput.Y, ControllerInput.LeftTrigger));
+            BattleKey(Screens.BattleScreen.KeyCapacity, "Read floor capacity", new KeyboardBinding(KeyCode.B), new ControllerBinding(ControllerInput.B, ControllerInput.LeftTrigger));
+            BattleKey(Screens.BattleScreen.KeyAllCapacity, "Read all floor capacity", new KeyboardBinding(KeyCode.B, shift: true), new ControllerBinding(ControllerInput.DpadUp, ControllerInput.RightTrigger));
+            BattleKey(Screens.BattleScreen.KeyHand, "Jump to hand", new KeyboardBinding(KeyCode.G), null);
+            // The run's: coin and the pyre's health, on the map as in a battle.
+            InputManager.Register("run.gold", "Read coin", InputCategory.Game, Screens.BattleScreen.ReadCoin)
+                .AddBinding(new KeyboardBinding(KeyCode.G, ctrl: true))
+                .AddBinding(new ControllerBinding(ControllerInput.A, ControllerInput.RightTrigger))
+                .When(() => Screens.HudScreen.Available);
+            InputManager.Register("run.pyre", "Read pyre health", InputCategory.Game, Screens.BattleScreen.ReadPyre)
+                .AddBinding(new KeyboardBinding(KeyCode.H, ctrl: true))
+                .AddBinding(new ControllerBinding(ControllerInput.A, ControllerInput.LeftTrigger))
+                .When(() => Screens.HudScreen.Available);
+
             // Global: always live, so the player can hand the keyboard back to the game and reclaim it.
             InputManager.Register("mod.focus", "Toggle navigation", InputCategory.Global, ToggleFocus)
                 .AddBinding(new KeyboardBinding(KeyCode.A, ctrl: true, shift: true))
@@ -187,6 +209,15 @@ namespace MonsterTrainAccessibility.Module
             InputManager.Register(HelpScreen.ActionKey, "Keys here", InputCategory.Global, HelpScreen.Toggle)
                 .AddBinding(new KeyboardBinding(KeyCode.F1))
                 .AddBinding(new ControllerBinding(ControllerInput.Back, ControllerInput.LeftTrigger));
+        }
+
+        // A read key of the battle's: fired at the battle screen while it is in front.
+        private static void BattleKey(string key, string label, KeyboardBinding keyboard, ControllerBinding pad)
+        {
+            var action = InputManager.Register(key, label, InputCategory.Game, () => (ScreenManager.Current as Screens.BattleScreen)?.Read(key))
+                .AddBinding(keyboard)
+                .When(() => Screens.BattleScreen.Offers(key));
+            if (pad != null) action.AddBinding(pad);
         }
 
         // A Ctrl+arrow key of the map's: fired at the map's action of the same key.
@@ -223,7 +254,10 @@ namespace MonsterTrainAccessibility.Module
             ScreenManager.Register(new Screens.DragonsHoardScreen());
             ScreenManager.Register(new Screens.DragonsHoardLevelsScreen());
             ScreenManager.Register(new Screens.DraftScreen(global::ScreenName.RelicChoice, "game.draft.artifact"));
+            ScreenManager.Register(new Screens.DraftScreen(global::ScreenName.Elixir, "game.draft.elixir"));
             ScreenManager.Register(new Screens.BattleIntroScreen());
+            ScreenManager.Register(new Screens.RewardScreen());
+            ScreenManager.Register(new Screens.BattleScreen());
             ScreenManager.Register(new Screens.PauseMenuScreen());
             ScreenManager.Register(new Screens.SettingsScreen());
             ScreenManager.Register(new Screens.DialogScreen());
@@ -246,6 +280,11 @@ namespace MonsterTrainAccessibility.Module
             FocusMode.Tick();
             Safe(TextEdit.Tick, "text edit");
             InputManager.Tick();
+            // The game's events, heard before the focus the same frame moves (a unit died, then the
+            // unit now in its place).
+            Safe(Combat.RunEvents.Tick, "run events");
+            Safe(Combat.CombatEvents.Tick, "combat events");
+            Safe(Core.Events.GameEvents.Flush, "events");
             ScreenManager.Tick();
             if (!TextEdit.OwnsKeyboard) Navigation.TickTypeahead();
             Safe(Later.Tick, "later");
@@ -266,6 +305,8 @@ namespace MonsterTrainAccessibility.Module
             // On a reload the successor already owns the input: drop our hooks only. On a shutdown,
             // give everything back to the game.
             bool restore = _host == null || !_host.SuccessorLoaded;
+            try { Combat.CombatEvents.Shutdown(); } catch (Exception e) { _host?.LogError("[dispose] combat events: " + e); }
+            try { Combat.RunEvents.Shutdown(); } catch (Exception e) { _host?.LogError("[dispose] run events: " + e); }
             try { TextEdit.Shutdown(); } catch (Exception e) { _host?.LogError("[dispose] text edit: " + e); }
             try { FocusMode.Shutdown(restore); } catch (Exception e) { _host?.LogError("[dispose] focus: " + e); }
             try { Gamepad.Reset(); } catch (Exception e) { _host?.LogError("[dispose] gamepad: " + e); }

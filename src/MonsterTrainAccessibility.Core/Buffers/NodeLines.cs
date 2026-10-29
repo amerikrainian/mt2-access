@@ -27,7 +27,7 @@ namespace MonsterTrainAccessibility.Core.Buffers
             for (int i = 0; i < parts.Count; i++)
             {
                 var part = parts[i];
-                if (part == null || part.Kind == AnnouncementKinds.Position) continue;
+                if (part == null || part.Kind == AnnouncementKinds.Position || !part.Buffered) continue;
                 // The control type's role word ("button") says nothing the review needs; a role the node
                 // supplies itself (a card's type in the role word's place) is information: it ends the
                 // head line ("Firestarter, cost 1, Spell").

@@ -152,7 +152,7 @@ namespace MonsterTrainAccessibility.Core.Graph
             var sb = new StringBuilder();
             for (int i = 0; i < anns.Count; i++)
             {
-                if (anns[i]?.Kind == AnnouncementKinds.Review) continue; // the buffer's alone
+                if (anns[i]?.Kind == AnnouncementKinds.Review || anns[i]?.Spoken == false) continue; // the buffer's alone
                 string t = null;
                 if (anns[i]?.Text != null) t = anns[i].Text();
                 if (string.IsNullOrEmpty(t)) continue;

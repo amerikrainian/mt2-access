@@ -60,12 +60,19 @@ namespace MonsterTrainAccessibility.Module.UI
             else _active = false;
         }
 
-        // The game's keyboard poll, replaced while we own the keys: every key it tracks is let go.
+        // The game's keyboard poll, replaced while we own the keys: every key it tracks is let go, but
+        // for the game's own controls the screen in front lets through (Input.GameKeys), polled as the
+        // game polls them.
         private static bool Prefix(CoreInputDriverKeyboard __instance)
         {
             if (!_active) return true;
+            var passing = Input.GameKeys.Passing();
             foreach (KeyValuePair<KeyCode, CoreInputDataButton> key in __instance._keyData)
-                key.Value.UpdateButtonParams(false);
+            {
+                bool down = passing != null && passing.Contains(key.Key) && UnityEngine.Input.GetKey(key.Key);
+                if (down) __instance.lastInputTime = Time.time;
+                key.Value.UpdateButtonParams(down);
+            }
             return false;
         }
 

@@ -55,6 +55,14 @@ namespace MonsterTrainAccessibility.Core.Graph
         /// of the same kind, and key the user's per-kind announcement settings.</summary>
         public string Kind;
 
+        /// <summary>Whether the part is spoken on landing (false: the buffer's alone, kept where its kind
+        /// puts it there: an elixir's full card text, which its focus line shortens).</summary>
+        public bool Spoken = true;
+
+        /// <summary>Whether the part is in the buffer (false: spoken alone: the short form of a part the
+        /// buffer keeps in full).</summary>
+        public bool Buffered = true;
+
         public NodeAnnouncement(Func<string> text, bool live = false, string kind = null)
         {
             Text = text;
@@ -147,7 +155,7 @@ namespace MonsterTrainAccessibility.Core.Graph
         /// short and the detail waits in the buffer.</summary>
         public Func<IEnumerable<string>> Details;
 
-        /// <summary>Optional. Lines for a side buffer (<c>BufferKeys.Hero</c>, <c>BufferKeys.Item</c>) about
+        /// <summary>Optional. Lines for a side buffer (by its key) about
         /// what the control concerns: the hero whose slot, card or unit this is, the items it carries.
         /// Null or empty for a key = that buffer has nothing here and the review keys skip it.</summary>
         public Func<string, IEnumerable<string>> SideLines;
