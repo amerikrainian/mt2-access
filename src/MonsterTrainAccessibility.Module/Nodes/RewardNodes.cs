@@ -38,6 +38,17 @@ namespace MonsterTrainAccessibility.Module.Nodes
 
         /// <summary>A reward panel as buffer lines: each reward's own line (what it is and does), then
         /// its tooltips, one per line.</summary>
+        /// <summary>A choice's reward preview (<see cref="ChoiceRewardPreview"/>: a story event's, an
+        /// endless mutator pair's), as the game shows it for the choice hovered: each reward's lines.</summary>
+        public static List<string> PreviewLines(ChoiceRewardPreview preview)
+        {
+            var lines = new List<string>();
+            if (preview == null || !preview.gameObject.activeInHierarchy || preview.rewardItems == null) return lines;
+            foreach (var reward in preview.rewardItems)
+                if (reward != null && reward.gameObject.activeInHierarchy) lines.AddRange(Lines(reward));
+            return lines;
+        }
+
         public static List<string> Lines(RewardDetailsUI details)
         {
             var lines = new List<string>();

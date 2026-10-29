@@ -126,19 +126,8 @@ namespace MonsterTrainAccessibility.Module.Screens
                 SearchText = label,
                 OnFocus = () => GameInput.Hover(item.button),
                 OnActivate = () => GameInput.Submit(item.button),
-                Details = () => Preview(screen),
+                Details = () => RewardNodes.PreviewLines(screen.rewardPreview),
             };
-        }
-
-        // The game's reward preview, as it shows it for the choice hovered.
-        private static IEnumerable<string> Preview(global::StoryEventScreen screen)
-        {
-            var preview = screen.rewardPreview;
-            var lines = new List<string>();
-            if (preview == null || !preview.gameObject.activeInHierarchy || preview.rewardItems == null) return lines;
-            foreach (var reward in preview.rewardItems)
-                if (reward != null && reward.gameObject.activeInHierarchy) lines.AddRange(RewardNodes.Lines(reward));
-            return lines;
         }
 
         // The design credit as the game words it (its heading and the name).

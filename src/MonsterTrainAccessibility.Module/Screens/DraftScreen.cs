@@ -18,7 +18,8 @@ namespace MonsterTrainAccessibility.Module.Screens
     /// game's instructions ("Herzal's Hoard. Choose an artifact."); then the items side by side as the
     /// game lays them out, each read by its kind (an artifact by <see cref="RelicNodes"/>, a card by
     /// <see cref="CardNodes"/>, a soul by <see cref="SoulNodes.Offer"/>, an endless pair of mutators by
-    /// its title and each half's description), then Skip with what skipping gives. Nothing is declared while the game
+    /// its title and each half's description, the cards and artifacts it gives, the game's preview of it
+    /// on hovering, in its buffer: what a curse does), then Skip with what skipping gives. Nothing is declared while the game
     /// deals the items in, and an item the game has taken out of play (all of them, once one is
     /// chosen) is not declared. Landing on an item shows it as hovered; Enter takes it through the
     /// game. Escape is the game's: the Menu.
@@ -74,7 +75,7 @@ namespace MonsterTrainAccessibility.Module.Screens
             var items = new List<NodeVtable>();
             foreach (var item in draft.draftItems)
             {
-                var vt = Item(item);
+                var vt = Item(item, draft);
                 if (vt != null) items.Add(vt);
             }
             if (items.Count > 0)
@@ -98,7 +99,7 @@ namespace MonsterTrainAccessibility.Module.Screens
         }
 
         // An item by its kind, while it is in play; null for one out of play or of a kind not read yet.
-        private static NodeVtable Item(IDraftableUI item)
+        private static NodeVtable Item(IDraftableUI item, DraftScreenBase draft)
         {
             var widget = item as Component;
             if (widget == null || !widget.gameObject.activeInHierarchy) return null;
@@ -125,6 +126,7 @@ namespace MonsterTrainAccessibility.Module.Screens
                     GameNodes.TooltipPart(() => Shown(pair.GetEndlessMutatorUINegative().descriptionLabel)),
                 };
                 vt.OnFocus = () => GameInput.Hover(button);
+                if (draft is EndlessMutatorDraftScreen endless) vt.Details = () => RewardNodes.PreviewLines(endless.rewardPreview);
                 return vt;
             }
             if (item is CardUI card)
