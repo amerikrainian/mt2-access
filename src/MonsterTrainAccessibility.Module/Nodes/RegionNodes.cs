@@ -51,15 +51,23 @@ namespace MonsterTrainAccessibility.Module.Nodes
             }, choose, () => isLocked() && locked != null ? GameNodes.Sentences(TooltipReader.Lines(locked)) : null);
         }
 
-        /// <summary>A region's reward by its tooltip, "upgraded" where the game has improved it.</summary>
+        /// <summary>A region's reward by its tooltip: "Light Forge, upgraded, Upgrade your Champion.",
+        /// "upgraded" where the game has improved it.</summary>
         public static NodeVtable Reward(RegionSelectionRewardDisplay display, Func<MapNodeData> data)
         {
-            var vt = TooltipReader.Item(display);
-            vt.Announcements = new List<NodeAnnouncement>(vt.Announcements)
+            Func<string> name = () => TooltipReader.FirstTitle(display);
+            return new NodeVtable
             {
-                new NodeAnnouncement(() => data()?.GetIsSoulSaviorUpgradedNode() == true ? Strings.StateUpgraded : null, kind: AnnouncementKinds.Value),
+                ControlType = ControlTypes.Text,
+                Announcements = new List<NodeAnnouncement>
+                {
+                    GameNodes.LabelPart(name),
+                    new NodeAnnouncement(() => data()?.GetIsSoulSaviorUpgradedNode() == true ? Strings.StateUpgraded : null, kind: AnnouncementKinds.Value),
+                    GameNodes.TooltipPart(() => TooltipReader.FirstBody(display)),
+                },
+                SearchText = name,
+                Details = () => AfterFirst(TooltipReader.Lines(display)),
             };
-            return vt;
         }
 
         /// <summary>The region's mutator: its name and what it does, its first tooltip; the keywords it
