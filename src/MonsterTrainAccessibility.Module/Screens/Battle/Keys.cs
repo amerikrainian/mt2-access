@@ -10,8 +10,12 @@ namespace MonsterTrainAccessibility.Module.Screens
 {
     // The battle's read keys, main's set: ember (R), forge points (Ctrl+R), the moon (P), what the
     // coming combat does to the focused unit (I), to the focused floor (Ctrl+I), to every floor
-    // (Ctrl+Shift+I), the focused floor's room and upgrades (B), every floor's room (Shift+B), and back
-    // to the hand (G). Coin (Ctrl+G) and the pyre (Ctrl+H) are the run's, live on the map too.
+    // (Ctrl+Shift+I), the focused floor's room and upgrades (B), every floor's room (Shift+B). Its
+    // jumps: the top panel (Shift+Up) and the hand (Shift+Down), each where it was last left; a floor
+    // by its number (Ctrl+1 for Floor 1), said as its heading alone ("Floor 1, 3/5"), the floor
+    // selected as arrowing there does. Shift and the game's key for the hand's nth card (a digit by
+    // default) reads that card as a landing on it does, focus staying where it is. Coin (Ctrl+G) and
+    // the pyre (Ctrl+H) are the run's, live on the map too.
     public sealed partial class BattleScreen
     {
         public const string KeyEmber = "battle.ember";
@@ -23,6 +27,15 @@ namespace MonsterTrainAccessibility.Module.Screens
         public const string KeyCapacity = "battle.capacity";
         public const string KeyAllCapacity = "battle.all_capacity";
         public const string KeyHand = "battle.hand";
+        public const string KeyTop = "battle.top";
+        private const string CardPrefix = "battle.card.";
+        private const string FloorPrefix = "battle.floor.";
+
+        public static string KeyCard(int n) => CardPrefix + n;
+        public static string KeyFloor(int n) => FloorPrefix + n;
+
+        private static int Numbered(string key, string prefix)
+            => key.StartsWith(prefix, System.StringComparison.Ordinal) && int.TryParse(key.Substring(prefix.Length), out int n) ? n : -1;
 
         // The floor under focus (its units' row, or the floor being targeted); -1 elsewhere.
         private int _focusFloor = -1;
@@ -31,13 +44,18 @@ namespace MonsterTrainAccessibility.Module.Screens
         public static bool Offers(string key)
         {
             if (!(Core.Screens.ScreenManager.Current is BattleScreen screen)) return false;
+            int card = Numbered(key, CardPrefix);
+            if (card > 0) return Managers?.GetCardManager() != null && card <= Managers.GetCardManager().GetNumCardsInHand();
+            int floor = Numbered(key, FloorPrefix);
+            if (floor > 0) return Targeting == null && Rooms != null && floor <= Rooms.GetNumRooms();
             switch (key)
             {
                 case KeyMoon: return Managers?.GetPlayerManager() != null && Managers.GetPlayerManager().GetHasMoonPhaseCardEffect();
                 case KeyOutcome: return FocusedUnit() != null;
                 case KeyFloorOutcomes:
                 case KeyCapacity: return screen.CurrentFloor >= 0;
-                case KeyHand: return Targeting == null;
+                case KeyHand:
+                case KeyTop: return Targeting == null;
                 default: return true;
             }
         }
@@ -46,6 +64,18 @@ namespace MonsterTrainAccessibility.Module.Screens
 
         public void Read(string key)
         {
+            int card = Numbered(key, CardPrefix);
+            if (card > 0)
+            {
+                ReadCard(card);
+                return;
+            }
+            int floor = Numbered(key, FloorPrefix);
+            if (floor > 0)
+            {
+                GoToFloor(floor - 1);
+                return;
+            }
             switch (key)
             {
                 case KeyEmber:
@@ -74,8 +104,10 @@ namespace MonsterTrainAccessibility.Module.Screens
                     Say(AllCapacity());
                     break;
                 case KeyHand:
-                    if (Targeting == null && _lastInRow.TryGetValue("hand", out var card) && Navigation.MoveTo(card)) break;
-                    if (Targeting == null) JumpToHand();
+                    if (Targeting == null && _rowLanding.TryGetValue("hand", out var hand)) Navigation.MoveTo(hand);
+                    break;
+                case KeyTop:
+                    if (Targeting == null && _rowLanding.TryGetValue("top", out var top)) Navigation.MoveTo(top);
                     break;
             }
         }
@@ -135,14 +167,24 @@ namespace MonsterTrainAccessibility.Module.Screens
             return string.Join(", ", parts);
         }
 
-        private void JumpToHand()
+        // The hand's nth card as a landing on it reads it, its row's heading aside; focus stays.
+        private static void ReadCard(int n)
         {
             var cards = Managers.GetCardManager();
-            var hand = HandUi;
-            if (cards == null || hand == null) return;
-            var uis = hand.GetCardUIList();
-            if (cards.GetNumCardsInHand() > 0 && uis.Count > 0) Navigation.MoveTo(Core.Graph.ControlId.Structural(CardKey(cards.GetHandCard(0))));
-            else Navigation.MoveTo(Core.Graph.ControlId.Structural("hand:empty"));
+            if (cards == null || n > cards.GetNumCardsInHand()) return;
+            var state = cards.GetHandCard(n - 1);
+            var render = (Navigation.Active as Core.UI.GraphNavigator)?.CurrentRender;
+            if (state == null || render == null || !render.Nodes.TryGetValue(Core.Graph.ControlId.Structural(CardKey(state)), out var node)) return;
+            Say(Core.Graph.GraphAnnouncer.LeafText(node));
+        }
+
+        // To a floor as arrowing there lands (where it was last left, the floor selected), said as the
+        // floor's heading alone: the unit landed on is not read. Already on the floor, it is only said.
+        private void GoToFloor(int room)
+        {
+            if (!_rowLanding.TryGetValue("floor:" + room, out var landing)) return;
+            Navigation.MoveTo(landing, announce: false);
+            Say(FloorLabel(room));
         }
 
         /// <summary>Ctrl+G, anywhere in a run: "50 Coin".</summary>

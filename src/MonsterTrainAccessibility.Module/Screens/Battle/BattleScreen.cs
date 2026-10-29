@@ -65,6 +65,9 @@ namespace MonsterTrainAccessibility.Module.Screens
         // Where each row was last left, so coming back lands there (the rows are rebuilt every frame).
         private readonly Dictionary<string, ControlId> _lastInRow = new Dictionary<string, ControlId>();
 
+        // Where a landing on each row goes this render: where it was last left, else its first item.
+        private readonly Dictionary<string, ControlId> _rowLanding = new Dictionary<string, ControlId>();
+
         // A battle over (won: its victory panel, then the way out) is not the battle's to read. Nor one
         // the player is leaving (the Menu's Back to the Covenant Outpost or the Rift Station): the game
         // closes the Menu and loads the next screen with the battle still up and no longer interactable,
@@ -199,6 +202,7 @@ namespace MonsterTrainAccessibility.Module.Screens
             if (items.Count == 0) return;
             var ids = new List<ControlId>();
             foreach (var item in items) ids.Add(item.Key);
+            _rowLanding[key] = _lastInRow.TryGetValue(key, out var left) && ids.Contains(left) ? left : ids[0];
             b.PushContext(label, null, positions);
             b.StartRow(null, () => _lastInRow.TryGetValue(key, out var last) ? ids.IndexOf(last) : 0);
             foreach (var item in items)

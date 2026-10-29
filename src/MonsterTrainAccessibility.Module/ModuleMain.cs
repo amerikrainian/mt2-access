@@ -192,7 +192,21 @@ namespace MonsterTrainAccessibility.Module
             BattleKey(Screens.BattleScreen.KeyAllOutcomes, "Read all floor outcomes", new KeyboardBinding(KeyCode.I, ctrl: true, shift: true), new ControllerBinding(ControllerInput.Y, ControllerInput.LeftTrigger));
             BattleKey(Screens.BattleScreen.KeyCapacity, "Read floor capacity", new KeyboardBinding(KeyCode.B), new ControllerBinding(ControllerInput.B, ControllerInput.LeftTrigger));
             BattleKey(Screens.BattleScreen.KeyAllCapacity, "Read all floor capacity", new KeyboardBinding(KeyCode.B, shift: true), new ControllerBinding(ControllerInput.DpadUp, ControllerInput.RightTrigger));
-            BattleKey(Screens.BattleScreen.KeyHand, "Jump to hand", new KeyboardBinding(KeyCode.G), null);
+            BattleKey(Screens.BattleScreen.KeyTop, "Jump to top panel", new KeyboardBinding(KeyCode.UpArrow, shift: true), null);
+            BattleKey(Screens.BattleScreen.KeyHand, "Jump to hand", new KeyboardBinding(KeyCode.DownArrow, shift: true), null);
+            // Shift and a card's key (the game's Card 1 to Card 10, digits by default): read that card.
+            var cardControls = new[]
+            {
+                global::InputManager.Controls.Card01, global::InputManager.Controls.Card02, global::InputManager.Controls.Card03,
+                global::InputManager.Controls.Card04, global::InputManager.Controls.Card05, global::InputManager.Controls.Card06,
+                global::InputManager.Controls.Card07, global::InputManager.Controls.Card08, global::InputManager.Controls.Card09,
+                global::InputManager.Controls.Card10,
+            };
+            for (int i = 0; i < cardControls.Length; i++)
+                BattleKey(Screens.BattleScreen.KeyCard(i + 1), "Read card " + (i + 1), new GameControlBinding(cardControls[i], shift: true), null);
+            // Ctrl and a floor's number: go to that floor.
+            for (int floor = 1; floor <= 9; floor++)
+                BattleKey(Screens.BattleScreen.KeyFloor(floor), "Go to floor " + floor, new KeyboardBinding(KeyCode.Alpha0 + floor, ctrl: true), null);
             // The run's: coin and the pyre's health, on the map as in a battle.
             InputManager.Register("run.gold", "Read coin", InputCategory.Game, Screens.BattleScreen.ReadCoin)
                 .AddBinding(new KeyboardBinding(KeyCode.G, ctrl: true))
@@ -217,7 +231,7 @@ namespace MonsterTrainAccessibility.Module
         }
 
         // A read key of the battle's: fired at the battle screen while it is in front.
-        private static void BattleKey(string key, string label, KeyboardBinding keyboard, ControllerBinding pad)
+        private static void BattleKey(string key, string label, InputBinding keyboard, ControllerBinding pad)
         {
             var action = InputManager.Register(key, label, InputCategory.Game, () => (ScreenManager.Current as Screens.BattleScreen)?.Read(key))
                 .AddBinding(keyboard)

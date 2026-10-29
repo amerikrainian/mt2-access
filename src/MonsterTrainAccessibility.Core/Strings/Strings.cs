@@ -359,6 +359,11 @@ namespace MonsterTrainAccessibility.Core.Strings
             D("bind.battle.capacity", "Read floor capacity and charged echoes"),
             D("bind.battle.all_capacity", "Read all floor capacity and charged echoes"),
             D("bind.battle.hand", "Jump to hand"),
+            D("bind.battle.top", "Jump to top panel"),
+            // A numbered key's name ({0} = the number): Shift and the game's key for the hand's nth card,
+            // Ctrl and a floor's number.
+            D("bind.battle.card", "Read card {0}"),
+            D("bind.battle.floor", "Go to floor {0}"),
 
             // The event settings (mod menu): the list, its toggles, and each kind's name.
             D("event_settings", "Event announcements"),
@@ -558,10 +563,17 @@ namespace MonsterTrainAccessibility.Core.Strings
         public static string SearchNoMatch(string text) => F("search.no_match", text);
         public static string SearchCleared => Get("search.cleared");
 
-        /// <summary>The spoken label of an input action ("bind.ui.down" -> "Navigate down"); the
-        /// registration label when no entry exists.</summary>
+        /// <summary>The spoken label of an input action ("bind.ui.down" -> "Navigate down"); a numbered
+        /// action's from its kind's entry ("battle.card.3" -> "bind.battle.card" with 3: "Read card 3");
+        /// the registration label when no entry exists.</summary>
         public static string BindLabel(string actionKey, string fallback)
-            => Has("bind." + actionKey) ? Get("bind." + actionKey) : fallback;
+        {
+            if (Has("bind." + actionKey)) return Get("bind." + actionKey);
+            int dot = actionKey.LastIndexOf('.');
+            if (dot > 0 && int.TryParse(actionKey.Substring(dot + 1), out int n) && Has("bind." + actionKey.Substring(0, dot)))
+                return F("bind." + actionKey.Substring(0, dot), n);
+            return fallback;
+        }
 
         public static string RoleDialog => Get("role.dialog");
         public static string PauseDiscord => Get("pause.discord");

@@ -134,7 +134,10 @@ namespace MonsterTrainAccessibility.Core.UI
 
         public override object FocusedStopKey => _graph?.CurrentNode?.StopKey;
 
-        public override bool MoveTo(ControlId id)
+        /// <summary>Move focus to a node as a keypress does (its focus action fires); read unless
+        /// <paramref name="announce"/> is false, for a caller that says something of its own instead (a
+        /// jump that names only where it went). False when it is already there or not in the render.</summary>
+        public override bool MoveTo(ControlId id, bool announce = true)
         {
             if (id == null || _graph == null || !_graph.Rerender()) return false;
             var from = _graph.CurrentNode;
@@ -144,7 +147,7 @@ namespace MonsterTrainAccessibility.Core.UI
             if (node == null) return false;
             PlayHover(node);
             FireFocus(node);
-            Speak(ComposeMove(from, node, entry: false), interrupt: true);
+            if (announce) Speak(ComposeMove(from, node, entry: false), interrupt: true);
             _lastSpokenKey = node.Id;
             _lastSpokenNode = node;
             return true;

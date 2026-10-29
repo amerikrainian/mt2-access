@@ -8,15 +8,19 @@ namespace MonsterTrainAccessibility.Module.Input
     /// A key bound in the game's own key mapping to one of its controls (Access HUD), for a mod action
     /// that stands in for that control: whatever keys the player has bound to it in Bind Keys, read from
     /// the game's mapping on every poll, never kept, so a rebinding takes effect at once and the key help
-    /// names the keys bound now. Pressed bare, as the game's own keys pass to it (<see cref="GameKeys"/>).
+    /// names the keys bound now. Pressed bare, as the game's own keys pass to it (<see cref="GameKeys"/>),
+    /// or with Shift for a mod action beside the game's (Shift and a card's key reads the card), which
+    /// the game, hearing its keys bare only, does not hear.
     /// </summary>
     public sealed class GameControlBinding : InputBinding
     {
         public global::InputManager.Controls Control { get; }
+        public bool Shift { get; }
 
-        public GameControlBinding(global::InputManager.Controls control)
+        public GameControlBinding(global::InputManager.Controls control, bool shift = false)
         {
             Control = control;
+            Shift = shift;
         }
 
         // The keys the player has bound to the control, as the game maps them now.
@@ -30,14 +34,15 @@ namespace MonsterTrainAccessibility.Module.Input
             return keys;
         }
 
-        private static bool ModifierHeld =>
+        private static bool CtrlOrAltHeld =>
             UnityEngine.Input.GetKey(KeyCode.LeftControl) || UnityEngine.Input.GetKey(KeyCode.RightControl)
-            || UnityEngine.Input.GetKey(KeyCode.LeftShift) || UnityEngine.Input.GetKey(KeyCode.RightShift)
             || UnityEngine.Input.GetKey(KeyCode.LeftAlt) || UnityEngine.Input.GetKey(KeyCode.RightAlt);
+        private static bool ShiftHeld => UnityEngine.Input.GetKey(KeyCode.LeftShift) || UnityEngine.Input.GetKey(KeyCode.RightShift);
 
+        // Modifiers matched exactly, as for any key of the mod's.
         private bool Any(System.Func<KeyCode, bool> test)
         {
-            if (ModifierHeld) return false;
+            if (CtrlOrAltHeld || ShiftHeld != Shift) return false;
             foreach (var key in Keys())
                 if (test(key)) return true;
             return false;
@@ -53,7 +58,7 @@ namespace MonsterTrainAccessibility.Module.Input
             get
             {
                 foreach (var key in Keys())
-                    if (new KeyboardBinding(key).ConflictsWithTypeahead) return true;
+                    if (new KeyboardBinding(key, shift: Shift).ConflictsWithTypeahead) return true;
                 return false;
             }
         }
@@ -64,16 +69,22 @@ namespace MonsterTrainAccessibility.Module.Input
             get
             {
                 var names = new List<string>();
-                foreach (var key in Keys()) names.Add(new KeyboardBinding(key).DisplayName);
+                foreach (var key in Keys()) names.Add(new KeyboardBinding(key, shift: Shift).DisplayName);
                 return string.Join(", ", names);
             }
         }
 
         public override string Type => "game";
 
-        public override string Serialize() => Control.ToString();
+        // "AccessHud", or "Card01|shift".
+        public override string Serialize() => Shift ? Control + "|shift" : Control.ToString();
 
         public static GameControlBinding Deserialize(string data)
-            => System.Enum.TryParse(data, out global::InputManager.Controls control) ? new GameControlBinding(control) : null;
+        {
+            if (string.IsNullOrEmpty(data)) return null;
+            var parts = data.Split('|');
+            return System.Enum.TryParse(parts[0], out global::InputManager.Controls control)
+                ? new GameControlBinding(control, parts.Length > 1 && parts[1] == "shift") : null;
+        }
     }
 }

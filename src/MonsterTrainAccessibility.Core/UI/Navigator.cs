@@ -71,7 +71,7 @@ namespace MonsterTrainAccessibility.Core.UI
         /// (interrupting, the contexts crossed read as an arrow's are): a screen's own key that lands
         /// somewhere. False when the node is not in the render or is the focused one already, so the
         /// caller stays silent as at an edge.</summary>
-        public virtual bool MoveTo(Graph.ControlId id) => false;
+        public virtual bool MoveTo(Graph.ControlId id, bool announce = true) => false;
 
         /// <summary>Whether the current render has a focusable node in that Tab-stop: a screen offers
         /// a jump key (Alt+B for the board) only where its stop is on show.</summary>
@@ -144,7 +144,7 @@ namespace MonsterTrainAccessibility.Core.UI
 
         public static void FocusStop(object stopKey) => Active?.FocusStop(stopKey);
 
-        public static bool MoveTo(Graph.ControlId id) => Active != null && Active.MoveTo(id);
+        public static bool MoveTo(Graph.ControlId id, bool announce = true) => Active != null && Active.MoveTo(id, announce);
 
         public static object FocusedStopKey => Active?.FocusedStopKey;
 
