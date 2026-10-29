@@ -14,8 +14,9 @@ namespace MonsterTrainAccessibility.Module.Screens
     /// <summary>
     /// The Covenant Outpost, the game's main menu (<see cref="global::MainMenuScreen"/>): its places as
     /// one list, play first (Depart, the Dimensional Portal, the Rift Station), then the Train Depot and
-    /// the Library, the characters who have something to say when there are any, Settings last, and the
-    /// account the game shows when the platform has one. Each place reads its caption, then "Locked" or
+    /// the Library, the characters who have something to say when there are any, Settings, the account
+    /// the game shows when the platform has one, and the story's progress panel (the next reward's
+    /// objective and count) while the game shows it: only while a next reward remains. Each place reads its caption, then "Locked" or
     /// "disabled" when the game says so, then the line the game shows on hover ("Start a Run"); the Rift
     /// Station adds the game's DLC note when the DLC is missing. Enter submits through the game's input
     /// signal, so the game's own handler runs; Escape is the game's Escape here, which opens Settings.
@@ -55,6 +56,7 @@ namespace MonsterTrainAccessibility.Module.Screens
             MenuNodes.Place(b, "mainmenu:dialogue4", screen.dialogueFourthButton);
             MenuNodes.Place(b, "mainmenu:settings", screen.settingsButton, label: () => GameText.Term("ScreenMainMenu_Settings"));
             MenuNodes.Account(b, "mainmenu:user", screen.changeUserButton, screen.usernameLabel, screen.nonSwitchableUserButton, screen.nonSwitchableUsernameLabel);
+            MenuNodes.Progress(b, "mainmenu:progress", screen.progressionObjectiveUI);
             b.PopContext();
             b.SetStart(ControlId.Structural("mainmenu:depart"));
         }

@@ -81,7 +81,9 @@ namespace MonsterTrainAccessibility.Module.Screens
 
         // A section tab: landing on it opens its section, through the game's own tab press. The open
         // tab is not interactable in the game, so landing on it again does nothing.
-        private static NodeVtable Tab(SettingsTab tab)
+        /// <summary>A section tab (the game's <see cref="SettingsTab"/>, here and in the Soulforge): its
+        /// caption; landing on it opens its section, as pressing it does.</summary>
+        internal static NodeVtable Tab(SettingsTab tab)
         {
             System.Action open = () =>
             {

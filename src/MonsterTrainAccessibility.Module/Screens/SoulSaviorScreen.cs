@@ -50,9 +50,7 @@ namespace MonsterTrainAccessibility.Module.Screens
             MenuNodes.Place(b, "soulsavior:dialogue2", screen.dialogueSecondButton);
             MenuNodes.Place(b, "soulsavior:settings", screen.settingsButton, label: () => GameText.Term("ScreenMainMenu_Settings"));
             MenuNodes.Account(b, "soulsavior:user", screen.changeUserButton, screen.usernameLabel, screen.nonSwitchableUserButton, screen.nonSwitchableUsernameLabel);
-            var progress = screen.progressionObjectiveUI;
-            if (progress != null && progress.gameObject.activeInHierarchy && ProgressionReader.Line(progress) != null)
-                b.AddItem(ControlId.Structural("soulsavior:progress"), GameNodes.Text(() => ProgressionReader.Line(progress)));
+            MenuNodes.Progress(b, "soulsavior:progress", screen.progressionObjectiveUI);
             b.PopContext();
             b.SetStart(ControlId.Structural("soulsavior:depart"));
         }

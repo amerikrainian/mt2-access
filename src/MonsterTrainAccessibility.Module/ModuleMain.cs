@@ -246,6 +246,7 @@ namespace MonsterTrainAccessibility.Module
             ScreenManager.Register(new Screens.StartRunOptionsDialog());
             ScreenManager.Register(new Screens.SoulSaviorScreen());
             ScreenManager.Register(new Screens.SoulSaviorRunOptionsDialog());
+            ScreenManager.Register(new Screens.SoulforgeScreen());
             ScreenManager.Register(new Screens.RunSetupScreen());
             ScreenManager.Register(new Screens.RunSetupClanPickerScreen());
             ScreenManager.Register(new Screens.RunSetupPyreHeartPickerScreen());

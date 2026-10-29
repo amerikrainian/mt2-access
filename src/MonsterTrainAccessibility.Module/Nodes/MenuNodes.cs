@@ -37,6 +37,14 @@ namespace MonsterTrainAccessibility.Module.Nodes
             return null;
         }
 
+        /// <summary>A hub's progress panel ("Next Dialogue. Unlock All Souls. 11/33") while the game shows
+        /// it, as one line (<see cref="ProgressionReader"/>).</summary>
+        public static void Progress(GraphBuilder b, string key, ProgressionObjectiveUI panel)
+        {
+            if (panel == null || !panel.gameObject.activeInHierarchy || ProgressionReader.Line(panel) == null) return;
+            b.AddItem(ControlId.Structural(key), GameNodes.Text(() => ProgressionReader.Line(panel)));
+        }
+
         /// <summary>The signed-in account, where the platform has one: a button when the player may switch
         /// it, else the name alone.</summary>
         public static void Account(GraphBuilder b, string key, GameUISelectableButton change, TMP_Text changeName,
