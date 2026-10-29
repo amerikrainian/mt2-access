@@ -44,10 +44,8 @@ namespace MonsterTrainAccessibility.Module.Screens
         public override void OnPush()
         {
             var dialog = Dialog;
-            if (dialog == null || !Core.UI.Navigation.FocusActive()) return;
-            string intro = GameNodes.Sentences(ChallengeProgressScreen.HeaderOf(dialog, "Header label"),
-                ChallengeProgressScreen.HeaderOf(dialog, "Description"));
-            if (intro != null) Core.Speech.Say(intro);
+            if (dialog == null) return;
+            ScreenIntro.Say(ChallengeProgressScreen.HeaderOf(dialog, "Header label"), ChallengeProgressScreen.HeaderOf(dialog, "Description"));
         }
 
         public override void Build(GraphBuilder b)

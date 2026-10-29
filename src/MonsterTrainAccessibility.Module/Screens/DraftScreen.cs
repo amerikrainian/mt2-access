@@ -1,0 +1,115 @@
+using System.Collections.Generic;
+using MonsterTrainAccessibility.Core.Graph;
+using MonsterTrainAccessibility.Core.Input;
+using MonsterTrainAccessibility.Core.Strings;
+using MonsterTrainAccessibility.Core.UI;
+using MonsterTrainAccessibility.Module.Interop;
+using MonsterTrainAccessibility.Module.Nodes;
+using MonsterTrainAccessibility.Module.UI;
+using ShinyShoe;
+using UnityEngine;
+using Screen = MonsterTrainAccessibility.Core.Screens.Screen;
+
+namespace MonsterTrainAccessibility.Module.Screens
+{
+    /// <summary>
+    /// A draft (<see cref="DraftScreenBase"/>: the game's pick-one screens), one screen per game screen
+    /// it is registered for (the artifact draft so far). Opening it says the draft's header and the
+    /// game's instructions ("Herzal's Hoard. Choose an artifact."); then the items side by side as the
+    /// game lays them out, each read by its kind (an artifact by <see cref="RelicNodes"/>, a card by
+    /// <see cref="CardNodes"/>), then Skip with what skipping gives. Nothing is declared while the game
+    /// deals the items in, and an item the game has taken out of play (all of them, once one is
+    /// chosen) is not declared. Landing on an item shows it as hovered; Enter takes it through the
+    /// game. Escape is the game's: the Menu.
+    /// </summary>
+    public sealed class DraftScreen : Screen
+    {
+        private static readonly InputCategory[] Categories = { InputCategory.Game, InputCategory.UI };
+
+        private readonly global::ScreenName _screen;
+        private readonly string _key;
+
+        public DraftScreen(global::ScreenName screen, string key)
+        {
+            _screen = screen;
+            _key = key;
+        }
+
+        public override string Key => _key;
+        public override int Layer => 5;
+        public override IReadOnlyList<InputCategory> InputCategories => Categories;
+
+        private DraftScreenBase Game
+        {
+            get
+            {
+                var draft = GameScreens.Active<DraftScreenBase>(_screen);
+                return draft != null && draft.IsInteractable() ? draft : null;
+            }
+        }
+
+        public override bool IsActive() => Game != null;
+
+        public override void OnPush()
+        {
+            var draft = Game;
+            if (draft != null) ScreenIntro.Say(Shown(draft.headerLabel), ChallengeProgressScreen.HeaderOf(draft, "Instructions label"));
+        }
+
+        public override void Build(GraphBuilder b)
+        {
+            var draft = Game;
+            if (draft == null || draft.animatingIn) return;
+            b.PushContext(null);
+            var items = new List<NodeVtable>();
+            foreach (var item in draft.draftItems)
+            {
+                var vt = Item(item);
+                if (vt != null) items.Add(vt);
+            }
+            if (items.Count > 0)
+            {
+                b.StartRow();
+                for (int i = 0; i < items.Count; i++) b.AddItem(ControlId.Structural(_key + ":item:" + i), items[i]);
+                b.EndRow();
+            }
+            var skip = draft.skipButton;
+            if (skip != null && skip.gameObject.activeInHierarchy && skip.interactable && PauseMenuScreen.Caption(skip) != null)
+                b.AddItem(ControlId.Structural(_key + ":skip"), GameWidgets.Button(skip, () => PauseMenuScreen.Caption(skip)));
+            b.PopContext();
+        }
+
+        public override IEnumerable<ElementAction> GetActions()
+        {
+            yield return new ElementAction(ActionIds.Back, Strings.Get("bind.ui.back"),
+                _ => GameInput.Send(global::InputManager.Controls.Escape));
+        }
+
+        // An item by its kind, while it is in play; null for one out of play or of a kind not read yet.
+        private static NodeVtable Item(IDraftableUI item)
+        {
+            var widget = item as Component;
+            if (widget == null || !widget.gameObject.activeInHierarchy) return null;
+            if (item is RelicInfoUI relic)
+            {
+                var button = relic.GetComponent<GameUISelectableButton>();
+                if (button == null || !button.interactable) return null;
+                return RelicNodes.Offer(relic, () => GameInput.Hover(button), () => GameInput.Submit(button));
+            }
+            if (item is CardUI card)
+            {
+                if (card.GetCardState() == null || !card.IsCardInteractable()) return null;
+                var vt = CardNodes.Card(card, CardTooltipContainer.LoreTooltipSetting.Preferences, () => GameInput.Hover(card.SelectableUI));
+                vt.OnActivate = () => GameInput.Submit(card.SelectableUI);
+                return vt;
+            }
+            return null;
+        }
+
+        private static string Shown(TMPro.TMP_Text text)
+        {
+            string content = text != null && text.gameObject.activeInHierarchy ? text.Content() : null;
+            return string.IsNullOrWhiteSpace(content) ? null : content;
+        }
+    }
+}

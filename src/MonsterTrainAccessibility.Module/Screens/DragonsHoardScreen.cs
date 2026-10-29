@@ -14,8 +14,9 @@ using Screen = MonsterTrainAccessibility.Core.Screens.Screen;
 namespace MonsterTrainAccessibility.Module.Screens
 {
     /// <summary>
-    /// The Dragon's Hoard (<see cref="global::DragonsHoardScreen"/>), under its title: the game's
-    /// question, the current loot level as drawn ("Current Loot Level: 0 / 8", the hoard and its
+    /// The Dragon's Hoard (<see cref="global::DragonsHoardScreen"/>). Opening it says its title and the
+    /// game's question ("Dragon's Hoard. Loot the Dragon's Hoard or save it for later?"); then the
+    /// current loot level as drawn ("Current Loot Level: 0 / 8", the hoard and its
     /// maximum), the rewards looting now would give when there are any (each by its own tooltip), then
     /// View Loot Levels (<see cref="DragonsHoardLevelsScreen"/>), Loot and Save, all pressed through the
     /// game. Focus lands on the loot level, not on Loot. Escape is the game's: it leaves the hoard.
@@ -44,12 +45,17 @@ namespace MonsterTrainAccessibility.Module.Screens
             return screen != null && !DragonsHoardLevelsScreen.IsOpen(screen);
         }
 
+        public override void OnPush()
+        {
+            var screen = Game;
+            if (screen != null) ScreenIntro.Say(Title(screen), ChallengeProgressScreen.HeaderOf(screen, "Instructions"));
+        }
+
         public override void Build(GraphBuilder b)
         {
             var screen = Game;
             if (screen == null) return;
-            b.PushContext(Title(screen), Strings.RoleList);
-            Text(b, "question", ChallengeProgressScreen.HeaderOf(screen, "Instructions"));
+            b.PushContext(null);
             var level = screen.currentDragonsHoardLootLabel;
             if (level != null && level.gameObject.activeInHierarchy)
             {
@@ -89,12 +95,6 @@ namespace MonsterTrainAccessibility.Module.Screens
             foreach (var line in System.Text.RegularExpressions.Regex.Split(text, @"<br\s*/?>|\n"))
                 if (!string.IsNullOrWhiteSpace(line)) lines.Add(line.Trim());
             return string.Join(" / ", lines);
-        }
-
-        private static void Text(GraphBuilder b, string key, string text)
-        {
-            if (string.IsNullOrWhiteSpace(text)) return;
-            b.AddItem(ControlId.Structural("hoard:" + key), GameNodes.Text(() => text));
         }
 
         private static void Button(GraphBuilder b, string key, GameUISelectableButton button)
