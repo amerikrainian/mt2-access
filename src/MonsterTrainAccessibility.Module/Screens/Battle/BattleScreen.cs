@@ -36,7 +36,7 @@ namespace MonsterTrainAccessibility.Module.Screens
         private static readonly InputCategory[] Categories = { InputCategory.Game, InputCategory.UI };
 
         public override string Key => "game.battle";
-        public override int Layer => 4;
+        public override int Layer => 3;
         public override bool AllowsTypeahead => false;
         public override IReadOnlyList<InputCategory> InputCategories => Categories;
 
@@ -65,7 +65,13 @@ namespace MonsterTrainAccessibility.Module.Screens
         // Where each row was last left, so coming back lands there (the rows are rebuilt every frame).
         private readonly Dictionary<string, ControlId> _lastInRow = new Dictionary<string, ControlId>();
 
-        public override bool IsActive() => Game != null && HandUi != null;
+        // A battle over (won: its victory panel, then the way out) is not the battle's to read.
+        public override bool IsActive()
+        {
+            if (Game == null || HandUi == null) return false;
+            var combat = Managers.GetCombatManager();
+            return combat == null || combat.GetCombatPhase() != CombatManager.Phase.EndOfCombat;
+        }
 
         public override void Build(GraphBuilder b)
         {
