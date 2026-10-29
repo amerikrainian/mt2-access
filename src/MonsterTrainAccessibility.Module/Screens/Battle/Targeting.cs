@@ -116,13 +116,17 @@ namespace MonsterTrainAccessibility.Module.Screens
         /// <summary>The game's own message when a card cannot be played (not enough ember, the floor
         /// full), spoken as it is shown.</summary>
         [HarmonyPatch(typeof(HandUI), nameof(HandUI.ShowCardSelectionErrorMessage))]
-        private static class PlayErrors
+        internal static class PlayErrors
         {
+            /// <summary>How many messages have been spoken, so a caller can tell whether the game said one.</summary>
+            public static int Spoken;
+
             private static void Prefix(HandUI __instance, string errorMessage)
             {
                 if (__instance.suppressErrorMessages || string.IsNullOrEmpty(errorMessage)) return;
                 var save = AllGameManagers.Instance?.GetSaveManager();
                 if (save != null && save.IsInUndoMode) return;
+                Spoken++;
                 Speech.Say(errorMessage, interrupt: true);
             }
         }

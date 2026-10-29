@@ -72,6 +72,13 @@ namespace MonsterTrainAccessibility.Module.Screens
             var screen = Game;
             var rooms = Rooms;
             if (screen == null || rooms == null) return;
+            var selection = Selection;
+            if (selection == null || !selection.Active) _selectionPrompted = false;
+            else if (!selection.Hidden)
+            {
+                BuildHandSelection(b, selection);
+                return;
+            }
             var targeting = Targeting;
             if (targeting != null)
             {
@@ -172,10 +179,12 @@ namespace MonsterTrainAccessibility.Module.Screens
             {
                 var ui = uis[i];
                 var state = cards.GetHandCard(i);
-                if (ui == null || state == null) continue;
+                // A card being dealt is declared once its face is drawn.
+                if (ui == null || state == null || !CardNodes.Drawn(ui)) continue;
                 int index = i;
                 var vt = CardNodes.Card(ui, CardTooltipContainer.LoreTooltipSetting.Preferences, () => FocusCard(index));
                 vt.OnActivate = () => PlayCard(index);
+                if (Selection != null && Selection.Active) vt.Announcements = new List<NodeAnnouncement>(vt.Announcements) { GameNodes.SelectedPart(() => ChosenInSelection(ui)) };
                 items.Add(Item(CardKey(state), vt));
             }
             if (items.Count == 0) items.Add(Item("hand:empty", GameNodes.Text(() => Strings.Battle("hand_empty"))));
@@ -192,7 +201,7 @@ namespace MonsterTrainAccessibility.Module.Screens
         private static void FocusCard(int index)
         {
             var sel = HandUi?.selectionBehaviour;
-            if (sel == null || !Ready || sel.IsCardSelected()) return;
+            if (sel == null || !(Ready || Selecting) || sel.IsCardSelected()) return;
             try { sel.FocusCard(index, snapFocus: true, refresh: true); }
             catch (Exception e) { CoreLog.Warning("battle: focusing card " + index + ": " + e.Message); }
         }
@@ -205,6 +214,12 @@ namespace MonsterTrainAccessibility.Module.Screens
             var sel = hand?.selectionBehaviour;
             var cards = Managers.GetCardManager();
             if (sel == null || cards == null) return;
+            // The game asking for a card from the hand: choosing it is the game's own choosing.
+            if (Selecting)
+            {
+                if (sel.SelectCard(index, displayError: true, usingKeyboard: true)) LandOnConfirm();
+                return;
+            }
             if (!Ready)
             {
                 Speech.Say(Strings.StateDisabled, interrupt: true);
@@ -221,7 +236,14 @@ namespace MonsterTrainAccessibility.Module.Screens
             Later.Frames(1, () =>
             {
                 if (!sel.IsFocusedOrSelectedCard(index)) sel.FocusCard(index, snapFocus: true, refresh: true);
-                sel.SelectCard(index, displayError: true, usingKeyboard: true);
+                // The game names only some refusals; the rest it leaves to the card's look: said here.
+                sel.CanSelectCard(out var error);
+                int spoken = PlayErrors.Spoken;
+                if (!sel.SelectCard(index, displayError: true, usingKeyboard: true) && PlayErrors.Spoken == spoken)
+                {
+                    string message = CommonSelectionBehavior.GetErrorMessage(error);
+                    Speech.Say(string.IsNullOrWhiteSpace(message) ? Strings.StateDisabled : message, interrupt: true);
+                }
             }, "battle: select card");
         }
 
@@ -279,6 +301,10 @@ namespace MonsterTrainAccessibility.Module.Screens
                 Turn(items, top.battleTurnCounter);
                 Line(items, "moon", top.lunaCovenUI);
             }
+            // A hand prompt put aside to look at the train: the game's button to bring it back.
+            var prompt = Selection;
+            if (prompt != null && prompt.Active && prompt.Hidden && Shown(prompt.hideButton))
+                items.Add(Item("top:selection", GameWidgets.Button(prompt.hideButton, () => Shown(prompt.hideButtonLabel))));
             // An elixir being mixed, put aside to look at the train: the game's button to bring it back.
             var elixir = GameScreens.Active<ElixirDraftScreen>(global::ScreenName.Elixir);
             if (elixir != null && !DraftScreen.ElixirShown(elixir) && Shown(elixir.showButton))
@@ -384,6 +410,5 @@ namespace MonsterTrainAccessibility.Module.Screens
             return save != null && !save.IsUndoDisabledByMutator() && undo != null && undo.Active && undo.HasUndos();
         }
 
-        private static bool Shown(Component widget) => widget != null && widget.gameObject.activeInHierarchy;
     }
 }

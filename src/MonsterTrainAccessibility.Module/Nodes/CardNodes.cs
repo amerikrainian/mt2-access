@@ -88,6 +88,9 @@ namespace MonsterTrainAccessibility.Module.Nodes
             };
         }
 
+        /// <summary>Whether the card's face is drawn yet (a card being dealt has no name on it).</summary>
+        public static bool Drawn(CardUI card) => Name(card) != null;
+
         /// <summary>The card's tooltips: hover's own population of its container, read as drawn.</summary>
         public static List<string> Tooltips(CardUI card, CardTooltipContainer.LoreTooltipSetting lore)
         {
