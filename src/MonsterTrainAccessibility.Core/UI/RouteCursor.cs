@@ -1,0 +1,123 @@
+using System;
+using System.Collections.Generic;
+
+namespace MonsterTrainAccessibility.Core.UI
+{
+    /// <summary>What a <see cref="RouteCursor{T}"/> step did.</summary>
+    public enum RouteMove
+    {
+        /// <summary>The cursor moved: <see cref="RouteStep{T}.Stop"/> is where it now is.</summary>
+        Moved,
+        /// <summary>Nothing follows the cursor's stop: it stayed.</summary>
+        NoForward,
+        /// <summary>The cursor is back where it started: it stayed.</summary>
+        NoBackward,
+        /// <summary>No sibling that way (or none at all): it stayed.</summary>
+        Edge,
+    }
+
+    /// <summary>One step of a <see cref="RouteCursor{T}"/>: where it is, what happened, and whether the
+    /// stop is one of several the route forks into here and was just arrived at (the moment to say it is
+    /// a choice; cycling among the siblings is not an arrival).</summary>
+    public struct RouteStep<T>
+    {
+        public T Stop;
+        public RouteMove Move;
+        public bool ArrivedAtFork;
+        public int Index;
+        public int Count;
+    }
+
+    /// <summary>
+    /// A preview cursor over a route that only goes forward and forks (a run's map): from an origin it
+    /// steps on to what follows (the first of several when the route forks), cycles among a fork's
+    /// siblings, and steps back the way it came. Engine-free: the route is a function from a stop to the
+    /// stops that follow it, read fresh at every forward step, so the cursor holds no picture of the
+    /// route beyond the path it walked.
+    /// </summary>
+    public sealed class RouteCursor<T> where T : class
+    {
+        private struct Frame
+        {
+            public T Stop;
+            public IReadOnlyList<T> Siblings;
+            public int Index;
+        }
+
+        private readonly Func<T, IReadOnlyList<T>> _next;
+        private readonly List<Frame> _path = new List<Frame>();
+        private IReadOnlyList<T> _siblings = Array.Empty<T>();
+        private int _index;
+
+        public RouteCursor(Func<T, IReadOnlyList<T>> next)
+        {
+            _next = next ?? throw new ArgumentNullException(nameof(next));
+        }
+
+        /// <summary>Where the cursor is; null before the first <see cref="Reset"/>.</summary>
+        public T Current { get; private set; }
+
+        /// <summary>How many steps forward of its origin the cursor is.</summary>
+        public int Depth => _path.Count;
+
+        /// <summary>Start over at a stop (the one the player stands on): no path, no siblings.</summary>
+        public void Reset(T origin)
+        {
+            Current = origin;
+            _path.Clear();
+            _siblings = Array.Empty<T>();
+            _index = 0;
+        }
+
+        /// <summary>On to what follows the current stop: the first of them when the route forks.</summary>
+        public RouteStep<T> Forward()
+        {
+            var next = _next(Current);
+            if (next == null || next.Count == 0) return Stay(RouteMove.NoForward);
+            _path.Add(new Frame { Stop = Current, Siblings = _siblings, Index = _index });
+            _siblings = next;
+            _index = 0;
+            Current = next[0];
+            return Arrive();
+        }
+
+        /// <summary>Back to the stop this one was reached from, among its own siblings.</summary>
+        public RouteStep<T> Back()
+        {
+            if (_path.Count == 0) return Stay(RouteMove.NoBackward);
+            var frame = _path[_path.Count - 1];
+            _path.RemoveAt(_path.Count - 1);
+            Current = frame.Stop;
+            _siblings = frame.Siblings;
+            _index = frame.Index;
+            return Arrive();
+        }
+
+        /// <summary>To the next (+1) or previous (-1) sibling at this fork; no wrap.</summary>
+        public RouteStep<T> Cycle(int direction)
+        {
+            int target = _index + Math.Sign(direction);
+            if (_siblings.Count <= 1 || target < 0 || target >= _siblings.Count) return Stay(RouteMove.Edge);
+            _index = target;
+            Current = _siblings[_index];
+            return new RouteStep<T> { Stop = Current, Move = RouteMove.Moved, Index = _index, Count = _siblings.Count };
+        }
+
+        private RouteStep<T> Arrive() => new RouteStep<T>
+        {
+            Stop = Current,
+            Move = RouteMove.Moved,
+            ArrivedAtFork = _siblings.Count > 1,
+            Index = _index,
+            Count = _siblings.Count,
+        };
+
+        private RouteStep<T> Stay(RouteMove move) => new RouteStep<T>
+        {
+            Stop = Current,
+            Move = move,
+            Index = _index,
+            Count = _siblings.Count,
+        };
+    }
+}

@@ -161,6 +161,21 @@ namespace MonsterTrainAccessibility.Module
                 .AddBinding(new KeyboardBinding(KeyCode.DownArrow, ctrl: true))
                 .AddBinding(new ControllerBinding(ControllerInput.RightStickDown)).Repeating();
 
+            // The map's route preview, in the Map category the map alone declares (ahead of UI, so there
+            // they win the buffer keys' chords; over the map, the HUD and the pause menu keep them as the
+            // buffer keys): Ctrl+Up and Down step along the route, Ctrl+Left and Right walk a fork; on the
+            // pad, the right stick.
+            MapKey(Screens.MapScreen.RouteForward, "Preview next stop", KeyCode.UpArrow, ControllerInput.RightStickUp);
+            MapKey(Screens.MapScreen.RouteBack, "Preview previous stop", KeyCode.DownArrow, ControllerInput.RightStickDown);
+            MapKey(Screens.MapScreen.RoutePrev, "Previous route choice", KeyCode.LeftArrow, ControllerInput.RightStickLeft);
+            MapKey(Screens.MapScreen.RouteNext, "Next route choice", KeyCode.RightArrow, ControllerInput.RightStickRight);
+            // Tab anywhere in a run: the HUD as a list, opened and closed; on the pad, Y, the game's own
+            // HUD button.
+            InputManager.Register(Screens.HudScreen.ActionKey, "Run info", InputCategory.Game, Screens.HudScreen.Toggle)
+                .AddBinding(new KeyboardBinding(KeyCode.Tab))
+                .AddBinding(new ControllerBinding(ControllerInput.Y))
+                .When(() => Screens.HudScreen.Available);
+
             // Global: always live, so the player can hand the keyboard back to the game and reclaim it.
             InputManager.Register("mod.focus", "Toggle navigation", InputCategory.Global, ToggleFocus)
                 .AddBinding(new KeyboardBinding(KeyCode.A, ctrl: true, shift: true))
@@ -172,6 +187,15 @@ namespace MonsterTrainAccessibility.Module
             InputManager.Register(HelpScreen.ActionKey, "Keys here", InputCategory.Global, HelpScreen.Toggle)
                 .AddBinding(new KeyboardBinding(KeyCode.F1))
                 .AddBinding(new ControllerBinding(ControllerInput.Back, ControllerInput.LeftTrigger));
+        }
+
+        // A Ctrl+arrow key of the map's: fired at the map's action of the same key.
+        private static void MapKey(string key, string label, KeyCode arrow, ControllerInput stick)
+        {
+            InputManager.Register(key, label, InputCategory.Map, () => ScreenManager.Current?.InvokeAction(key))
+                .AddBinding(new KeyboardBinding(arrow, ctrl: true))
+                .AddBinding(new ControllerBinding(stick)).Repeating()
+                .When(() => ScreenManager.Current is Screens.MapScreen);
         }
 
         private static void ToggleFocus()
@@ -192,6 +216,8 @@ namespace MonsterTrainAccessibility.Module
             ScreenManager.Register(new Screens.RunSetupMutatorsScreen());
             ScreenManager.Register(new Screens.RunSetupFtueCovenantScreen());
             ScreenManager.Register(new Screens.RunOpeningScreen());
+            ScreenManager.Register(new Screens.MapScreen());
+            ScreenManager.Register(new Screens.HudScreen());
             ScreenManager.Register(new Screens.PauseMenuScreen());
             ScreenManager.Register(new Screens.SettingsScreen());
             ScreenManager.Register(new Screens.DialogScreen());

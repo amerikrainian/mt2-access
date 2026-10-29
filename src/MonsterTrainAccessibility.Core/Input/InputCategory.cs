@@ -16,5 +16,8 @@ namespace MonsterTrainAccessibility.Core.Input
         UI,
         /// <summary>In-run gameplay keys (the battle/run readers), declared by the run screens.</summary>
         Game,
+        /// <summary>The run map's own keys (the route preview on Ctrl+arrows), declared by the map
+        /// alone: anything opened over it (the HUD) gets the chords back for their usual keys.</summary>
+        Map,
     }
 }

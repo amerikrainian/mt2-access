@@ -117,7 +117,6 @@ namespace MonsterTrainAccessibility.Core.Strings
             D("icon.attack", "attack"),
             D("icon.armor", "armor"),
             D("icon.ember", "ember"),
-            D("icon.gold", "gold"),
             D("icon.health", "health"),
             D("icon.pyre", "pyre health"),
             D("icon.capacity", "capacity"),
@@ -157,6 +156,26 @@ namespace MonsterTrainAccessibility.Core.Strings
             D("pyre.attack", "Pyre attack {0}"),
             D("pyre.health", "Pyre health {0}"),
 
+            // The run's map. Said before a stop on arriving where the route forks ("choice, Light Forge"):
+            // the branches after a battle, a ring's nodes, a fork the route preview reaches.
+            D("map.choice", "choice"),
+            // The route preview (Ctrl+arrows on the map) at its ends.
+            D("map.no_forward", "No forward map node."),
+            D("map.no_backward", "No previous map node."),
+            // A map node already visited, in the ring the train is in.
+            D("state.visited", "visited"),
+            // The run's HUD, which Tab opens as a list anywhere in a run, and its groups the game
+            // draws without a heading.
+            D("hud.title", "Run info"),
+            D("hud.train_stats", "Train stats"),
+            D("hud.artifacts", "Artifacts"),
+            D("hud.enemy_artifacts", "Enemy artifacts"),
+            D("bind.map.forward", "Preview next stop"),
+            D("bind.map.back", "Preview previous stop"),
+            D("bind.map.prev", "Previous route choice"),
+            D("bind.map.next", "Next route choice"),
+            D("bind.run.hud", "Run info"),
+
             D("screen.mod_menu", "Monster Train Accessibility"),
             D("mod.settings", "Settings"),
             // The mod menu's list of every key the mod binds, whatever the screen.
@@ -166,10 +185,12 @@ namespace MonsterTrainAccessibility.Core.Strings
             D("mod.focus_on_launch", "Keyboard navigation on at launch"),
             // {0} = the key category, one of the three names below.
             D("mod.key_category", "{0} keys"),
-            // The key categories of the "All keys" list: live everywhere, on the focused screen, in a run.
+            // The key categories of the "All keys" list: live everywhere, on the focused screen, in a run,
+            // on the run's map.
             D("mod.category.global", "Global"),
             D("mod.category.ui", "UI"),
             D("mod.category.game", "Game"),
+            D("mod.category.map", "Map"),
             D("bind.mod.menu", "Mod menu"),
             // The context-sensitive key help (F1): the keys that do something on this screen, on this
             // control. Enter on a row runs it.
@@ -375,6 +396,15 @@ namespace MonsterTrainAccessibility.Core.Strings
 
         public static string PyreAttack(string value) => F("pyre.attack", value);
         public static string PyreHealth(string value) => F("pyre.health", value);
+
+        public static string MapChoice => Get("map.choice");
+        public static string MapNoForward => Get("map.no_forward");
+        public static string MapNoBackward => Get("map.no_backward");
+        public static string StateVisited => Get("state.visited");
+        public static string HudTitle => Get("hud.title");
+        public static string HudTrainStats => Get("hud.train_stats");
+        public static string HudArtifacts => Get("hud.artifacts");
+        public static string HudEnemyArtifacts => Get("hud.enemy_artifacts");
 
         public static string ScreenModMenu => Get("screen.mod_menu");
         public static string ModSettings => Get("mod.settings");

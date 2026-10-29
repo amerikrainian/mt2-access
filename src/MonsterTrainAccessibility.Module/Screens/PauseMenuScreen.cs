@@ -13,8 +13,9 @@ namespace MonsterTrainAccessibility.Module.Screens
     /// <summary>
     /// The game's "Menu" (<see cref="PauseDialog"/> on the settings screen), which Escape opens over the
     /// Covenant Outpost and over a run: its buttons as one list in the game's order (in a run the run's
-    /// own options come first), then the build number. Enter presses through the game; Escape closes
-    /// it as the game's Escape does. The Settings button opens <see cref="SettingsScreen"/> over it.
+    /// own options come first: Abandon Run, and in a battle its restarts), then the build number. Focus
+    /// lands on the game's own default, Settings. Enter presses through the game; Escape closes it as the
+    /// game's Escape does. The Settings button opens <see cref="SettingsScreen"/> over it.
     /// </summary>
     public sealed class PauseMenuScreen : Screen
     {
@@ -52,7 +53,10 @@ namespace MonsterTrainAccessibility.Module.Screens
                     continue;
                 }
                 if (Caption(b2) == null) continue;
-                b.AddItem(Id(ids, b2), GameWidgets.Button(b2, () => Caption(b2)));
+                var id = Id(ids, b2);
+                b.AddItem(id, GameWidgets.Button(b2, () => Caption(b2)));
+                // Focus lands where the game's own selection does (Settings), never on a run's Abandon Run.
+                if (ReferenceEquals(b2, dialog.GetDefaultGameUISelectable())) b.SetStart(id);
             }
             var build = dialog.GetComponentInChildren<BuildNumberLabel>(false);
             var buildText = build != null ? build.GetComponent<TMP_Text>() : null;

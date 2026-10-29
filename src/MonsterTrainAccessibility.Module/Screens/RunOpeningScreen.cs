@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using MonsterTrainAccessibility.Core.Graph;
+using MonsterTrainAccessibility.Core.Input;
 using MonsterTrainAccessibility.Core.UI;
 using MonsterTrainAccessibility.Module.Interop;
 using MonsterTrainAccessibility.Module.Nodes;
@@ -26,9 +27,13 @@ namespace MonsterTrainAccessibility.Module.Screens
     /// </summary>
     public sealed class RunOpeningScreen : Screen
     {
+        private static readonly InputCategory[] Categories = { InputCategory.Game, InputCategory.UI };
+
         public override string Key => "game.run_opening";
         public override int Layer => 5;
         public override bool Exclusive => true;
+        // The run keys (Tab's HUD) live here as on the map.
+        public override IReadOnlyList<InputCategory> InputCategories => Categories;
 
         // While it closes (its cards flying into the deck, its content fading) the game has let it go.
         private static global::RunOpeningScreen Game

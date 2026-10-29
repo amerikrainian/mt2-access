@@ -11,7 +11,8 @@ namespace MonsterTrainAccessibility.Module.Interop
     /// tooltip) as words, so nothing the game shows is lost when the speech filter strips the markup.
     /// An icon the game names reads by the game's own name, live in its current language: a status
     /// effect's icon by the status's name, a trigger's by its keyword, a card effect's by its tooltip
-    /// title. The few icons the game never names (ember, attack, health, X cost...) read by the mod's
+    /// title; the coin by the HUD's name for it ("Coin"). The few icons the game never names (ember,
+    /// attack, health, X cost...) read by the mod's
     /// <c>icon.*</c> strings, ahead of the game's tables. An icon neither knows is logged once and read by
     /// its own name, spelled out (Core's <see cref="Speech.SpriteName"/>).
     /// Core's <see cref="Speech.IconWords"/> seam, so every spoken line and buffer line passes through it.
@@ -22,13 +23,19 @@ namespace MonsterTrainAccessibility.Module.Interop
             "<sprite\\s+[^>]*?name\\s*=\\s*(?:\"(?<name>[^\"]+)\"|'(?<name>[^']+)'|(?<name>[^\\s>]+))[^>]*>",
             RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
+        // Icons the game names in its own interface though never beside the icon: the coin, which rules
+        // text draws as the "Gold" icon, by the HUD's name for the counter it draws ("Coin").
+        private static readonly Dictionary<string, string> Termed = new Dictionary<string, string>(StringComparer.Ordinal)
+        {
+            ["Gold"] = "HudTooltip_Gold_Title",
+        };
+
         // The game's icon names for the icons only the mod names.
         private static readonly Dictionary<string, string> Fixed = new Dictionary<string, string>(StringComparer.Ordinal)
         {
             ["Attack"] = "attack",
             ["Armor"] = "armor",
             ["Ember"] = "ember",
-            ["Gold"] = "gold",
             ["Health"] = "health",
             ["PyreHealth"] = "pyre",
             ["Capacity"] = "capacity",
@@ -82,6 +89,11 @@ namespace MonsterTrainAccessibility.Module.Interop
             if (string.IsNullOrWhiteSpace(sprite)) return null;
             // The few icons the game never names first: a lookup through its tables can come back with
             // the icon's raw id ("Xcost") for those.
+            if (Termed.TryGetValue(sprite, out string term))
+            {
+                string termed = GameText.Term(term);
+                if (!string.IsNullOrWhiteSpace(termed)) return termed;
+            }
             if (Fixed.TryGetValue(sprite, out string key)) return Strings.Icon(key);
             var named = Named();
             if (named != null && named.TryGetValue(sprite, out Func<string> name))
