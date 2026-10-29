@@ -193,9 +193,29 @@ does something; a screen offers its own keys through `GetActions`.
 Review lists for the information a focus announcement leaves out, read live on every keypress:
 Ctrl+Right/Left switch buffers, Ctrl+Up/Down step lines. Empty buffers are skipped; a focus change
 re-homes review to the control's buffer. So far only **control** (the focused node's head line, then
-one line per description part and per `NodeVtable.Details` tooltip). The game's buffers (card, unit,
-floor, combat log) join as their screens are ported. Conventions: a tooltip is ONE line, never joined
-with others; a node's details go in `Details = () => ...`, never spoken directly.
+one line per description part and per `NodeVtable.Details` tooltip, then the definitions those lines
+mention that the game left out: the glossary, below). The game's buffers (card, unit, floor, combat
+log) join as their screens are ported. Conventions: a tooltip is ONE line, never joined with others; a
+node's details go in `Details = () => ...`, never spoken directly.
+
+**The glossary** (`Core/Text/Glossary`, `Module/Nodes/GameGlossary`, hooked in through
+`NodeLines.Definitions`): every definition the game can draw, read from its registries (status effects,
+unit and card triggers, every `CardTraitState`, the `X_TooltipTitle`/`X_TooltipText` and
+`HudTooltip_X_Title`/`_Body` term pairs), so a keyword a patch or a mod adds is in it without code.
+Each definition has an id the same in every language, and its links to other definitions are read
+from its body's SOURCE text, never from the translation's wording: the replacement tokens (`[armor]`,
+mapped by what the token renders in English, never by its spelling: the status id `buff` is Rage) in
+this language's text and the English, plus the English text's own bold. So Russian Valor links Armor
+though it writes "броню" by hand. In a node's own text, a bold span is a mention when it is exactly a
+definition's name (every token renders so). Inflected forms match only in English (the source text);
+another language's spelling is never guessed at, since its words can be another keyword's exact name
+(German "Verzauberung" is Incant, Traditional Chinese 強化 is Enhance). The closure of what a node
+mentions and does not show is appended to the control buffer, never spoken on focus. A panel declared a
+node per line (an enemy's details) sets `NodeVtable.Panel` on each line, so what one line defines is
+not added again to another's buffer.
+`Module/Dev/GlossaryAudit.Run()` (REPL) checks it against all content: every tooltip title the game
+draws must be an entry, and what each card and artifact gains is listed; `RunAllLanguages()` repeats
+it per language. Rerun it after a game patch or with new mods.
 
 ## Languages (`Module/LanguageSync`, `Core/Strings`, `lang/`)
 The mod's own words follow the GAME's language, never the system's: I2's current language code,
@@ -220,6 +240,8 @@ English). Game terms are the game's own: read them from I2 (`LocalizationManager
 - **Tooltips come from the game's own pipeline**, never rebuilt by hand: `ITooltipProvider.Tooltips`
   for widgets, `CardTooltipContainer.SetSelectedCard` for cards, `CharacterTooltipHelper` for units,
   `TooltipGenerator` for relics, all yielding `TooltipContent` in the game's order (`docs/plan.md`).
+  The one addition is the glossary's: definitions the game omits, each drawn by the game's own
+  function for it, appended to the buffer after the game's tooltips.
 - **Element factories are named**: a domain object (card, unit, relic) gets a static factory class
   returning its `NodeVtable` (Guildrun's `Nodes/` style); inline lambdas are for one-offs.
 - **Harmony**: attribute patches applied by `PatchAll` under the generation's id; patch a

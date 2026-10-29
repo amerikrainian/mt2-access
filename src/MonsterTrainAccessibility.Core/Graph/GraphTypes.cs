@@ -155,6 +155,11 @@ namespace MonsterTrainAccessibility.Core.Graph
         /// short and the detail waits in the buffer.</summary>
         public Func<IEnumerable<string>> Details;
 
+        /// <summary>Optional. The lines of the panel this control is one line of (an enemy's details, a
+        /// line per ability): the definitions they show count as shown here, so the glossary never adds to
+        /// one line what another line of the panel already says.</summary>
+        public Func<IEnumerable<string>> Panel;
+
         /// <summary>Optional. Lines for a side buffer (by its key) about
         /// what the control concerns: the hero whose slot, card or unit this is, the items it carries.
         /// Null or empty for a key = that buffer has nothing here and the review keys skip it.</summary>

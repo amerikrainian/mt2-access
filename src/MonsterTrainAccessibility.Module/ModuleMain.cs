@@ -55,6 +55,8 @@ namespace MonsterTrainAccessibility.Module
             InputManager.TextFieldFocused = () => TextEdit.OwnsKeyboard;
             GraphAnnouncer.PositionText = (i, n) => host.Settings.SpeakPositions ? Strings.Position(i, n) : null;
             GraphAnnouncer.ExpandedStateText = Strings.ExpandedState;
+            // The control buffer completes a node's tooltips with the definitions they mention.
+            Core.Buffers.NodeLines.Definitions = () => Nodes.GameGlossary.Current;
             Core.Events.GameEvents.Store = () => host.Settings.Store;
             Core.Events.GameEvents.Suppressed = Combat.CombatEvents.Replaying;
             Core.Events.GameEvents.Muted = Combat.CombatEvents.Muted;

@@ -51,6 +51,8 @@ namespace MonsterTrainAccessibility.Module.Nodes
             if (details == null || !details.gameObject.activeInHierarchy) return;
             string name = Shown(details.nameLabel);
             if (name == null) return; // still loading
+            // One panel: what one line defines is never added again to another's buffer.
+            Func<IEnumerable<string>> panel = () => PanelLines(details);
             b.AddItem(ControlId.Structural(key + ":name"), new NodeVtable
             {
                 ControlType = ControlTypes.Text,
@@ -60,20 +62,29 @@ namespace MonsterTrainAccessibility.Module.Nodes
                     new NodeAnnouncement(() => Stats(details), kind: AnnouncementKinds.Value),
                 },
                 SearchText = () => Shown(details.nameLabel),
+                Panel = panel,
             });
             if (details.sinContainer != null && details.sinContainer.activeInHierarchy)
-                Line(b, key + ":sin", () => Shown(details.sinDetailsLabel));
+                Line(b, key + ":sin", () => Shown(details.sinDetailsLabel), panel);
             // An undiscovered enemy's panel repeats "???" in every text: once is enough.
             var blocks = Blocks(Shown(details.detailsLabel));
             for (int i = 0; i < blocks.Count; i++)
             {
                 if (blocks[i] == name) continue;
                 int index = i;
-                Line(b, key + ":ability:" + i, () => { var now = Blocks(Shown(details.detailsLabel)); return index < now.Count ? now[index] : null; });
+                Line(b, key + ":ability:" + i, () => { var now = Blocks(Shown(details.detailsLabel)); return index < now.Count ? now[index] : null; }, panel);
             }
-            if (Shown(details.loreLabel) != name) Line(b, key + ":lore", () => Shown(details.loreLabel));
+            if (Shown(details.loreLabel) != name) Line(b, key + ":lore", () => Shown(details.loreLabel), panel);
             if (details.artistAttributionRoot != null && details.artistAttributionRoot.activeInHierarchy)
                 Line(b, key + ":artist", () => { var artist = Shown(details.artistAttribution); return artist != null ? Strings.EnemyArtist(artist) : null; });
+        }
+
+        // The panel's texts, as its lines read them: the sin, each ability block, the lore.
+        private static IEnumerable<string> PanelLines(CompendiumEnemyDetailsUI details)
+        {
+            if (details.sinContainer != null && details.sinContainer.activeInHierarchy) yield return Shown(details.sinDetailsLabel);
+            foreach (var block in Blocks(Shown(details.detailsLabel))) yield return block;
+            yield return Shown(details.loreLabel);
         }
 
         // The numbers beside the stat icons, each only while the game shows its icon.
@@ -117,10 +128,12 @@ namespace MonsterTrainAccessibility.Module.Nodes
             lines.Clear();
         }
 
-        private static void Line(GraphBuilder b, string key, Func<string> text)
+        private static void Line(GraphBuilder b, string key, Func<string> text, Func<IEnumerable<string>> panel = null)
         {
             if (string.IsNullOrWhiteSpace(text())) return;
-            b.AddItem(ControlId.Structural(key), GameNodes.Text(text));
+            var vt = GameNodes.Text(text);
+            vt.Panel = panel;
+            b.AddItem(ControlId.Structural(key), vt);
         }
 
         private static bool Active(UnityEngine.GameObject root) => root != null && root.activeInHierarchy;

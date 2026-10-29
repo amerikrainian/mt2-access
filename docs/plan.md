@@ -114,6 +114,27 @@ from the branch before that would catch regressions no single tester feels.
   collector used its own order and appears to miss several of these.
 - Trainworks-Reloaded adds content only (JSON pipelines, registries); it offers nothing to read. Content
   it adds flows through the same pipeline, so reading the pipeline covers modded cards for free.
+- The game never defines a keyword that is only mentioned in another's text (Valor's body names Armor;
+  no Armor tooltip follows). The glossary fills that in (CLAUDE.md, Buffers). Its registries are the
+  ones Trainworks writes to: `StatusIdToLocalizationExpression`, both `TriggerToLocalizationExpression`
+  dictionaries, trait types in mod assemblies, and I2 terms; checked with Trainworks 0.7.33, Conductor
+  0.5.17 and Steward Clan 0.7.0 installed (their 11 statuses, 13 unit triggers and 5 traits appear).
+- No data links one keyword to another: `StatusEffectData` has no such field, Valor's Armor rule is
+  code (`RoomStateValorModifier`), and Trainworks' status JSON declares none. The links are the game's
+  replacement tokens in each definition's source text; a definition's key is the same in every
+  language, so the English text's tokens and bold give every language the same links.
+- Audit, vanilla, English: 668 cards and 553 artifacts draw 1558 tooltip titles, all but 6 distinct
+  names entries (the rest are the game's wrappers, "Added Card", "Summoned Unit", "Converted Card",
+  and three one-offs). The game has no definition for "Deployment Phase" or "Triggers".
+- Measured against the earlier rule (bold spans matched by spelling in every language), with the mods
+  above installed, over 1265 cards and artifacts: English adds the same 459 definitions; French 482
+  (was 474), German 478 (474, and 8 were wrong: Incant for Enchant), Russian 468 (465), Portuguese
+  486 (487), Chinese 468 (464), Spanish 443 (463), Traditional Chinese 472 (461), Korean 473 (469),
+  Japanese 469 (465). What is lost is wording only a translation has, written out by hand with no
+  token anywhere: Spanish Burst's "Impactar" (Strike, 18 cards; the English no longer mentions
+  Strike), Portuguese "Avança" in card text (Advance, 6), and about 15 one-offs.
+- Not covered: `AdditionalTooltipData` a designer attaches to one card ("Cultivate"), and a trait's
+  text that quotes its card's number (a bare trait has no card: "+0").
 
 ## 6. Translations
 `lang/` holds `en.txt` (the generated template) and one file per game language, named for I2's code:

@@ -120,12 +120,17 @@ namespace MonsterTrainAccessibility.Module.Nodes
                 if (key == null || key.Contains("EmptyString")) continue;
                 if (keys.Contains(key) || keys.Contains(key.Replace("_CardText", ""))) continue;
                 keys.Add(key);
-                string line = Line(CardTextHelper.RemoveBold(tooltip.title), CardTextHelper.ScrubUpgradeHighlights(tooltip.body));
+                string line = Format(tooltip.title, tooltip.body);
                 // The game ships a few placeholders ("(WIP) Pyre Heart tooltip here", the Pyre Heart header's).
                 if (line != null && !line.StartsWith("(WIP)")) lines.Add(line);
             }
             return lines;
         }
+
+        /// <summary>One tooltip's line as a container would draw it: the title without its bold, the body
+        /// without its upgrade highlights.</summary>
+        public static string Format(string title, string body)
+            => Line(CardTextHelper.RemoveBold(title), CardTextHelper.ScrubUpgradeHighlights(body));
 
         /// <summary>The tooltips a container has instantiated, as drawn.</summary>
         public static List<string> Container(TooltipContainer container)

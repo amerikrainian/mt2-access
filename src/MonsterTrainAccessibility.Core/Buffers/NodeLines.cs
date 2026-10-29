@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using MonsterTrainAccessibility.Contracts;
 using MonsterTrainAccessibility.Core.Graph;
+using MonsterTrainAccessibility.Core.Text;
 
 namespace MonsterTrainAccessibility.Core.Buffers
 {
@@ -9,12 +10,18 @@ namespace MonsterTrainAccessibility.Core.Buffers
     /// readout, then a role the node supplies itself, then its review-only parts; never the control
     /// type's role word or the "n of m" position), then one line per description part
     /// (<see cref="AnnouncementKinds.Tooltip"/>), then the vtable's <see cref="NodeVtable.Details"/>,
-    /// one line per tooltip. A detail that only repeats a head part (an item tooltip whose title is the
+    /// one line per tooltip, then the definitions those lines mention and the game left out
+    /// (<see cref="Definitions"/>), less those another line of the node's panel shows
+    /// (<see cref="NodeVtable.Panel"/>). A detail that only repeats a head part (an item tooltip whose title is the
     /// item's name, through markup or not) or an earlier detail is folded; blank lines are dropped. Read live on every
     /// buffer keypress. The same conventions as Harkest Dungeon's element buffer lines.
     /// </summary>
     public static class NodeLines
     {
+        /// <summary>The glossary the details are completed from (the module's, read from the game's
+        /// registries); null, as in tests, adds nothing.</summary>
+        public static System.Func<Glossary> Definitions;
+
         public static IEnumerable<string> Lines(GraphNode node)
         {
             if (node == null) yield break;
@@ -56,6 +63,7 @@ namespace MonsterTrainAccessibility.Core.Buffers
                 catch (System.Exception e) { CoreLog.Warning("buffer lines: details failed: " + e.Message); }
             }
             if (own != null) details.AddRange(own);
+            details.AddRange(Defined(head, details, Panel(node)));
 
             // A detail repeating a head part, or an earlier detail (the same tooltip reached twice),
             // is folded: the reader steps through new information only.
@@ -67,6 +75,39 @@ namespace MonsterTrainAccessibility.Core.Buffers
                 if (string.IsNullOrWhiteSpace(clean) || !seen.Add(clean)) continue;
                 yield return line;
             }
+        }
+
+        // The lines of the panel the node is one line of, or none.
+        private static List<string> Panel(GraphNode node)
+        {
+            if (node.Vtable?.Panel == null) return null;
+            try
+            {
+                var lines = new List<string>();
+                foreach (var line in node.Vtable.Panel())
+                    if (!string.IsNullOrWhiteSpace(line)) lines.Add(line);
+                return lines;
+            }
+            catch (System.Exception e)
+            {
+                CoreLog.Warning("buffer lines: the panel's lines failed: " + e.Message);
+                return null;
+            }
+        }
+
+        private static List<string> Defined(List<string> head, List<string> details, List<string> panel)
+        {
+            var lines = new List<string>();
+            Glossary glossary = null;
+            try { glossary = Definitions?.Invoke(); }
+            catch (System.Exception e) { CoreLog.Warning("buffer lines: the glossary failed: " + e.Message); }
+            if (glossary == null) return lines;
+            foreach (var entry in glossary.Expand(head, details, panel))
+            {
+                try { lines.Add(entry.Line()); }
+                catch (System.Exception e) { CoreLog.Warning("buffer lines: " + entry.Id + "'s line threw: " + e.Message); }
+            }
+            return lines;
         }
 
         private static bool Contains(IReadOnlyList<NodeAnnouncement> parts, NodeAnnouncement part)
