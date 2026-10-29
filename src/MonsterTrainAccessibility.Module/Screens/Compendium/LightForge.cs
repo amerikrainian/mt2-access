@@ -8,7 +8,7 @@ namespace MonsterTrainAccessibility.Module.Screens
         // ---- Light Forge Upgrades ----
 
         // A row of clans and a row of champions, each chosen by landing on it; then the chosen
-        // champion's upgrade paths, a Tab-stop of their own.
+        // champion's upgrade paths.
         private static void LightForge(GraphBuilder b, CompendiumSectionChampUpgrades forge)
         {
             // A vertical move into either row lands on its chosen item: landing chooses.
@@ -27,7 +27,6 @@ namespace MonsterTrainAccessibility.Module.Screens
                 b.AddItem(ControlId.Structural("logbook:forge:champion:" + i), ClanNodes.ChampionOption(champions[i]));
             b.EndRow();
 
-            b.BeginStop("upgrades");
             for (int i = 0; i < forge.upgradeUIs.Count; i++)
                 UpgradeTreeNodes.Tree(b, "logbook:forge:tree:" + i, forge.upgradeUIs[i]);
         }

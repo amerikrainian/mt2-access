@@ -22,7 +22,7 @@ namespace MonsterTrainAccessibility.Module.Screens
         {
             bool soulSavior = SoulSaviorList(enemies);
             bool tabs = enemies.hasRailforgedDLC;
-            bool filters = Shown(enemies.covenantRankFilterUI) || Shown(enemies.difficultyTierFilterUI);
+            bool filters = FilterNodes.Shown(enemies.covenantRankFilterUI) || FilterNodes.Shown(enemies.difficultyTierFilterUI);
             if (tabs || filters)
             {
                 b.StartRow(entry: () => tabs && SoulSaviorList(enemies) ? 1 : 0);
@@ -66,8 +66,6 @@ namespace MonsterTrainAccessibility.Module.Screens
             EnemyNodes.Details(b, "logbook:enemy:details", enemies.characterDataUI);
         }
 
-        // As FilterNodes.Dropdown declares one: shown, with its dropdown.
-        private static bool Shown(DropdownFilterUI filter) => filter != null && filter.dropdown != null && filter.gameObject.activeInHierarchy;
 
         private static bool SoulSaviorList(CompendiumSectionEnemies enemies)
             => enemies.currentScrollRectRootGameObject != null && enemies.railforgedEnemiesScrollRectRoot != null

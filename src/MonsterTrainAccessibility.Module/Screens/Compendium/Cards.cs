@@ -15,23 +15,26 @@ namespace MonsterTrainAccessibility.Module.Screens
     {
         // ---- Cards ----
 
-        // The filters, the search (a Tab-stop of its own: an edit owns the arrows), then the page's
-        // cards, a Tab-stop of their own.
+        // The filters, each option filter a row (clan, rarity, cost) and the two dropdowns one; the
+        // search on a line of its own (Left and Right are its caret's); then the page's cards as a row.
         private void Cards(GraphBuilder b, CompendiumSectionCards cards)
         {
             var toolbar = cards.filterToolbar;
             if (toolbar != null)
             {
                 FilterNodes.Options(b, "logbook:filter:clan", toolbar.classFilterUI);
-                FilterNodes.Dropdown(b, "logbook:filter:type", toolbar.typeFilterUI);
                 FilterNodes.Options(b, "logbook:filter:rarity", toolbar.rarityFilterUI);
                 FilterNodes.Options(b, "logbook:filter:cost", toolbar.costFilterUI);
-                FilterNodes.Dropdown(b, "logbook:filter:mastery", toolbar.masteryFilterUI);
-                b.BeginStop("search");
+                if (FilterNodes.Shown(toolbar.typeFilterUI) || FilterNodes.Shown(toolbar.masteryFilterUI))
+                {
+                    b.StartRow();
+                    FilterNodes.Dropdown(b, "logbook:filter:type", toolbar.typeFilterUI);
+                    FilterNodes.Dropdown(b, "logbook:filter:mastery", toolbar.masteryFilterUI);
+                    b.EndRow();
+                }
                 FilterNodes.Search(b, _cardSearch, toolbar.searchFilterUI);
-                b.BeginStop("cards");
             }
-            b.PushContext(GameText.Term("Compendium_Section_Cards"), Strings.RoleList);
+            var items = new List<KeyValuePair<ControlId, NodeVtable>>();
             foreach (var selectable in cards.cardSelectableUIs)
             {
                 var widget = selectable?.component;
@@ -41,13 +44,25 @@ namespace MonsterTrainAccessibility.Module.Screens
                 var card = selectable.GetUISubComponent<CardUI>() ?? widget.GetComponentInParent<CardUI>();
                 if (card != null && card.GetCardState() != null)
                 {
-                    b.AddItem(ControlId.Structural("logbook:card:" + card.GetCardState().GetCardDataID()), CardNodes.Card(card, CardTooltipContainer.LoreTooltipSetting.Always, hover));
+                    items.Add(new KeyValuePair<ControlId, NodeVtable>(ControlId.Structural("logbook:card:" + card.GetCardState().GetCardDataID()),
+                        CardNodes.Card(card, CardTooltipContainer.LoreTooltipSetting.Always, hover)));
                     continue;
                 }
                 var locked = widget.GetComponent<LockedCardUI>() ?? widget.GetComponentInParent<LockedCardUI>();
                 if (locked != null)
-                    b.AddItem(ControlId.Structural("logbook:locked:" + locked.GetInstanceID()), CardNodes.Locked(locked, hover));
+                    items.Add(new KeyValuePair<ControlId, NodeVtable>(ControlId.Structural("logbook:locked:" + locked.GetInstanceID()), CardNodes.Locked(locked, hover)));
             }
+            Row(b, GameText.Term("Compendium_Section_Cards"), items);
+        }
+
+        // Items as a row in a context, or nothing when there are none (a row cannot be empty).
+        private static void Row(GraphBuilder b, string label, List<KeyValuePair<ControlId, NodeVtable>> items)
+        {
+            if (items.Count == 0) return;
+            b.PushContext(label, Strings.RoleList);
+            b.StartRow();
+            foreach (var item in items) b.AddItem(item.Key, item.Value);
+            b.EndRow();
             b.PopContext();
         }
 
@@ -62,13 +77,13 @@ namespace MonsterTrainAccessibility.Module.Screens
             {
                 if (collection == null || !collection.gameObject.activeInHierarchy) continue;
                 int ci = c++;
-                b.PushContext(Title(collection.tooltipProvider), Strings.RoleList);
+                var items = new List<KeyValuePair<ControlId, NodeVtable>>();
                 int r = 0;
                 foreach (var relic in collection.relicUIs)
                 {
                     if (relic == null || !relic.gameObject.activeInHierarchy) continue;
                     var artifact = relic;
-                    b.AddItem(ControlId.Structural("logbook:artifact:" + ci + ":" + r++), new NodeVtable
+                    items.Add(new KeyValuePair<ControlId, NodeVtable>(ControlId.Structural("logbook:artifact:" + ci + ":" + r++), new NodeVtable
                     {
                         ControlType = ControlTypes.Item,
                         Announcements = new List<NodeAnnouncement>
@@ -79,9 +94,9 @@ namespace MonsterTrainAccessibility.Module.Screens
                         SearchText = () => FirstTitle(artifact.Tooltips),
                         OnFocus = () => GameInput.Hover(artifact.SelectableUI),
                         Details = () => GameNodes.Lines(TooltipReader.Lines(artifact)),
-                    });
+                    }));
                 }
-                b.PopContext();
+                Row(b, Title(collection.tooltipProvider), items);
             }
         }
 

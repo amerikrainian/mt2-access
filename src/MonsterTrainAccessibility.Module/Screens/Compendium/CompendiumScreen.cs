@@ -13,19 +13,20 @@ using Screen = MonsterTrainAccessibility.Core.Screens.Screen;
 namespace MonsterTrainAccessibility.Module.Screens
 {
     /// <summary>
-    /// The Logbook (<see cref="global::CompendiumScreen"/>, The Library). Tab-stops: the sections as
-    /// tabs (by the game's own section titles; landing on one opens it), the open section's stops, the
-    /// page ("Page 1 of 57", then the game's Previous Page and Next Page while each turns; PageUp and
-    /// PageDown turn from anywhere), Back. Each section has its reader, in its own file:
+    /// The Logbook (<see cref="global::CompendiumScreen"/>, The Library), one Tab-stop, top to bottom:
+    /// the sections as a row of tabs (by the game's own section titles; landing on one opens it), the
+    /// open section, the page row ("Page 1 of 57", then the game's Previous Page and Next Page while each
+    /// turns; PageUp and PageDown turn from anywhere), Back. Each section has its reader, in its own file:
     /// <list type="bullet">
-    /// <item>Cards: the filters (<see cref="FilterNodes"/>), the search, then the page's cards
+    /// <item>Cards: the filters (<see cref="FilterNodes"/>), each option filter a row and the two
+    /// dropdowns one, the search on a line of its own, then the page's cards as a row
     /// (<see cref="CardNodes"/>; landing hovers one, as the mouse does);</item>
-    /// <item>Enemies: the base game and Soul Savior lists as tabs with the list's filter, the search,
-    /// the enemies (chosen by landing), then the chosen one's variants and details
+    /// <item>Enemies: the base game and Soul Savior lists as tabs with the list's filters, the search,
+    /// the enemies as a row (chosen by landing), then the chosen one's variants as a row and its details
     /// (<see cref="EnemyNodes"/>);</item>
     /// <item>Light Forge Upgrades: a row of clans and a row of champions (chosen by landing,
     /// <see cref="ClanNodes"/>), then the upgrade paths (<see cref="UpgradeTreeNodes"/>);</item>
-    /// <item>Artifacts: each collection with its artifacts, by the game's tooltips;</item>
+    /// <item>Artifacts: each collection a row of its artifacts, by the game's tooltips;</item>
     /// <item>Progress Record: the record pages as tabs, then the open page: stat rows, or the friends'
     /// leaderboard with its sort choices;</item>
     /// <item>Clans and Mastery Card Frames: their panels as drawn, in the game's order, a clan's
@@ -64,18 +65,20 @@ namespace MonsterTrainAccessibility.Module.Screens
             if (screen == null) return;
             b.PushContext(GameText.Term("Compendium_Title"), Strings.RoleList, positions: false);
 
-            b.BeginStop("sections");
-            b.StartRow();
+            b.BeginStop("logbook");
+            var sections = new List<global::CompendiumScreen.Section>();
             foreach (var section in screen.sectionOrder)
+                if (screen.tabsBySection.TryGetValue(section, out CompendiumTab shown) && shown != null && shown.gameObject.activeInHierarchy) sections.Add(section);
+            // Coming back up from the section lands on its own tab, not where the row was last left.
+            b.StartRow(entry: () => System.Math.Max(0, sections.IndexOf(screen.currentSection)));
+            foreach (var section in sections)
             {
-                if (!screen.tabsBySection.TryGetValue(section, out CompendiumTab tab) || tab == null || !tab.gameObject.activeInHierarchy) continue;
                 var id = ControlId.Structural("logbook:tab:" + section);
-                b.AddItem(id, Tab(screen, section, tab));
+                b.AddItem(id, Tab(screen, section, screen.tabsBySection[section]));
                 if (section == screen.currentSection) b.SetStart(id); // the open section's tab, as the game shows it
             }
             b.EndRow();
 
-            b.BeginStop("page");
             if (screen.pagesBySection.TryGetValue(screen.currentSection, out CompendiumSection page) && page != null && page.gameObject.activeInHierarchy)
             {
                 switch (page)
@@ -89,13 +92,17 @@ namespace MonsterTrainAccessibility.Module.Screens
                 }
             }
 
-            b.BeginStop("paging");
-            if (page is PaginatedCompendiumSection paged && paged.pageCountLabel != null && paged.pageCountLabel.gameObject.activeInHierarchy)
-                b.AddItem(ControlId.Structural("logbook:pagecount"), GameNodes.Text(() => paged.pageCountLabel.Content()));
-            PageButton(b, screen, PageTurnZone.TurnDir.Left, "Leaderboard_Navigation_PreviousPage");
-            PageButton(b, screen, PageTurnZone.TurnDir.Right, "Leaderboard_Navigation_NextPage");
+            var count = page is PaginatedCompendiumSection paged && paged.pageCountLabel != null && paged.pageCountLabel.gameObject.activeInHierarchy
+                ? paged.pageCountLabel : null;
+            if (count != null || Zone(screen, PageTurnZone.TurnDir.Left) != null || Zone(screen, PageTurnZone.TurnDir.Right) != null)
+            {
+                b.StartRow();
+                if (count != null) b.AddItem(ControlId.Structural("logbook:pagecount"), GameNodes.Text(() => count.Content()));
+                PageButton(b, screen, PageTurnZone.TurnDir.Left, "Leaderboard_Navigation_PreviousPage");
+                PageButton(b, screen, PageTurnZone.TurnDir.Right, "Leaderboard_Navigation_NextPage");
+                b.EndRow();
+            }
 
-            b.BeginStop("actions");
             var back = screen.backButton;
             if (back != null && back.gameObject.activeInHierarchy)
                 b.AddItem(ControlId.Structural("logbook:back"), GameWidgets.Button(back, () => PauseMenuScreen.Caption(back)));

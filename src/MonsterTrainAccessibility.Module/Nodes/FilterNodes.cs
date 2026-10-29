@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using MonsterTrainAccessibility.Core.Graph;
 using MonsterTrainAccessibility.Core.Strings;
 using MonsterTrainAccessibility.Module.Interop;
@@ -12,9 +13,9 @@ namespace MonsterTrainAccessibility.Module.Nodes
     /// The game's list filters (<see cref="FilterUI"/>: the Logbook's card and enemy filters, and
     /// wherever else the game puts a <see cref="FilterToolbar"/>):
     /// <list type="bullet">
-    /// <item>an options filter (clan, rarity, cost) is its caption as the context, each option a button
-    /// with "selected", named by its tooltip title where the option is an icon; Enter toggles it
-    /// through the game;</item>
+    /// <item>an options filter (clan, rarity, cost) is a row in its caption's context, each option a
+    /// button with "selected", named by its tooltip title where the option is an icon; Enter toggles it
+    /// through the game; a vertical move into it lands on the selected option;</item>
     /// <item>a dropdown filter is the shared combo box with its picker;</item>
     /// <item>a search filter is a <see cref="SearchField"/> on the game's own text field, then the
     /// game's clear button while there is text to clear.</item>
@@ -26,20 +27,31 @@ namespace MonsterTrainAccessibility.Module.Nodes
         public static void Options(GraphBuilder b, string key, OptionsFilterUI filter)
         {
             if (filter == null || !filter.gameObject.activeInHierarchy) return;
-            string label = Label(filter);
-            b.PushContext(label, label != null ? Strings.RoleList : null); // an unlabeled group says nothing of itself
+            var shown = new List<int>();
             for (int i = 0; i < filter.optionButtons.Count; i++)
             {
                 var option = filter.optionButtons[i];
-                var button = option != null ? option.GetComponent<GameUISelectableButton>() : null;
-                if (button == null || !option.gameObject.activeInHierarchy) continue;
+                if (option != null && option.GetComponent<GameUISelectableButton>() != null && option.gameObject.activeInHierarchy) shown.Add(i);
+            }
+            if (shown.Count == 0) return; // a row cannot be empty
+            string label = Label(filter);
+            b.PushContext(label, label != null ? Strings.RoleList : null); // an unlabeled group says nothing of itself
+            b.StartRow(entry: () => System.Math.Max(0, shown.IndexOf(filter.SelectedOption)));
+            foreach (int i in shown)
+            {
+                var option = filter.optionButtons[i];
+                var button = option.GetComponent<GameUISelectableButton>();
                 int index = i;
                 b.AddItem(ControlId.Structural(key + ":" + i), GameWidgets.Button(button,
                     () => OptionName(option), () => OptionDescription(option),
                     GameNodes.SelectedPart(() => filter.SelectedOption == index)));
             }
+            b.EndRow();
             b.PopContext();
         }
+
+        /// <summary>Whether <see cref="Dropdown"/> declares the filter: shown, with its dropdown.</summary>
+        public static bool Shown(DropdownFilterUI filter) => filter != null && filter.dropdown != null && filter.gameObject.activeInHierarchy;
 
         public static void Dropdown(GraphBuilder b, string key, DropdownFilterUI filter)
         {

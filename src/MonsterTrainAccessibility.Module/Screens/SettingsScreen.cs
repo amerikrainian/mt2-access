@@ -53,11 +53,14 @@ namespace MonsterTrainAccessibility.Module.Screens
             b.PushContext(PauseMenuScreen.DialogTitle(dialog), Strings.RoleList, positions: false);
 
             b.BeginStop("tabs");
-            b.StartRow();
-            SettingsTab open = null;
+            var tabs = new List<SettingsTab>();
             foreach (var tab in dialog.tabs)
+                if (tab != null && tab.button != null && tab.button.gameObject.activeInHierarchy) tabs.Add(tab);
+            // A vertical move into the row lands on the open tab.
+            b.StartRow(entry: () => System.Math.Max(0, tabs.FindIndex(t => t.SectionRoot != null && t.SectionRoot.activeInHierarchy)));
+            SettingsTab open = null;
+            foreach (var tab in tabs)
             {
-                if (tab == null || tab.button == null || !tab.button.gameObject.activeInHierarchy) continue;
                 if (tab.SectionRoot != null && tab.SectionRoot.activeInHierarchy) open = tab;
                 b.AddItem(ControlId.Structural("settings:tab:" + tab.gameObject.name), Tab(tab));
             }
