@@ -68,7 +68,11 @@ namespace MonsterTrainAccessibility.Module.Screens
             b.PushContext(choices.Count > 1 ? Strings.MapChoice : null);
             bool row = route.Layout == ChoiceLayout.Row;
             if (row) b.StartRow();
-            foreach (var stop in choices)
+            // A ring's stops one after another read as the map draws them, bottom to top: the next stop
+            // at the bottom, where focus starts, Up toward the battle. A fork is a row.
+            var shown = new List<MapStop>(choices);
+            if (!row) shown.Reverse();
+            foreach (var stop in shown)
             {
                 var id = ControlId.Structural("map:" + stop.Key);
                 _choices[id] = stop;
@@ -76,6 +80,7 @@ namespace MonsterTrainAccessibility.Module.Screens
             }
             if (row) b.EndRow();
             b.PopContext();
+            if (!row) b.SetStart(ControlId.Structural("map:" + choices[0].Key));
         }
 
         public override IEnumerable<ElementAction> GetActions()
@@ -107,7 +112,8 @@ namespace MonsterTrainAccessibility.Module.Screens
             {
                 _preview = new RouteCursor<MapStop>(route.Next);
                 // From the choice in focus, its fellow choices are the fork Ctrl+Left/Right walk.
-                var choices = focused != null ? route.Choices() : null;
+                // Only a fork has fellow choices; a ring's stops one after another are not alternatives.
+                var choices = focused != null && route.Layout == ChoiceLayout.Row ? route.Choices() : null;
                 MapStop origin = null;
                 if (choices != null)
                     foreach (var c in choices)
