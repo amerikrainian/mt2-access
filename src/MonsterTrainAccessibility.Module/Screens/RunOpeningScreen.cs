@@ -12,12 +12,16 @@ namespace MonsterTrainAccessibility.Module.Screens
 {
     /// <summary>
     /// The run's opening briefing (<see cref="global::RunOpeningScreen"/>, over the map as a run
-    /// begins), one list in the panel's order:
+    /// begins, or Soul Savior's, <see cref="RunOpeningSoulSaviorScreen"/>, the same with the souls
+    /// added), one list in the panel's order:
     /// <list type="bullet">
     /// <item>each boss as the game labels it ("Ring 3: The Fleshweaver", "Final Boss: Seraph
     /// Aeternus"), then its power, the second of its tooltips; all of them (its description, its power,
     /// the keywords it uses) in the buffer;</item>
     /// <item>the pyre heart: its header, its name, then what it does;</item>
+    /// <item>for Soul Savior, the run's souls, each through <see cref="SoulNodes.Info"/>: the pyre heart
+    /// and they one row (left and right), under the header the game draws over both ("Pyre Heart and
+    /// Souls");</item>
     /// <item>the cards the run starts with beyond the deck (the Covenant's random cards) while the game
     /// shows them, as one row (left and right), each through <see cref="CardNodes"/>;</item>
     /// <item>OK.</item>
@@ -40,7 +44,8 @@ namespace MonsterTrainAccessibility.Module.Screens
         {
             get
             {
-                var screen = GameScreens.Active<global::RunOpeningScreen>(global::ScreenName.RunOpening);
+                var screen = GameScreens.Active<global::RunOpeningScreen>(global::ScreenName.RunOpening)
+                    ?? GameScreens.Active<RunOpeningSoulSaviorScreen>(global::ScreenName.SoulSaviorRunOpening);
                 return screen != null && screen.open ? screen : null;
             }
         }
@@ -64,7 +69,22 @@ namespace MonsterTrainAccessibility.Module.Screens
                     if (first == null) first = id;
                 }
             }
-            PyreHeart(b, screen.pyreHeartInfoUI);
+            if (screen is RunOpeningSoulSaviorScreen soulSavior && soulSavior.soulsSectionRoot != null
+                && soulSavior.soulsSectionRoot.activeInHierarchy && soulSavior.soulHudInfoUis != null)
+            {
+                var pyre = screen.pyreHeartInfoUI;
+                b.PushContext(pyre != null && pyre.transform.parent != null
+                    ? ChallengeProgressScreen.HeaderOf(pyre.transform.parent, "Text section header") : null);
+                b.StartRow();
+                PyreHeart(b, pyre);
+                int s = 0;
+                foreach (var soul in soulSavior.soulHudInfoUis)
+                    if (soul != null && soul.gameObject.activeInHierarchy && soul.GetSoulData() != null)
+                        b.AddItem(ControlId.Structural("opening:soul:" + s++), SoulNodes.Info(soul));
+                b.EndRow();
+                b.PopContext();
+            }
+            else PyreHeart(b, screen.pyreHeartInfoUI);
             if (screen.cardSectionRoot != null && screen.cardSectionRoot.activeInHierarchy && screen.cardUIs != null)
             {
                 // One row, as the game lays them out: left and right walk the cards.

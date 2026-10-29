@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using MonsterTrainAccessibility.Contracts;
 using MonsterTrainAccessibility.Core.Graph;
 using MonsterTrainAccessibility.Core.Strings;
 using MonsterTrainAccessibility.Core.UI;
@@ -30,6 +31,34 @@ namespace MonsterTrainAccessibility.Module.Nodes
         public static NodeVtable Choice(RunSetupSoulSelectionItemUI item, SoulSelectionDialog dialog)
             => Build(item.soulNameLabel, () => item.SoulState, () => item.IsLocked, () => item.Chosen, item.Button,
                 dialog.soulNameLabel, dialog.progressionObjectiveUI, choose: true);
+
+        /// <summary>A soul a run carries, as a panel lists it (<see cref="SoulInfoUI"/>: the run's
+        /// opening): its name and description as drawn; its tooltips in the buffer, less the soul's own
+        /// (the panel asks for it first, and it says what the description does).</summary>
+        public static NodeVtable Info(SoulInfoUI soul)
+        {
+            Func<string> name = () => soul.soulNameText != null && !string.IsNullOrWhiteSpace(soul.soulNameText.Content())
+                ? soul.soulNameText.Content() : soul.GetSoulData()?.GetName();
+            return new NodeVtable
+            {
+                ControlType = ControlTypes.Text,
+                Announcements = new List<NodeAnnouncement>
+                {
+                    GameNodes.LabelPart(name),
+                    GameNodes.TooltipPart(() => soul.soulDescriptionText != null && soul.soulDescriptionText.gameObject.activeInHierarchy
+                        ? soul.soulDescriptionText.Content() : null),
+                },
+                SearchText = name,
+                Details = () =>
+                {
+                    var tips = new List<TooltipContent>();
+                    if (soul.Tooltips != null)
+                        foreach (var tip in soul.Tooltips)
+                            if (TextFilter.Clean(tip.title) != TextFilter.Clean(name())) tips.Add(tip);
+                    return GameNodes.Lines(TooltipReader.Lines(tips));
+                },
+            };
+        }
 
         private static NodeVtable Build(TMP_Text label, Func<SoulState> state, Func<bool> locked, Func<bool> chosen,
             GameUISelectableButton button, TMP_Text panelName, ProgressionObjectiveUI panelProgress, bool choose)
