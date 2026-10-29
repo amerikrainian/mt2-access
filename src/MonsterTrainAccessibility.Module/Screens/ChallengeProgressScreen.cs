@@ -12,16 +12,18 @@ using Screen = MonsterTrainAccessibility.Core.Screens.Screen;
 namespace MonsterTrainAccessibility.Module.Screens
 {
     /// <summary>
-    /// The Dimensional Portal (<see cref="global::ChallengeProgressScreen"/>), in four Tab-stops:
+    /// The Dimensional Portal (<see cref="global::ChallengeProgressScreen"/>), top to bottom:
     /// <list type="bullet">
-    /// <item>the challenge sets (Primary Challenges, Echoes) as tabs, landing on one switching to it
-    /// through the game's own next/previous buttons;</item>
-    /// <item>the set's challenges, each landing selecting it as a click on its node does (the details
-    /// follow), with "selected", the game's "Locked" and "completed";</item>
+    /// <item>the challenge sets (Primary Challenges, Echoes) as a row of tabs, landing on one switching
+    /// to it through the game's own next/previous buttons;</item>
+    /// <item>the set's challenges as a row, landing on one selecting it as a click on its node does
+    /// (the details follow), with "selected", the game's "Locked" and "completed"; focus starts on the
+    /// selected one, and a vertical move into either row lands on the shown set or challenge;</item>
+    /// <item>Rewards;</item>
     /// <item>the selected challenge's details: its name, why it is locked, its description, Covenant
     /// rank, clans, pyre heart and mutators (their hover tooltips in the buffer), then Depart or
     /// Resume;</item>
-    /// <item>Rewards and Back.</item>
+    /// <item>Back.</item>
     /// </list>
     /// Escape is the game's: back to the Covenant Outpost. Rewards opens
     /// <see cref="ChallengeRewardsScreen"/>.
@@ -35,7 +37,6 @@ namespace MonsterTrainAccessibility.Module.Screens
 
         public override string Key => "game.dimensional_portal";
         public override bool KeepStateOnPop => true;
-        public override object InitialFocusStop => "challenges";
 
         internal static global::ChallengeProgressScreen Game
             => GameScreens.Active<global::ChallengeProgressScreen>(global::ScreenName.ChallengeProgress);
@@ -52,33 +53,35 @@ namespace MonsterTrainAccessibility.Module.Screens
             if (screen == null) return;
             b.PushContext(HeaderOf(screen, "Text Main Header"), Strings.RoleList, positions: false);
 
-            b.BeginStop("sets");
-            b.StartRow();
-            foreach (var set in screen.challengeSetOrder)
+            // The set shown, coming up from below.
+            var sets = new List<global::ChallengeProgressScreen.ChallengeSet>(screen.challengeSetOrder);
+            b.StartRow(entry: () => System.Math.Max(0, sets.IndexOf(screen.currentChallengeSet)));
+            foreach (var set in sets)
                 b.AddItem(ControlId.Structural("portal:set:" + set), SetTab(screen, set));
             b.EndRow();
 
-            b.BeginStop("challenges");
             var selection = Selection(screen);
             if (selection != null && selection.availableChallenges != null)
             {
                 b.PushContext(screen.challengeSetTitleLabel != null ? screen.challengeSetTitleLabel.Content() : null, Strings.RoleList);
+                // The selected challenge, coming into the row from above or below.
+                var nodes = new List<ChallengeNode>();
                 foreach (var node in selection.availableChallenges)
+                    if (node != null && node.Challenge != null && node.gameObject.activeInHierarchy) nodes.Add(node);
+                b.StartRow(entry: () => System.Math.Max(0, nodes.IndexOf(selection.CurrentChallenge)));
+                foreach (var node in nodes)
                 {
-                    if (node == null || node.Challenge == null || !node.gameObject.activeInHierarchy) continue;
                     var id = ControlId.Structural("portal:challenge:" + node.Challenge.GetID());
-                    b.AddItem(id, Challenge(selection, node));
+                    b.AddItem(id, Challenge(selection, node, screen.challengeDetailsAndLaunchUI));
                     if (node == selection.CurrentChallenge) b.SetStart(id);
                 }
+                b.EndRow();
                 b.PopContext();
             }
 
-            b.BeginStop("details");
-            Details(b, screen.challengeDetailsAndLaunchUI);
-
-            b.BeginStop("actions");
             var details = screen.challengeDetailsAndLaunchUI;
             Button(b, "rewards", details != null ? details.showRewardProgressButton : null);
+            Details(b, details);
             Button(b, "back", screen.backButton);
             b.PopContext();
         }
@@ -118,13 +121,16 @@ namespace MonsterTrainAccessibility.Module.Screens
         }
 
         // A challenge node: its name, then selected, the game's "Locked" (a node that is always open never
-        // reads locked), completed. Landing selects it, as a click does: the details follow.
-        private static NodeVtable Challenge(ChallengeSelectionUI selection, ChallengeNode node)
+        // reads locked), completed. Landing selects it as the game's navigation highlight does (a hover:
+        // ChallengeSelectionUI selects the hovered node), and the details follow, a locked one's unlock
+        // requirements among them. A press would also move into the details panel (its sidebar layer,
+        // which then swallows the set buttons and Back), so Enter selects the same way.
+        private static NodeVtable Challenge(ChallengeSelectionUI selection, ChallengeNode node, ChallengeDetailsAndLaunchUI details)
         {
             System.Func<string> name = () => GameText.Term(node.Challenge.GetNameKey());
             System.Action select = () =>
             {
-                if (selection.CurrentChallenge != node) GameInput.Submit(node.Button);
+                if (selection.CurrentChallenge != node) GameInput.Hover(node.Button);
             };
             return new NodeVtable
             {
@@ -139,6 +145,20 @@ namespace MonsterTrainAccessibility.Module.Screens
                 SearchText = name,
                 OnActivate = select,
                 OnFocus = select,
+                // What the details panel says of it (the selected one): a locked one's unlock requirements,
+                // one per line, else its description.
+                Details = () =>
+                {
+                    var lines = new List<string>();
+                    if (selection.CurrentChallenge != node || details == null) return GameNodes.Lines(lines);
+                    if (Shown(details.lockedContainer) && details.lockedLabel != null && details.lockedLabel.gameObject.activeInHierarchy)
+                        foreach (var line in details.lockedLabel.Content().Split('\n'))
+                            if (!string.IsNullOrWhiteSpace(line)) lines.Add(line.Trim());
+                    var description = details.challengeDescriptionLabel;
+                    if (description != null && description.gameObject.activeInHierarchy && !string.IsNullOrWhiteSpace(description.Content()))
+                        lines.Add(description.Content().Trim());
+                    return GameNodes.Lines(lines);
+                },
             };
         }
 

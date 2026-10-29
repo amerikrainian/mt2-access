@@ -177,6 +177,48 @@ namespace MonsterTrainAccessibility.Tests
             }
         }
 
+        // A wrapping screen laid out as a single Tab-stop (the Dimensional Portal).
+        private sealed class OneStopScreen : Screen
+        {
+            public OneStopScreen() { Wrap = true; }
+            public override string Key => "test.onestop";
+            public override bool IsActive() => true;
+            public override void Build(GraphBuilder b)
+            {
+                b.BeginStop("only");
+                foreach (var item in new[] { "First", "Second" })
+                    b.AddItem(ControlId.Structural(item), new NodeVtable
+                    {
+                        Announcements = new[] { new NodeAnnouncement(() => item, kind: AnnouncementKinds.Label) },
+                    });
+            }
+        }
+
+        [Fact]
+        public void TabOnAWrappingScreenWithOneStopSaysNothing()
+        {
+            var spoken = new List<string>();
+            var input = new FakeNavInput { FrameCount = 1 };
+            Speech.Speak = (t, i) => spoken.Add(t);
+            NavInput.Current = input;
+            try
+            {
+                var nav = new GraphNavigator();
+                nav.Attach(new OneStopScreen());
+                nav.EnsureFocus();
+                Assert.True(nav.OnInputJustPressed(Action(UiActions.Down)));
+                int said = spoken.Count;
+
+                Assert.True(nav.OnInputJustPressed(Action(UiActions.Next)));
+                Assert.True(nav.OnInputJustPressed(Action(UiActions.Prev)));
+                Assert.Equal(said, spoken.Count);
+            }
+            finally
+            {
+                Speech.Speak = (t, i) => { };
+            }
+        }
+
         [Fact]
         public void EntryReadsContextThenArrowsReadLeaves()
         {

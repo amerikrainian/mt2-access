@@ -653,6 +653,7 @@ namespace MonsterTrainAccessibility.Core.UI
                     ni = ((ni % stops.Count) + stops.Count) % stops.Count;
                 else
                     return true; // at the end; consume, no wrap
+                if (ni == idx) return true; // a single stop wraps onto itself: nothing to move to
             }
             return LandOnStop(stops[ni]);
         }
