@@ -15,48 +15,61 @@ namespace MonsterTrainAccessibility.Module.Screens
     {
         // ---- Enemies ----
 
-        // The lists as tabs (base game, Soul Savior) and the list's filter; the search; the enemies;
-        // the chosen enemy's variants and details.
+        // One stop, top to bottom: the lists as tabs (base game, Soul Savior) with the list's filters
+        // beside them; the enemies as a row, landing on the chosen one; the chosen enemy's variants as a
+        // row; its details. Then the search, a stop of its own (its edit owns the arrows).
         private void Enemies(GraphBuilder b, CompendiumSectionEnemies enemies)
         {
             bool soulSavior = SoulSaviorList(enemies);
-            if (enemies.hasRailforgedDLC)
+            bool tabs = enemies.hasRailforgedDLC;
+            bool filters = Shown(enemies.covenantRankFilterUI) || Shown(enemies.difficultyTierFilterUI);
+            if (tabs || filters)
             {
-                b.StartRow(entry: () => SoulSaviorList(enemies) ? 1 : 0);
-                b.AddItem(ControlId.Structural("logbook:enemies:base"), ListTab(enemies.baseGameButton, () => !SoulSaviorList(enemies)));
-                b.AddItem(ControlId.Structural("logbook:enemies:soulsavior"), ListTab(enemies.railforgedPageButton, () => SoulSaviorList(enemies)));
+                b.StartRow(entry: () => tabs && SoulSaviorList(enemies) ? 1 : 0);
+                if (tabs)
+                {
+                    b.AddItem(ControlId.Structural("logbook:enemies:base"), ListTab(enemies.baseGameButton, () => !SoulSaviorList(enemies)));
+                    b.AddItem(ControlId.Structural("logbook:enemies:soulsavior"), ListTab(enemies.railforgedPageButton, () => SoulSaviorList(enemies)));
+                }
+                FilterNodes.Dropdown(b, "logbook:enemies:covenant", enemies.covenantRankFilterUI);
+                FilterNodes.Dropdown(b, "logbook:enemies:tier", enemies.difficultyTierFilterUI);
                 b.EndRow();
             }
-            FilterNodes.Dropdown(b, "logbook:enemies:covenant", enemies.covenantRankFilterUI);
-            FilterNodes.Dropdown(b, "logbook:enemies:tier", enemies.difficultyTierFilterUI);
+
+            var shown = new List<CharacterButtonUI>();
+            foreach (var enemy in soulSavior ? enemies.railforgedCharacterButtons : enemies.baseGameCharacterButtons)
+                if (enemy != null && enemy.CharacterEntry?.CharacterData != null && enemy.gameObject.activeInHierarchy) shown.Add(enemy);
+            if (shown.Count > 0)
+            {
+                b.PushContext(GameText.Term("Compendium_Section_Enemies"), Strings.RoleList);
+                b.StartRow(entry: () => System.Math.Max(0, shown.FindIndex(e => e.IsChosen)));
+                foreach (var enemy in shown)
+                    b.AddItem(ControlId.Structural("logbook:enemy:" + enemy.CharacterEntry.CharacterData.GetID()), EnemyNodes.Enemy(enemy));
+                b.EndRow();
+                b.PopContext();
+            }
+
+            if (enemies.variantButtonRoot != null && enemies.variantButtonRoot.activeInHierarchy)
+            {
+                var variants = new List<int>();
+                for (int i = 0; i < enemies.variantButtons.Count; i++)
+                    if (enemies.variantButtons[i] != null && enemies.variantButtons[i].gameObject.activeInHierarchy) variants.Add(i);
+                if (variants.Count > 0)
+                {
+                    b.StartRow(entry: () => System.Math.Max(0, variants.IndexOf((int)enemies.selectedTab)));
+                    foreach (int i in variants)
+                        b.AddItem(ControlId.Structural("logbook:enemy:variant:" + i), EnemyNodes.Variant(enemies.variantButtons[i], i));
+                    b.EndRow();
+                }
+            }
+            EnemyNodes.Details(b, "logbook:enemy:details", enemies.characterDataUI);
 
             b.BeginStop("search");
             FilterNodes.Search(b, _enemySearch, enemies.searchFilterUI);
-
-            b.BeginStop("enemies");
-            b.PushContext(GameText.Term("Compendium_Section_Enemies"), Strings.RoleList);
-            foreach (var enemy in soulSavior ? enemies.railforgedCharacterButtons : enemies.baseGameCharacterButtons)
-            {
-                var data = enemy != null ? enemy.CharacterEntry?.CharacterData : null;
-                if (data == null || !enemy.gameObject.activeInHierarchy) continue;
-                b.AddItem(ControlId.Structural("logbook:enemy:" + data.GetID()), EnemyNodes.Enemy(enemy));
-            }
-            b.PopContext();
-
-            b.BeginStop("details");
-            if (enemies.variantButtonRoot != null && enemies.variantButtonRoot.activeInHierarchy)
-            {
-                b.StartRow(entry: () => System.Math.Max(0, (int)enemies.selectedTab));
-                for (int i = 0; i < enemies.variantButtons.Count; i++)
-                {
-                    var variant = enemies.variantButtons[i];
-                    if (variant != null && variant.gameObject.activeInHierarchy)
-                        b.AddItem(ControlId.Structural("logbook:enemy:variant:" + i), EnemyNodes.Variant(variant, i));
-                }
-                b.EndRow();
-            }
-            EnemyNodes.Details(b, "logbook:enemy:details", enemies.characterDataUI);
         }
+
+        // As FilterNodes.Dropdown declares one: shown, with its dropdown.
+        private static bool Shown(DropdownFilterUI filter) => filter != null && filter.dropdown != null && filter.gameObject.activeInHierarchy;
 
         private static bool SoulSaviorList(CompendiumSectionEnemies enemies)
             => enemies.currentScrollRectRootGameObject != null && enemies.railforgedEnemiesScrollRectRoot != null
