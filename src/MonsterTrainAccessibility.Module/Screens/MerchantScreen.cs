@@ -15,7 +15,7 @@ namespace MonsterTrainAccessibility.Module.Screens
     /// A shop (<see cref="global::MerchantScreen"/>): the goods side by side in one row
     /// (<see cref="ShopNodes"/>: what each is, its price, whether the coin covers it), then the services
     /// in a row under them (Purge Card, Re-roll), then Leave. Enter buys through the game, which opens
-    /// what a service needs (the deck to purge from). Escape leaves, as in the game. The run keys (Tab's
+    /// what a service needs (the deck to purge from); a re-roll lands on the new goods. Escape leaves, as in the game. The run keys (Tab's
     /// HUD, Ctrl+G's coin) are live here.
     /// </summary>
     public sealed class MerchantScreen : Screen
@@ -60,6 +60,30 @@ namespace MonsterTrainAccessibility.Module.Screens
                 _ => GameInput.Send(global::InputManager.Controls.Escape));
         }
 
+        private static MerchantGoodUIBase FirstGood()
+        {
+            var container = Game?.content?.GoodsContainer;
+            if (container == null) return null;
+            foreach (Transform child in container.transform)
+            {
+                var good = child.GetComponent<MerchantGoodUIBase>();
+                if (good != null && child.gameObject.activeInHierarchy && good.GoodState != null && !good.Claimed) return good;
+            }
+            return null;
+        }
+
+        // A re-roll done (the shelf's first good another than before): focus to it, read as a landing.
+        // A re-roll the game refused leaves the shelf as it was, and focus where it was.
+        private static void LandOnNewGoods(MerchantGoodState before, int tries)
+        {
+            Later.Frames(1, () =>
+            {
+                var first = FirstGood();
+                if (first != null && first.GoodState != before) Navigation.MoveTo(ControlId.Structural("shop:good:0"));
+                else if (tries > 0) LandOnNewGoods(before, tries - 1);
+            }, "shop: re-roll");
+        }
+
         // The goods, side by side in one row.
         private static void Goods(GraphBuilder b, MerchantScreenContent content)
         {
@@ -81,6 +105,16 @@ namespace MonsterTrainAccessibility.Module.Screens
             for (int i = 0; i < goods.Count; i++)
             {
                 var vt = ShopNodes.Good(goods[i]);
+                if (vt != null && goods[i].GoodState?.RewardData is RerollMerchantRewardData)
+                {
+                    var buy = vt.OnActivate;
+                    vt.OnActivate = () =>
+                    {
+                        var before = FirstGood()?.GoodState;
+                        buy?.Invoke();
+                        LandOnNewGoods(before, 60);
+                    };
+                }
                 if (vt != null) items.Add(new KeyValuePair<ControlId, NodeVtable>(ControlId.Structural("shop:" + key + ":" + (first + i)), vt));
             }
             if (items.Count == 0) return;
