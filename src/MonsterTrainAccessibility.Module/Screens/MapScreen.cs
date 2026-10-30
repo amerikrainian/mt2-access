@@ -60,6 +60,14 @@ namespace MonsterTrainAccessibility.Module.Screens
 
         public override bool IsActive() => Route != null;
 
+        // A map opened again starts its preview over: the cursor holds the stops it walked, whose widgets
+        // a resumed run has replaced, and the same choice in focus would not tell it to.
+        public override void OnPush()
+        {
+            _preview = null;
+            _previewFrom = null;
+        }
+
         public override void Build(GraphBuilder b)
         {
             _choices.Clear();
