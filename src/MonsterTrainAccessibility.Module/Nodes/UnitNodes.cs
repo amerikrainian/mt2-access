@@ -14,7 +14,8 @@ namespace MonsterTrainAccessibility.Module.Nodes
     /// <item>the focus line: its name, then its subtypes ("Steward", the player's units only), size (the
     /// player's units), attack (when it has any, or the pyre's), armor and health ("2 armor, 5 of 8
     /// health"), its statuses with their stacks ("Rage 3"), its equipment ("Windblade"), its
-    /// ability and where it stands ("Quick Strike, ready"), its triggers by keyword ("Slay");</item>
+    /// ability and where it stands ("Quick Strike, ready"), its triggers by keyword ("Slay"), the heal
+    /// it gives after combat by name ("Recover");</item>
     /// <item>the buffer: that line, then a boss's next action ("targets floor 2"), then the game's own
     /// tooltips for the unit (its equipment, statuses, abilities, triggers, the room's effects on it),
     /// one per line, in the game's order (<see cref="CharacterTooltipHelper"/>).</item>
@@ -60,6 +61,7 @@ namespace MonsterTrainAccessibility.Module.Nodes
             parts.AddRange(Equipment(unit));
             Add(parts, Ability(unit));
             parts.AddRange(Triggers(unit));
+            Add(parts, Healer(unit));
             return parts;
         }
 
@@ -127,6 +129,17 @@ namespace MonsterTrainAccessibility.Module.Nodes
                 string keyword = trigger.GetKeywordText();
                 if (!string.IsNullOrWhiteSpace(keyword) && seen.Add(keyword)) yield return keyword;
             }
+        }
+
+        // The heal the unit gives after combat, by the name its tooltip gives it ("Recover", its icon
+        // left out); what it heals is the tooltip's, in the buffer. The game draws it as an ability, never
+        // among the unit's triggers.
+        private static string Healer(CharacterState unit)
+        {
+            var effect = unit.GetHealerEffect();
+            var statuses = StatusEffectManager.Instance;
+            if (effect == null || statuses == null || !TooltipUI.TryGetCharacterHealerContent(effect, statuses, out var content)) return null;
+            return Interop.GameSprites.WithoutEchoedIcons(content.title);
         }
 
         private static List<string> Details(CharacterState unit)

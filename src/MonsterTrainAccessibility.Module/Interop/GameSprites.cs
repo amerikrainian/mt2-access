@@ -261,11 +261,12 @@ namespace MonsterTrainAccessibility.Module.Interop
             }
         }
 
-        // A card effect's name: its tooltip title, else its card text term, else the term itself.
-        // Through GameText, which leaves the term's parse cache to the game's own context.
+        // A card effect's name: its tooltip title, else its card text term, else its name as a unit's
+        // ability (the heal effect is Recover, drawn beside the icon it shares with Rejuvenate), else the
+        // term itself. Through GameText, which leaves the term's parse cache to the game's own context.
         private static string CardEffectName(string id)
         {
-            foreach (string key in new[] { id + "_TooltipTitle", id + "_CardText", id })
+            foreach (string key in new[] { id + "_TooltipTitle", id + "_CardText", "CharacterAbility_" + id + "_CardText", id })
                 if (key.HasTranslation()) return GameText.Term(key);
             return null;
         }
