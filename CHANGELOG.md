@@ -1,5 +1,13 @@
 # Changelog
 
+## V0.3.3
+
+- Fixed the tutorial lockup for draggable cards.
+- Added the before/after/between units terminology, on by default, instead of spawn points.
+- We now do say whether some part of a card was new again, but you can turn this off in settings.
+- We now allow for rebindings of mod keys.
+- Event kinds are back; no more artifact spam! Or well, you can turn it off now.
+
 ## V0.3.2
 
 - We now always show branch choices even if their UI is not active instead of taking the hint from the game, which should prevent mouse mode from interfering.
