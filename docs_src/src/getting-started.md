@@ -1,27 +1,27 @@
 # Getting Started
 
-After installing the mod, launch Monster Train 2. You should hear focus announcements as the game enters its first screen or main menu.
+After installing the mod, launch Monster Train 2. You will hear "Monster Train Accessibility" and its version once the game is up, then the title screen.
 
 ## Basic Navigation
 
-Use arrow keys, the D-pad, or the left stick to move through accessible menus. Use Enter or the controller confirm button to activate focused items. Escape or the controller cancel button backs out of many screens.
+Use the arrow keys, the D-pad or the left stick to move. Enter or A activates the focused control, Escape or B backs out. Tab and Shift+Tab (the bumpers on a controller) move between groups of controls, and typing letters jumps to the matching item in the focused list. The full list is on the [Controls](controls.md) page.
 
-The mod adds its own review and information commands. Press F1 to open context-sensitive help. Press Ctrl+M to open mod settings.
+While the mod's navigation is on, the game hears none of your keys except a few in battle. Ctrl+Shift+A hands the keyboard and controller back to the game, and takes them again.
 
 ## Help
 
-Press F1 to open the help screen. The help screen lists mod actions that are currently available on the active screen. Use up and down to read the help entries. Press F1 again, Escape, Enter, or the usual cancel/confirm input to close it.
-
-Do note that, due to some unfortunate decisions, the mod currently supports only whatever actions it adds beyond the base game. A full listing of keyboard controls for both the mod and the game is included later in the document.
+Press F1 for the keys that do something on the current screen, on the focused control, right now. Move through them with the arrows; Enter on a row runs it. F1 or Escape closes the list.
 
 ## Buffers
 
-Many focused elements have more information than should be spoken every time focus lands on them. The mod puts that extra information into buffers.
+Many controls have more information than should be spoken every time focus lands on them. The mod puts it into buffers, which you read without moving focus: Ctrl+Up and Ctrl+Down step through the lines, Ctrl+Left and Ctrl+Right switch buffers. On a controller, the right stick. See [Buffers](buffers.md).
 
-For example, when focusing a card, the focus announcement can stay concise, while the card buffer contains full card details. Use Ctrl+Up and Ctrl+Down to move through items in the current buffer. Use Ctrl+Left and Ctrl+Right to switch between buffers.
+## The Mod Menu
 
-Controller buffer navigation uses the right stick by default.
+Press Ctrl+Shift+M (LT+Start) for the mod menu:
 
-## Mod Settings
+- **Settings**: whether list items speak their position ("3 of 10"), and whether the mod's navigation is on at launch.
+- **Sounds**: the volume of each sound the mod plays, with a master volume. Left and Right change a volume, Enter plays the sound.
+- **All Keys**: every key the mod has, by category.
 
-Press Ctrl+M to open mod settings. Settings include event announcements, element behavior, and mod keybindings. Keybindings can be changed for keyboard and controller.
+Which game events are announced, and which go to the events buffer, is set per event in the config file, `BepInEx\config\com.accessibility.monstertrain.cfg`, in the game folder.

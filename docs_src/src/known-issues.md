@@ -12,7 +12,7 @@ If the mod does not speak:
    C:\Program Files (x86)\Steam\steamapps\common\Monster Train 2\BepInEx\LogOutput.log
    ```
 
-4. Look for `Monster Train Accessibility ready`.
+4. Look for `Monster Train Accessibility loaded`.
 
 ## Controller Notes
 

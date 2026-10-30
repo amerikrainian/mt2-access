@@ -1,90 +1,100 @@
 # Controls
 
-This page lists both Monster Train 2 game controls and mod-specific controls.
+The mod drives the game itself: while its navigation is on (it is at launch), the game hears none of your keys or controller buttons except the few listed under Game Keys In Battle. Ctrl+Shift+A hands the keyboard and controller back to the game, and takes them again.
 
-Game controls are the native actions exposed by Monster Train 2's own key mapping system. They can be changed in the game's Settings, Key Mapping screen. Mod controls can be changed in the mod settings screen under **Keybindings**.
+Press F1 anywhere for the keys that do something on the current screen, right now. Enter on a row runs it. The mod menu's All Keys lists every key the mod has.
 
-## Game Controls
+On the controller, a trigger is a modifier: LT+A means hold the left trigger and press A. A trigger combination never also fires the button alone.
 
-These defaults come from the game's input setup. Keyboard mappings can be rebound in the game's settings. Gamepad labels are written as Xbox-style names; other controllers may show different button glyphs in game.
+## Navigation
 
-| Game action | Default keyboard | Default controller | Function |
-| --- | --- | --- | --- |
-| Submit | E, Enter | A | Activate, play, or confirm the focused game item |
-| Close | Q, Backspace | B | Close the current panel or back out of some UI |
-| Cancel | Escape | B | Cancel or back out |
-| Settings | Escape | Start | Open settings or pause-style menu where available |
-| Left | Left Arrow, A | Left Stick Left, D-pad Left | Move left |
-| Right | Right Arrow, D | Left Stick Right, D-pad Right | Move right |
-| Up | Up Arrow, W | Left Stick Up, D-pad Up | Move up |
-| Down | Down Arrow, S | Left Stick Down, D-pad Down | Move down |
-| Deselect | Right Mouse | Unbound | Deselect or cancel selected item in pointer-style UI |
-| Scroll up | Page Up | Right Stick Up | Scroll upward |
-| Scroll down | Page Down | Right Stick Down | Scroll downward |
-| Scroll left | Page Up | Right Stick Left | Scroll left in horizontal scrollers |
-| Scroll right | Page Down | Right Stick Right | Scroll right in horizontal scrollers |
-| Home | Home | Unbound | Jump to the start where supported |
-| End | End | Unbound | Jump to the end where supported |
-| Deck | Z | Back | Open deck |
-| Draw pile | X | Unbound | Open draw pile |
-| Consume pile | V | Unbound | Open consume pile |
-| Discard pile | C | Unbound | Open discard pile |
-| Minimap | M | Right Bumper | Open or focus minimap where available |
-| Context action | F | X | Context-specific action |
-| Access HUD | Tab | Y | Open the HUD overlay |
-| Show card preview | Right Mouse, L | Right Trigger | Show card preview or alternate card view |
-| Card 1 | 1 | Unbound | Select card slot 1 |
-| Card 2 | 2 | Unbound | Select card slot 2 |
-| Card 3 | 3 | Unbound | Select card slot 3 |
-| Card 4 | 4 | Unbound | Select card slot 4 |
-| Card 5 | 5 | Unbound | Select card slot 5 |
-| Card 6 | 6 | Unbound | Select card slot 6 |
-| Card 7 | 7 | Unbound | Select card slot 7 |
-| Card 8 | 8 | Unbound | Select card slot 8 |
-| Card 9 | 9 | Unbound | Select card slot 9 |
-| Card 10 | 0 | Unbound | Select card slot 10 |
-| Ludicrous mode | Right Mouse | Unbound | Hold/toggle fast interaction mode where the game supports it |
-| Game speed toggle | N | Left Bumper | Toggle game speed |
-| Feedback | F8 | Unbound | Open feedback |
-| Mute | Unbound | Unbound | Mute toggle if bound |
-| Advance dialogue | Space, Enter | A | Advance dialogue |
-| Skip dialogue | Unbound | B | Skip dialogue if the screen supports it |
-| Secondary tooltips | Left Alt, Right Alt | Left Trigger | Show secondary tooltips |
-| Undo | U | Unbound | Undo turn or undo supported action |
-| Dragon's Hoard | H | Right Stick Click | Open Dragon's Hoard where available |
-| Previous page | O | Left Trigger | Previous page |
-| Next page | P | Right Trigger | Next page |
-
-## Mod Actions
-
-| Action | Default keyboard | Default controller | Function |
-| --- | --- | --- | --- |
-| Help | F1 | LT+Back | Open context-sensitive help |
-| Mod settings | Ctrl+M | LT+Start | Open mod settings |
+| Action | Keyboard | Controller |
+| --- | --- | --- |
+| Move | Arrow keys | D-pad, left stick |
+| Activate | Enter | A |
+| Secondary action | Backspace | X |
+| Back | Escape | B |
+| Next control group | Tab | Right bumper |
+| Previous control group | Shift+Tab | Left bumper |
+| First item | Home | LT+D-pad Up |
+| Last item | End | LT+D-pad Down |
+| Previous section | Alt+Up | RT+D-pad Up |
+| Next section | Alt+Down | RT+D-pad Down |
+| Previous page (the Logbook) | Page Up | RT+D-pad Left |
+| Next page (the Logbook) | Page Down | RT+D-pad Right |
+| Search the focused list | Type letters | None |
 
 ## Buffers
 
-| Action | Default keyboard | Default controller | Function |
-| --- | --- | --- | --- |
-| Previous buffer item | Ctrl+Up | Right Stick Up | Move to the previous item in the current buffer |
-| Next buffer item | Ctrl+Down | Right Stick Down | Move to the next item in the current buffer |
-| Previous buffer | Ctrl+Left | Right Stick Left | Switch to the previous available buffer |
-| Next buffer | Ctrl+Right | Right Stick Right | Switch to the next available buffer |
+| Action | Keyboard | Controller |
+| --- | --- | --- |
+| Next line | Ctrl+Up | Right stick up |
+| Previous line | Ctrl+Down | Right stick down |
+| Next buffer | Ctrl+Right | Right stick right |
+| Previous buffer | Ctrl+Left | Right stick left |
 
-The current focused item is at the Ctrl+Down side of a buffer. Pressing Ctrl+Down from the starting point reads the current/top buffer item.
+On the run's map these keys preview the route instead; see [Map And Travel](map-and-travel.md).
 
-## Run And Combat Information
+## Mod Keys
 
-| Action | Default keyboard | Default controller | Function |
-| --- | --- | --- | --- |
-| Read gold | Ctrl+G | RT+A | Speak current gold |
-| Read Pyre health | Ctrl+H | LT+A | Speak current Pyre health |
-| Read ember | R | LT+X | Speak current ember |
-| Read forge points | Ctrl+R | RT+X | Speak current forge points |
-| Read unit outcome | I | RT+Y | Speak the currently focused unit outcome |
-| Read floor outcomes | Ctrl+I | RT+B | Speak outcomes for the currently focused floor |
-| Read all floor outcomes | Ctrl+Shift+I | LT+Y | Speak outcomes for every floor |
-| Read floor capacity and charged echoes | B | LT+B | Speak focused floor capacity and charged echoes |
-| Read all floor capacity and charged echoes | Shift+B | RT+D-pad Up | Speak capacity and charged echoes for every floor |
-| Jump to hand | G | Unbound by default | Move focus back to the hand in combat |
+| Action | Keyboard | Controller |
+| --- | --- | --- |
+| Keys here (the key help) | F1 | LT+Back |
+| Mod menu | Ctrl+Shift+M | LT+Start |
+| Turn the mod's navigation off or on | Ctrl+Shift+A | RT+Back |
 
+## In A Run
+
+| Action | Keyboard | Controller |
+| --- | --- | --- |
+| Run info (the game's HUD) | The game's Access HUD key, Tab by default | Y |
+| Read coin | Ctrl+G | RT+A |
+| Read pyre health | Ctrl+H | LT+A |
+
+Run info replaces Tab's control group cycling while a run is on screen; Shift+Tab and the bumpers still cycle.
+
+## In Battle
+
+| Action | Keyboard | Controller |
+| --- | --- | --- |
+| Read ember | R | LT+X |
+| Read forge points | Ctrl+R | RT+X |
+| Read moon phase | P | RT+D-pad Down |
+| Read the focused unit's outcome | I | RT+Y |
+| Read the focused floor's outcomes | Ctrl+I | RT+B |
+| Read every floor's outcomes | Ctrl+Shift+I | LT+Y |
+| Read the focused floor's capacity | B | LT+B |
+| Read every floor's capacity | Shift+B | RT+D-pad Up |
+| Jump to the top panel | Shift+Up | None |
+| Jump to the hand | Shift+Down | None |
+| Read card 1 to 10 | Shift with the game's Card 1 to Card 10 keys (Shift+1 to Shift+0 by default) | None |
+| Go to floor 1 to 9 | Ctrl+1 to Ctrl+9 | None |
+
+In battle, RT+D-pad Up and RT+D-pad Down read capacity and the moon phase instead of jumping sections.
+
+## Game Keys In Battle
+
+In battle the game still hears its own keys for these actions, as bound in its Key Mapping screen. A key only passes to the game held without Ctrl, Shift or Alt, and only when the mod does not use it bare: R, P, I and B stay the mod's.
+
+| Game action | Default key |
+| --- | --- |
+| Undo | U |
+| Draw pile | X |
+| Discard pile | C |
+| Consume pile | V |
+| Eaten pile | B, which the mod uses; bind another key to reach it |
+| Deck | Z |
+| Context action (End Turn) | F |
+| Game speed | N |
+| Minimap | M |
+| Dragon's Hoard | H |
+| Card preview | L |
+| Card 1 to Card 10 | 1 to 0 |
+
+The controller has no game buttons in battle: everything the game would do on a button is a control on screen (End Turn and Undo are in the top panel).
+
+## Text Fields
+
+The Logbook's search fields are edited with the game's own editor, started when you land on one; the mod's keys stand aside while you type. Enter or Escape ends the edit and keeps focus there (Enter edits again); Tab, Shift+Tab, Up and Down end it and move on. On the controller, the bumpers, the D-pad, the left stick and B end it the same way.
+
+When the game's Key Mapping screen waits for a key, the next key you press goes to the game, not the mod.

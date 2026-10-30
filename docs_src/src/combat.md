@@ -67,6 +67,17 @@ The same pattern holds for your and enemy units; only key pieces of information 
 
 Floors can also be navigated with left/right arrows. They expose the full lineup of creatures, yours and otherwise, with your and the enemy's backliners on the edges. In other words, the unit that is most likely to be attacked next turn is adjacent to the first enemy unit within the list from left-to-right.
 
+A unit's line names its equipment, if it carries any. A short beep plays when moving along a floor takes you from your units to the enemy's (a higher tone) or back (a lower one).
+
+## Moving Around
+
+- Up and Down move between the hand, the floors and the top panel, landing where you last were on each.
+- Home and End go to the first and last item of the row you are on.
+- Shift+Down jumps to the hand, Shift+Up to the top panel.
+- Ctrl+1 to Ctrl+4 go to that floor.
+- Shift with a card's key (Shift+1 to Shift+0 by default) reads that card without moving to it.
+- The bare card keys, 1 to 0, are the game's own, as are U to undo and F to end the turn; see [Controls](controls.md) for every game key the battle lets through.
+
 ## Resources
 
 These are listed in [Controls](controls.md) but are repeated here for your convenience. Keep in mind that these are mod-provided and that the game may have more, e.g., `F` to end turn.
@@ -75,6 +86,8 @@ These are listed in [Controls](controls.md) but are repeated here for your conve
 - Ctrl+R: read forge points.
 - Ctrl+G: read gold.
 - Ctrl+H: read pyre health.
+- P: read the moon phase.
+- B: read the focused floor's capacity; Shift+B every floor's.
 
 ## Outcomes
 
