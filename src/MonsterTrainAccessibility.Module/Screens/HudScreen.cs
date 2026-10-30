@@ -73,7 +73,7 @@ namespace MonsterTrainAccessibility.Module.Screens
             if (Shown(hud.deckButton))
                 b.AddItem(Id("deck"), Leaving(HudNodes.Count(hud.deckButton, "HudTooltip_Deck_Title", hud.deckButton.GetComponent<GameUISelectableButton>())));
             if (Shown(hud.dragonsHoardUI)) b.AddItem(Id("hoard"), Leaving(HudNodes.Count(hud.dragonsHoardUI, "HudTooltip_DragonsHoard_Title", hud.dragonsHoardButton)));
-            if (Shown(hud.forgePointsUI)) b.AddItem(Id("forge"), HudNodes.Count(hud.forgePointsUI, "HudTooltip_ForgePoints_Title", hud.forgePointsUI.forgeButton));
+            if (Shown(hud.forgePointsUI)) b.AddItem(Id("forge"), HudNodes.ForgePoints(hud.forgePointsUI));
             Line(b, "clans", hud.classesUI);
             if (Shown(hud.covenantUI)) b.AddItem(Id("covenant"), StartingConditionsNodes.Covenant(hud.covenantUI));
             Line(b, "difficulty", hud.difficultyTierUI);

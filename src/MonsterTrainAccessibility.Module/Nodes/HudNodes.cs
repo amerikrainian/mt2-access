@@ -43,6 +43,27 @@ namespace MonsterTrainAccessibility.Module.Nodes
             return vt;
         }
 
+        /// <summary>"Forge Points, toggle, 2, off": the battle's forge points and whether the next card
+        /// played spends them. Enter flips it through the game, as its key does; the new state is
+        /// spoken by <see cref="Combat.ForgeToggle"/>, which hears both.</summary>
+        public static NodeVtable ForgePoints(ForgePointsUI forge)
+        {
+            Func<string> label = () => GameText.Term("HudTooltip_ForgePoints_Title")?.Trim();
+            return new NodeVtable
+            {
+                ControlType = ControlTypes.Toggle,
+                Announcements = new List<NodeAnnouncement>
+                {
+                    GameNodes.LabelPart(label),
+                    new NodeAnnouncement(() => Drawn(forge), kind: AnnouncementKinds.Value),
+                    new NodeAnnouncement(() => Combat.ForgeToggle.State(), kind: AnnouncementKinds.Value),
+                },
+                SearchText = label,
+                OnActivate = () => GameInput.Submit(forge.forgeButton),
+                Details = () => GameNodes.Lines(TooltipReader.Lines(forge)),
+            };
+        }
+
         /// <summary>"Game Speed, button, Current speed: Ultra": a toggle the game names in its tooltip.</summary>
         public static NodeVtable Tooltipped(Component widget, IGameUIComponent press)
         {

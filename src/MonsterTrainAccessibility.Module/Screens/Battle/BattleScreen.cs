@@ -20,7 +20,7 @@ namespace MonsterTrainAccessibility.Module.Screens
     /// <summary>
     /// A battle (<see cref="GameScreen"/>), laid out as the train is, top to bottom, one row each:
     /// <list type="bullet">
-    /// <item>the top panel: ember, the piles, the units' abilities, the battle's line and the moon,
+    /// <item>the top panel: ember, the forge points (a toggle), the piles, the units' abilities, the battle's line and the moon,
     /// undo and end turn, each by the game's own name for it;</item>
     /// <item>each floor from the pyre's down, named on entering ("Floor 2, 3/5, Training Ground"): its
     /// units left to right as drawn (<see cref="UnitNodes"/>), "No creatures" when it has none;</item>
@@ -407,9 +407,12 @@ namespace MonsterTrainAccessibility.Module.Screens
         private void TopPanel(GraphBuilder b, BattleHud hud)
         {
             var items = new List<KeyValuePair<ControlId, NodeVtable>>();
+            var top = GameScreens.Active<global::Hud>(global::ScreenName.Hud);
+            if (hud != null) Counter(items, "ember", hud.energyUI, hud.energyUI != null ? hud.energyUI.count : null, null, hud.energyIncreaseUI);
+            // The run's HUD holds the forge points, shown in a battle once a card can forge.
+            if (top != null && Shown(top.forgePointsUI)) items.Add(Item("top:forge", HudNodes.ForgePoints(top.forgePointsUI)));
             if (hud != null)
             {
-                Counter(items, "ember", hud.energyUI, hud.energyUI != null ? hud.energyUI.count : null, null, hud.energyIncreaseUI);
                 Pile(items, "draw", hud.deckUI, hud.cardIncreaseUI);
                 Pile(items, "discard", hud.discardUI, null);
                 Pile(items, "consume", hud.exhaustedUI, null);
@@ -417,7 +420,6 @@ namespace MonsterTrainAccessibility.Module.Screens
                 var abilities = hud.abilityCounterUI;
                 if (Shown(abilities)) Counter(items, "abilities", abilities, abilities.countLabel, abilities.Button, null);
             }
-            var top = GameScreens.Active<global::Hud>(global::ScreenName.Hud);
             if (top != null)
             {
                 Turn(items, top.battleTurnCounter);

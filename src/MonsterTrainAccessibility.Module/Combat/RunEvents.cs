@@ -52,6 +52,28 @@ namespace MonsterTrainAccessibility.Module.Combat
     }
 
     /// <summary>
+    /// The forge toggle's new state, "on" or "off", when the player flips it: its key (the game's
+    /// Dragon's Hoard key, passed through in a battle) or Enter on its line. The game flips it in
+    /// <c>SaveManager.ToggleForgeActive</c> for the player alone (a card or a replay sets it directly),
+    /// and says nothing but a sound.
+    /// </summary>
+    [HarmonyPatch(typeof(SaveManager), nameof(SaveManager.ToggleForgeActive))]
+    internal static class ForgeToggle
+    {
+        public static string State()
+        {
+            var save = AllGameManagers.Instance != null ? AllGameManagers.Instance.GetSaveManager() : null;
+            return save != null && save.IsForgeToggleActive() ? Strings.StateOn : Strings.StateOff;
+        }
+
+        private static void Postfix()
+        {
+            try { Speech.Say(State(), interrupt: true); }
+            catch (System.Exception e) { CoreLog.Warning("forge toggle: " + e.Message); }
+        }
+    }
+
+    /// <summary>
     /// The units' chatter as the game shows it in their speech bubbles ("Fel summoned, "..."), to the
     /// monster quotes buffer (spoken only when the player turns a kind on). The game picks the line and
     /// its reason in <c>Chatter.DisplayChatter</c>, which hands it straight to a bubble; the reason a
