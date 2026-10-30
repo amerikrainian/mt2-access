@@ -134,9 +134,6 @@ namespace MonsterTrainAccessibility.Core.Strings
             D("card.attack", "{0} attack"),
             D("card.health", "{0} health"),
             D("card.size", "size {0}"),
-            // What an upgrade adds to a card's text, which the game draws in its upgrade colour; {0} = that
-            // text ("new: Ability: Savior.").
-            D("card.upgraded", "new: {0}"),
             // The soul attached to a card in a Soul Savior run ({0} = its name).
             D("card.soul_attached", "{0} attached"),
             // The Logbook. An enemy's numbers beside their icons ({0} = the number), its variant buttons
@@ -601,7 +598,6 @@ namespace MonsterTrainAccessibility.Core.Strings
         public static string CardAttack(string value) => F("card.attack", value);
         public static string CardHealth(string value) => F("card.health", value);
         public static string CardSize(string value) => F("card.size", value);
-        public static string CardUpgraded(string text) => F("card.upgraded", text);
         public static string CardSoulAttached(string soul) => F("card.soul_attached", soul);
 
         public static string PyreAttack(string value) => F("pyre.attack", value);

@@ -138,7 +138,6 @@ bind.map.prev=上一个路线选项
 bind.map.next=下一个路线选项
 bind.run.hud=本局信息
 mod.category.map=地图
-card.upgraded=新增: {0}
 card.soul_attached=已附身：{0}
 hoard.level={0}级
 state.current=当前

@@ -260,41 +260,9 @@ namespace MonsterTrainAccessibility.Module.Nodes
             return m.Success ? text.Substring(m.Index + m.Length) : text;
         }
 
-        // The card text as drawn, with what an upgrade adds marked ("Multistrike 1. new: Ability:
-        // Savior."): the game draws it in the card's upgrade colour (CardUI.UpdateUpgradeHighlightText),
-        // which speech cannot carry. A colour nested inside the span (an X cost's) does not end it.
+        // The card text as drawn.
         private static string Text(CardUI card)
-        {
-            string text = Shown(card._cardFrame != null ? card._cardFrame.cardTextLabel : null);
-            if (text == null) return null;
-            string open = "<color=#" + ShinyShoe.ColorUtil.ToHtmlStringRGBACached(card.upgradedTextColor) + ">";
-            var sb = new System.Text.StringBuilder();
-            int at = 0;
-            while (true)
-            {
-                int start = text.IndexOf(open, at, StringComparison.OrdinalIgnoreCase);
-                if (start < 0) break;
-                int end = SpanEnd(text, start + open.Length);
-                if (end < 0) break;
-                sb.Append(text, at, start - at);
-                sb.Append(Strings.CardUpgraded(text.Substring(start + open.Length, end - start - open.Length)));
-                at = end + "</color>".Length;
-            }
-            sb.Append(text, at, text.Length - at);
-            return sb.ToString();
-        }
-
-        // Where the colour span opened before `from` closes: the "</color>" that balances it.
-        private static int SpanEnd(string text, int from)
-        {
-            int depth = 1;
-            for (int i = from; i < text.Length; i++)
-            {
-                if (string.Compare(text, i, "<color", 0, 6, StringComparison.OrdinalIgnoreCase) == 0) depth++;
-                else if (string.Compare(text, i, "</color>", 0, 8, StringComparison.OrdinalIgnoreCase) == 0 && --depth == 0) return i;
-            }
-            return -1;
-        }
+            => Shown(card._cardFrame != null ? card._cardFrame.cardTextLabel : null);
 
         private static void Add(List<string> parts, string value, Func<string, string> format)
         {

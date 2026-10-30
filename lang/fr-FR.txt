@@ -138,7 +138,6 @@ bind.map.prev=Choix de route précédent
 bind.map.next=Choix de route suivant
 bind.run.hud=Infos de la partie
 mod.category.map=Carte
-card.upgraded=nouveau : {0}
 card.soul_attached={0} attachée
 hoard.level=Niveau {0}
 state.current=actuel

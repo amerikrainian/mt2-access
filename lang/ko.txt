@@ -138,7 +138,6 @@ bind.map.prev=이전 경로 선택지
 bind.map.next=다음 경로 선택지
 bind.run.hud=런 정보
 mod.category.map=지도
-card.upgraded=추가: {0}
 card.soul_attached={0} 부착됨
 hoard.level=레벨 {0}
 state.current=현재

@@ -138,7 +138,6 @@ bind.map.prev=前のルート選択肢
 bind.map.next=次のルート選択肢
 bind.run.hud=ラン情報
 mod.category.map=マップ
-card.upgraded=追加: {0}
 card.soul_attached={0}付属済み
 hoard.level=レベル {0}
 state.current=現在

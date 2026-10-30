@@ -138,7 +138,6 @@ bind.map.prev=Escolha de rota anterior
 bind.map.next=Próxima escolha de rota
 bind.run.hud=Informações da partida
 mod.category.map=Mapa
-card.upgraded=novo: {0}
 card.soul_attached={0} acoplada
 hoard.level=Nível {0}
 state.current=atual

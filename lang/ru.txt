@@ -138,7 +138,6 @@ bind.map.prev=Предыдущий вариант маршрута
 bind.map.next=Следующий вариант маршрута
 bind.run.hud=Сведения о забеге
 mod.category.map=Карта
-card.upgraded=новое: {0}
 card.soul_attached={0} привязана
 hoard.level=Уровень {0}
 state.current=текущий
