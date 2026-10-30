@@ -12,9 +12,9 @@ namespace MonsterTrainAccessibility.Module.Interop
     /// tooltip) as words, so nothing the game shows is lost when the speech filter strips the markup.
     /// An icon the game names reads by the game's own name, live in its current language: a status
     /// effect's icon by the status's name, a trigger's by its keyword, a card effect's by its tooltip
-    /// title; the coin by the HUD's name for it ("Coin"). The few icons the game never names (ember,
-    /// attack, health, X cost...) read by the mod's
-    /// <c>icon.*</c> strings, ahead of the game's tables. An icon neither knows is logged once and read by
+    /// title; the coin by the HUD's name for it ("Coin"); a key a tutorial draws by the game's name for
+    /// the key ("Up Arrow"). The few icons the game never names (ember, attack, health, X cost, a pad
+    /// button...) read by the mod's <c>icon.*</c> strings, ahead of the game's tables. An icon neither knows is logged once and read by
     /// its own name, spelled out (Core's <see cref="Speech.SpriteName"/>).
     /// Core's <see cref="Speech.IconWords"/> seam, so every spoken line and buffer line passes through it.
     /// </summary>
@@ -205,8 +205,60 @@ namespace MonsterTrainAccessibility.Module.Interop
                     }
                 }
             }
+            AddControlGlyphs(named);
             _named = named;
             return _named;
+        }
+
+        // The game's control icons (a tutorial's "Press [Up]"), from its own table of them: a key by the
+        // game's name for it ("Up Arrow"), a pad button by the mod's.
+        private static void AddControlGlyphs(Dictionary<string, List<Func<string>>> named)
+        {
+            var images = global::InputManager.Inst != null ? global::InputManager.Inst._controlMapImages : null;
+            if (images == null)
+            {
+                CoreLog.Warning("GameSprites: the game has no control icon table; key icons read by their own names");
+                return;
+            }
+            if (images._keyboardButtons != null)
+            {
+                foreach (var key in images._keyboardButtons)
+                {
+                    var code = key.key;
+                    AddGlyph(named, key.spriteNameInAtlas, () => ShinyShoe.KeyCodeExtensions.GetLocalizedDisplayName(code));
+                }
+            }
+            if (images._gamepadImages == null) return;
+            foreach (var set in images._gamepadImages)
+            {
+                if (set?.buttons == null) continue;
+                foreach (var button in set.buttons)
+                {
+                    string word = PadButtonWord(set.product, button.button);
+                    if (word != null) AddGlyph(named, button.spriteNameInAtlas, () => Strings.Icon(word));
+                }
+            }
+        }
+
+        private static void AddGlyph(Dictionary<string, List<Func<string>>> named, string sprite, Func<string> name)
+        {
+            if (string.IsNullOrWhiteSpace(sprite)) return;
+            if (!named.TryGetValue(sprite, out var names)) named[sprite] = names = new List<Func<string>>();
+            names.Add(name);
+        }
+
+        // The icon key of a pad button the game draws in text; null for one it never draws.
+        private static string PadButtonWord(ShinyShoe.GamepadIconSet set, ShinyShoe.GamepadButton button)
+        {
+            switch (button)
+            {
+                case ShinyShoe.GamepadButton.DpadUp: return "dpad_up";
+                case ShinyShoe.GamepadButton.DpadDown: return "dpad_down";
+                case ShinyShoe.GamepadButton.DpadLeft: return "dpad_left";
+                case ShinyShoe.GamepadButton.DpadRight: return "dpad_right";
+                case ShinyShoe.GamepadButton.Action1: return set == ShinyShoe.GamepadIconSet.Ps5 ? "pad_cross" : "pad_a";
+                default: return null;
+            }
         }
 
         // A card effect's name: its tooltip title, else its card text term, else the term itself.

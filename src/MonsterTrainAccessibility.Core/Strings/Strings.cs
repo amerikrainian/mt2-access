@@ -129,6 +129,14 @@ namespace MonsterTrainAccessibility.Core.Strings
             D("icon.ability", "ability"),
             D("icon.charged_echo", "charged echo"),
             D("icon.charged_echo_slot", "charged echo slot"),
+            // The pad buttons a tutorial draws as icons ("Press [D-pad Down] now"); the keys read by the
+            // game's own names for them.
+            D("icon.dpad_up", "D-pad Up"),
+            D("icon.dpad_down", "D-pad Down"),
+            D("icon.dpad_left", "D-pad Left"),
+            D("icon.dpad_right", "D-pad Right"),
+            D("icon.pad_a", "A"),
+            D("icon.pad_cross", "Cross"),
             // A card's numbers, which its face shows beside icons; {0} = the number as drawn.
             D("card.cost", "cost {0}"),
             D("card.attack", "{0} attack"),
