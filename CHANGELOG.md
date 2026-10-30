@@ -1,5 +1,10 @@
 # Changelog
 
+## V0.3.2
+
+- We now always show branch choices even if their UI is not active instead of taking the hint from the game, which should prevent mouse mode from interfering.
+- We no longer say the word new on cards if their value changed.
+
 ## V0.3.1
 
 The mod has been rebuilt from the ground up. We expect some regressions, though not too many. Most things should read the same. Some notable highlights.
