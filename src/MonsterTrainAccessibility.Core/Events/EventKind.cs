@@ -68,6 +68,39 @@ namespace MonsterTrainAccessibility.Core.Events
         public bool Announces(ISettingsStore store) => store == null ? AnnounceDefault : store.GetBool(AnnounceKey, AnnounceDefault);
         public bool Buffers(ISettingsStore store) => store == null ? BufferDefault : store.GetBool(BufferKey, BufferDefault);
 
+        // ---- items: one artifact of Artifact triggered, set apart from the kind's own settings ----
+
+        /// <summary>The store keys of the kind's items set apart from its own settings: the items not
+        /// spoken, and the items kept out of the log, each a ';'-separated list of item ids (an artifact's
+        /// asset name). Only the exceptions are kept, so an item never set apart (a mod's new artifact)
+        /// follows the kind.</summary>
+        public string SilencedKey => "events." + Key + ".items.silenced";
+        public string UnloggedKey => "events." + Key + ".items.unbuffered";
+
+        /// <summary>Whether an event about the item is spoken, as far as the item goes (the kind's own
+        /// Announce still applies); true for no item.</summary>
+        public bool ItemAnnounces(ISettingsStore store, string item) => item == null || store == null || !Items(store, SilencedKey).Contains(item);
+
+        /// <summary>Whether an event about the item goes to the log, as far as the item goes.</summary>
+        public bool ItemBuffers(ISettingsStore store, string item) => item == null || store == null || !Items(store, UnloggedKey).Contains(item);
+
+        public void SetItemAnnounces(ISettingsStore store, string item, bool on) => SetItem(store, SilencedKey, item, !on);
+        public void SetItemBuffers(ISettingsStore store, string item, bool on) => SetItem(store, UnloggedKey, item, !on);
+
+        private static HashSet<string> Items(ISettingsStore store, string key)
+            => new HashSet<string>((store.GetString(key, "") ?? "").Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries), StringComparer.Ordinal);
+
+        private static void SetItem(ISettingsStore store, string key, string item, bool listed)
+        {
+            if (store == null || string.IsNullOrEmpty(item)) return;
+            var items = Items(store, key);
+            if (listed) items.Add(item);
+            else items.Remove(item);
+            var sorted = new List<string>(items);
+            sorted.Sort(StringComparer.Ordinal);
+            store.SetString(key, string.Join(";", sorted));
+        }
+
         /// <summary>Whether an event on this side passes the kind's source filter.</summary>
         public bool Passes(ISettingsStore store, EventSide side)
         {

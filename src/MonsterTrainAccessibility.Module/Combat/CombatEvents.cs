@@ -343,7 +343,7 @@ namespace MonsterTrainAccessibility.Module.Combat
             string key = relic.GetRelicDataID() + "|" + effect?.GetType().FullName + "|" + combat?.GetCombatPhase() + "|" + _turn + "|" + _turnModifier;
             if (!_relicsThisTurn.Add(key)) return;
             string name = relic.GetName();
-            if (!string.IsNullOrWhiteSpace(name)) GameEvents.Raise(EventKinds.RelicTriggered, Strings.Event("relic_triggered", name), EventSide.Friendly);
+            if (!string.IsNullOrWhiteSpace(name)) GameEvents.Raise(EventKinds.RelicTriggered, Strings.Event("relic_triggered", name), EventSide.Friendly, relic.GetAssetName());
         }
     }
 }

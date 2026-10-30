@@ -458,6 +458,9 @@ namespace MonsterTrainAccessibility.Core.Strings
             D("event_group.resources", "Resources"),
             D("event_group.chatter", "Chatter"),
             D("event_group.other", "Other"),
+            // Artifact triggered's list of relics: the run's own, and what trials do to the enemies.
+            D("relics.this_run", "This run"),
+            D("relics.trials", "Trials"),
         };
 
         private static readonly Dictionary<string, string> _defaults = BuildDefaults();
@@ -736,5 +739,7 @@ namespace MonsterTrainAccessibility.Core.Strings
         public static string EventFriendly => Get("event_settings.friendly");
         public static string EventEnemy => Get("event_settings.enemy");
         public static string EventGroup(string group) => Get("event_group." + (group ?? "").ToLowerInvariant());
+        public static string RelicsThisRun => Get("relics.this_run");
+        public static string RelicsTrials => Get("relics.trials");
     }
 }

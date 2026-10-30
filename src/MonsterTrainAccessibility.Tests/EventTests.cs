@@ -119,6 +119,56 @@ namespace MonsterTrainAccessibility.Tests
         }
 
         [Fact]
+        public void AnItemSetApartIsSilencedOrUnloggedOnItsOwnUnderItsKind()
+        {
+            var spoken = new List<string>();
+            var store = new StringStore();
+            Speech.Speak = (t, i) => spoken.Add(t);
+            GameEvents.Store = () => store;
+            GameEvents.Suppressed = () => false;
+            GameEvents.Events.Clear();
+            var kind = EventKinds.RelicTriggered;
+            try
+            {
+                kind.SetItemAnnounces(store, "Shardsoul", false);
+                kind.SetItemBuffers(store, "Imp-cicle", false);
+                Assert.Equal("Shardsoul", store.GetString(kind.SilencedKey, ""));
+                GameEvents.Raise(kind, "Shardsoul triggered.", EventSide.Friendly, "Shardsoul");
+                GameEvents.Raise(kind, "Imp-cicle triggered.", EventSide.Friendly, "Imp-cicle");
+                GameEvents.Raise(kind, "Gel Transfusor triggered.", EventSide.Friendly, "Gel");
+                GameEvents.Flush();
+                Assert.Equal(new[] { "Imp-cicle triggered.", "Gel Transfusor triggered." }, spoken);
+                Assert.Equal(new[] { "Gel Transfusor triggered.", "Shardsoul triggered." }, GameEvents.Events.Lines);
+
+                // The kind's own setting still rules: an item never set apart follows it.
+                store.SetBool(kind.AnnounceKey, false);
+                GameEvents.Raise(kind, "Gel Transfusor triggered.", EventSide.Friendly, "Gel");
+                GameEvents.Flush();
+                Assert.Equal(2, spoken.Count);
+
+                kind.SetItemAnnounces(store, "Shardsoul", true);
+                Assert.Equal("", store.GetString(kind.SilencedKey, ""));
+            }
+            finally
+            {
+                Speech.Speak = (t, i) => { };
+                GameEvents.Store = () => null;
+                GameEvents.Events.Clear();
+            }
+        }
+
+        private sealed class StringStore : ISettingsStore
+        {
+            private readonly Dictionary<string, object> _values = new Dictionary<string, object>();
+            public bool GetBool(string key, bool defaultValue) => _values.TryGetValue(key, out var v) ? (bool)v : defaultValue;
+            public void SetBool(string key, bool value) => _values[key] = value;
+            public int GetInt(string key, int defaultValue) => defaultValue;
+            public void SetInt(string key, int value) { }
+            public string GetString(string key, string defaultValue) => _values.TryGetValue(key, out var v) ? (string)v : defaultValue;
+            public void SetString(string key, string value) => _values[key] = value;
+        }
+
+        [Fact]
         public void EveryKindHasALabelAndAGroupTheSettingsList()
         {
             foreach (var kind in EventKinds.All)

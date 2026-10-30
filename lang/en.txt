@@ -311,3 +311,5 @@ event_group.units=Units
 event_group.resources=Resources
 event_group.chatter=Chatter
 event_group.other=Other
+relics.this_run=This run
+relics.trials=Trials

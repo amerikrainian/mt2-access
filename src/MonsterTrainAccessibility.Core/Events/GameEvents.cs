@@ -47,6 +47,7 @@ namespace MonsterTrainAccessibility.Core.Events
             public EventKind Kind;
             public string Text;
             public EventSide Side;
+            public string Item;
         }
 
         private static readonly List<Pending> _pending = new List<Pending>();
@@ -64,10 +65,12 @@ namespace MonsterTrainAccessibility.Core.Events
         /// nothing but its turn and phase).</summary>
         public static Func<EventKind, bool> Muted = _ => false;
 
-        public static void Raise(EventKind kind, string text, EventSide side = EventSide.None)
+        /// <summary>An event to speak and log at the next flush. <paramref name="item"/> is what it is
+        /// about, for a kind whose items are set one by one (an artifact's asset name), or null.</summary>
+        public static void Raise(EventKind kind, string text, EventSide side = EventSide.None, string item = null)
         {
             if (kind == null || string.IsNullOrWhiteSpace(text) || Muted(kind)) return;
-            _pending.Add(new Pending { Kind = kind, Text = text, Side = side });
+            _pending.Add(new Pending { Kind = kind, Text = text, Side = side, Item = item });
         }
 
         /// <summary>Speak and log everything raised since the last flush, in order.</summary>
@@ -81,8 +84,8 @@ namespace MonsterTrainAccessibility.Core.Events
             foreach (var e in batch)
             {
                 if (!e.Kind.Passes(store, e.Side)) continue;
-                if (e.Kind.Buffers(store)) (e.Kind.Log == EventLogKind.Quotes ? Quotes : Events).Add(e.Text);
-                if (!suppressed && e.Kind.Announces(store)) Speech.Say(e.Text);
+                if (e.Kind.Buffers(store) && e.Kind.ItemBuffers(store, e.Item)) (e.Kind.Log == EventLogKind.Quotes ? Quotes : Events).Add(e.Text);
+                if (!suppressed && e.Kind.Announces(store) && e.Kind.ItemAnnounces(store, e.Item)) Speech.Say(e.Text);
             }
         }
 
