@@ -26,7 +26,7 @@ namespace MonsterTrainAccessibility.Module.Screens
     {
         public const string ActionKey = "run.hud";
 
-        private static readonly InputCategory[] Categories = { InputCategory.Game, InputCategory.UI };
+        private static readonly InputCategory[] Categories = { InputCategory.Run, InputCategory.UI };
         private static bool s_open;
 
         public override string Key => "run.hud";

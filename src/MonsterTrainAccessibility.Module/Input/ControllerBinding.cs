@@ -20,7 +20,7 @@ namespace MonsterTrainAccessibility.Module.Input
         }
 
         // The triggers are the modifiers; a binding of a trigger itself never counts its own press.
-        private static bool IsModifier(ControllerInput input)
+        public static bool IsModifier(ControllerInput input)
             => input == ControllerInput.LeftTrigger || input == ControllerInput.RightTrigger;
 
         private bool ModifiersMatch(Func<ControllerInput, bool> held)
@@ -68,6 +68,8 @@ namespace MonsterTrainAccessibility.Module.Input
         }
 
         public override string Type => "controller";
+
+        public override string Device => "controller";
 
         // "A" or "LeftTrigger+A": the modifier first, as it is held first.
         public override string Serialize() => Modifier != null ? Modifier.Value + "+" + Input : Input.ToString();

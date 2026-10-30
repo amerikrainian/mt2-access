@@ -26,7 +26,7 @@ namespace MonsterTrainAccessibility.Module.Screens
     /// </summary>
     public sealed class DraftScreen : Screen
     {
-        private static readonly InputCategory[] Categories = { InputCategory.Game, InputCategory.UI };
+        private static readonly InputCategory[] Categories = { InputCategory.Run, InputCategory.UI };
 
         private readonly global::ScreenName _screen;
         private readonly string _key;

@@ -226,9 +226,43 @@ namespace MonsterTrainAccessibility.Core.Strings
             // The key categories of the "All keys" list: live everywhere, on the focused screen, in a run,
             // on the run's map.
             D("mod.category.global", "Global"),
-            D("mod.category.ui", "UI"),
-            D("mod.category.game", "Game"),
+            D("mod.category.ui", "Navigation"),
+            D("mod.category.battle", "Battle"),
             D("mod.category.map", "Map"),
+            D("mod.category.run", "Run"),
+            // Rebinding the mod's keys and buttons, from the key list. A key that is the game's own
+            // ({0} = the game's name for its key screen, "Bind Keys").
+            D("keys.game", "set in {0}"),
+            D("keys.add_key", "Add key"),
+            D("keys.add_button", "Add button"),
+            // An action's reset; read "Reset to default: Ctrl+M" with its default keys.
+            D("keys.reset", "Reset to default"),
+            D("keys.reset_all", "Reset all keys"),
+            D("keys.reset_all.ask", "Reset all keys to their defaults?"),
+            D("keys.reset_all.done", "All keys reset"),
+            D("keys.yes", "Yes"),
+            D("keys.no", "No"),
+            D("keys.none", "No keys"),
+            D("keys.replace", "Replace"),
+            D("keys.remove", "Remove"),
+            // {0} = the key or button removed.
+            D("keys.removed", "Removed {0}"),
+            // Why Remove is unavailable: the action must keep one key and one button.
+            D("keys.needed", "the last on its device, cannot be removed"),
+            // {0} = the keys after a reset.
+            D("keys.reset.done", "Reset to {0}"),
+            D("keys.cancelled", "Cancelled"),
+            // {0} = the key pressed again in place of itself.
+            D("keys.kept", "Kept {0}"),
+            // {0} = the key, {1} = the action that has it.
+            D("keys.taken", "{0} is already {1}"),
+            // {0} = the new key or button.
+            D("keys.bound", "Bound to {0}"),
+            // The capture's prompt; {0} = the action.
+            D("rebind.key", "Press a key for {0}, Escape cancels"),
+            D("rebind.button", "Press a button for {0}, B cancels"),
+            // {0} = the new key, {1} = an action of another category that has it too.
+            D("rebind.conflict", "{0} is also {1}"),
             D("bind.mod.menu", "Mod menu"),
             // The context-sensitive key help (F1): the keys that do something on this screen, on this
             // control. Enter on a row runs it.
@@ -668,6 +702,28 @@ namespace MonsterTrainAccessibility.Core.Strings
         public static string ScreenHelp => Get("screen.help");
         public static string HelpNone => Get("help.none");
         public static string HelpRow(string label, string keys) => F("help.row", label, keys);
+        public static string KeysGame(string screen) => F("keys.game", screen);
+        public static string KeysAddKey => Get("keys.add_key");
+        public static string KeysAddButton => Get("keys.add_button");
+        public static string KeysReset => Get("keys.reset");
+        public static string KeysResetAll => Get("keys.reset_all");
+        public static string KeysResetAllAsk => Get("keys.reset_all.ask");
+        public static string KeysResetAllDone => Get("keys.reset_all.done");
+        public static string KeysYes => Get("keys.yes");
+        public static string KeysNo => Get("keys.no");
+        public static string KeysNone => Get("keys.none");
+        public static string KeysReplace => Get("keys.replace");
+        public static string KeysRemove => Get("keys.remove");
+        public static string KeysRemoved(string key) => F("keys.removed", key);
+        public static string KeysNeeded => Get("keys.needed");
+        public static string KeysResetDone(string keys) => F("keys.reset.done", keys);
+        public static string KeysCancelled => Get("keys.cancelled");
+        public static string KeysKept(string key) => F("keys.kept", key);
+        public static string KeysTaken(string key, string action) => F("keys.taken", key, action);
+        public static string KeysBound(string key) => F("keys.bound", key);
+        public static string RebindKey(string action) => F("rebind.key", action);
+        public static string RebindButton(string action) => F("rebind.button", action);
+        public static string RebindConflict(string key, string other) => F("rebind.conflict", key, other);
         public static string JumpTo(string stop) => F("help.jump_to", stop);
 
         /// <summary>A battle event's line: "event.&lt;key&gt;" filled in ("Turn {0}.").</summary>

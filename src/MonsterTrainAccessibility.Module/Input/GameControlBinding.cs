@@ -74,6 +74,18 @@ namespace MonsterTrainAccessibility.Module.Input
             }
         }
 
+        // Each key bound now, for a rebind's conflicts: the mod's keys never take one of the game's.
+        public override IEnumerable<string> Combos
+        {
+            get
+            {
+                foreach (var key in Keys()) yield return new KeyboardBinding(key, shift: Shift).DisplayName;
+            }
+        }
+
+        // The game's to change, in its Bind Keys.
+        public override bool Fixed => true;
+
         public override string Type => "game";
 
         // "AccessHud", or "Card01|shift".

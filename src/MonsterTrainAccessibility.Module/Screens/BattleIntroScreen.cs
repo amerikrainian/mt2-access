@@ -32,7 +32,7 @@ namespace MonsterTrainAccessibility.Module.Screens
     /// </summary>
     public sealed class BattleIntroScreen : Screen
     {
-        private static readonly InputCategory[] Categories = { InputCategory.Game, InputCategory.UI };
+        private static readonly InputCategory[] Categories = { InputCategory.Run, InputCategory.UI };
 
         public override string Key => "game.battle_intro";
         public override int Layer => 5;

@@ -31,7 +31,7 @@ namespace MonsterTrainAccessibility.Module.Screens
     /// </summary>
     public sealed class RunOpeningScreen : Screen
     {
-        private static readonly InputCategory[] Categories = { InputCategory.Game, InputCategory.UI };
+        private static readonly InputCategory[] Categories = { InputCategory.Run, InputCategory.UI };
 
         public override string Key => "game.run_opening";
         public override int Layer => 5;

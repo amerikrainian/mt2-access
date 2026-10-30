@@ -20,7 +20,7 @@ namespace MonsterTrainAccessibility.Module.Screens
     /// </summary>
     public sealed class MerchantScreen : Screen
     {
-        private static readonly InputCategory[] Categories = { InputCategory.Game, InputCategory.UI };
+        private static readonly InputCategory[] Categories = { InputCategory.Run, InputCategory.UI };
 
         public override string Key => "game.merchant";
         public override int Layer => 5;

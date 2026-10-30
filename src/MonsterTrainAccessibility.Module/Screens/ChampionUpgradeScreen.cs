@@ -19,7 +19,7 @@ namespace MonsterTrainAccessibility.Module.Screens
     /// </summary>
     public sealed class ChampionUpgradeScreen : Screen
     {
-        private static readonly InputCategory[] Categories = { InputCategory.Game, InputCategory.UI };
+        private static readonly InputCategory[] Categories = { InputCategory.Run, InputCategory.UI };
 
         public override string Key => "game.champion_upgrade";
         public override int Layer => 5;

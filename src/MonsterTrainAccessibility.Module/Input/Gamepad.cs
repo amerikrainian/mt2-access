@@ -26,6 +26,23 @@ namespace MonsterTrainAccessibility.Module.Input
         public static bool IsHeld(ControllerInput input) => _held.Contains(input);
         public static bool WasHeld(ControllerInput input) => _was.Contains(input);
 
+        /// <summary>Whether any control is held (a rebind waits for the pad to be let go).</summary>
+        public static bool AnyHeld => _held.Count > 0;
+
+        /// <summary>The controls held this frame that were not the frame before.</summary>
+        public static IEnumerable<ControllerInput> Pressed()
+        {
+            foreach (var input in _held)
+                if (!_was.Contains(input)) yield return input;
+        }
+
+        /// <summary>The controls let go this frame.</summary>
+        public static IEnumerable<ControllerInput> Released()
+        {
+            foreach (var input in _was)
+                if (!_held.Contains(input)) yield return input;
+        }
+
         // Focus mode: poll the devices for us and feed the game nothing.
         private static bool Prefix(CoreInputDriverGamepad __instance)
         {

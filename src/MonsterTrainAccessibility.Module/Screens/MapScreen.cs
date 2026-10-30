@@ -36,7 +36,7 @@ namespace MonsterTrainAccessibility.Module.Screens
         public const string RouteNext = "map.next";
 
         // The route preview's keys are the map's alone; the run keys (Tab's HUD) as on any run screen.
-        private static readonly InputCategory[] Categories = { InputCategory.Map, InputCategory.Game, InputCategory.UI };
+        private static readonly InputCategory[] Categories = { InputCategory.Map, InputCategory.Run, InputCategory.UI };
 
         // This render's choices by control id: the preview starts from the one in focus.
         private readonly Dictionary<ControlId, MapStop> _choices = new Dictionary<ControlId, MapStop>();

@@ -16,6 +16,20 @@ namespace MonsterTrainAccessibility.Core.Input
         public abstract bool Held();
         public abstract bool Released();
 
+        /// <summary>Each key combination this binding answers to, as <see cref="DisplayName"/> names
+        /// one ("Ctrl+M"): what a rebind compares to find two actions on one key. One for a fixed
+        /// combo; a binding that follows the game's keys has one per key the game gives it.</summary>
+        public virtual IEnumerable<string> Combos => new[] { DisplayName };
+
+        /// <summary>The device the binding is on, "keyboard" or "controller": a rebind adds a key or a
+        /// button, and an action that must keep a binding keeps one on each device.</summary>
+        public virtual string Device => "keyboard";
+
+        /// <summary>True for a binding the player changes elsewhere (the game's own key for one of its
+        /// controls, rebound in the game's Bind Keys): listed with the action's keys, never removed,
+        /// replaced or saved by the mod's rebinding.</summary>
+        public virtual bool Fixed => false;
+
         /// <summary>True when this combo is one the type-ahead search owns while a search is live (a
         /// bare letter, space, up/down, escape), so a live search swallows the action instead.</summary>
         public virtual bool ConflictsWithTypeahead => false;
@@ -39,6 +53,9 @@ namespace MonsterTrainAccessibility.Core.Input
         /// <summary>Register a binding kind's deserializer (the module registers "keyboard").</summary>
         public static void RegisterType(string type, Func<string, InputBinding> deserialize)
             => _deserializers[type] = deserialize;
+
+        /// <summary>Whether bindings of this kind can be saved and rebuilt (a rebind makes them).</summary>
+        public static bool CanDeserialize(string type) => type != null && _deserializers.ContainsKey(type);
 
         /// <summary>Rebuild a binding from a (type, data) pair, or null if the type is unknown/invalid.</summary>
         public static InputBinding Deserialize(string type, string data)

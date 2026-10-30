@@ -91,6 +91,11 @@ namespace MonsterTrainAccessibility.Module
             Cues = new CuePlayer(CueEngine, Sounds, () => Time.unscaledTimeAsDouble);
 
             RegisterInput();
+            // The player's own keys and buttons over the defaults just registered (the key list in the
+            // mod menu rebinds them): only what differs from the defaults is saved.
+            KeyBindings.Snapshot();
+            KeyBindings.Persist = saved => host.Settings.Store.SetString(KeyBindings.StoreKey, saved);
+            KeyBindings.Load(host.Settings.Store.GetString(KeyBindings.StoreKey, ""));
             RegisterScreens();
             // The game hooks (the input drivers, the language). Patched by this load's Harmony id,
             // unpatched in Dispose. A failure here is a broken mod: say so, loudly, in the log.
@@ -198,7 +203,7 @@ namespace MonsterTrainAccessibility.Module
             MapKey(Screens.MapScreen.RouteNext, "Next route choice", KeyCode.RightArrow, ControllerInput.RightStickRight);
             // The game's Access HUD (Tab, or whatever the player bound it to in Bind Keys) anywhere in a
             // run: the HUD as a list, opened and closed; on the pad, Y, the game's own HUD button.
-            InputManager.Register(Screens.HudScreen.ActionKey, "Run info", InputCategory.Game, Screens.HudScreen.Toggle)
+            InputManager.Register(Screens.HudScreen.ActionKey, "Run info", InputCategory.Run, Screens.HudScreen.Toggle)
                 .AddBinding(new GameControlBinding(global::InputManager.Controls.AccessHud))
                 .AddBinding(new ControllerBinding(ControllerInput.Y))
                 .When(() => Screens.HudScreen.Available);
@@ -228,11 +233,11 @@ namespace MonsterTrainAccessibility.Module
             for (int floor = 1; floor <= 9; floor++)
                 BattleKey(Screens.BattleScreen.KeyFloor(floor), "Go to floor " + floor, new KeyboardBinding(KeyCode.Alpha0 + floor, ctrl: true), null);
             // The run's: coin and the pyre's health, on the map as in a battle.
-            InputManager.Register("run.gold", "Read coin", InputCategory.Game, Screens.BattleScreen.ReadCoin)
+            InputManager.Register("run.gold", "Read coin", InputCategory.Run, Screens.BattleScreen.ReadCoin)
                 .AddBinding(new KeyboardBinding(KeyCode.G, ctrl: true))
                 .AddBinding(new ControllerBinding(ControllerInput.A, ControllerInput.RightTrigger))
                 .When(() => Screens.HudScreen.Available);
-            InputManager.Register("run.pyre", "Read pyre health", InputCategory.Game, Screens.BattleScreen.ReadPyre)
+            InputManager.Register("run.pyre", "Read pyre health", InputCategory.Run, Screens.BattleScreen.ReadPyre)
                 .AddBinding(new KeyboardBinding(KeyCode.H, ctrl: true))
                 .AddBinding(new ControllerBinding(ControllerInput.A, ControllerInput.LeftTrigger))
                 .When(() => Screens.HudScreen.Available);
@@ -253,7 +258,7 @@ namespace MonsterTrainAccessibility.Module
         // A read key of the battle's: fired at the battle screen while it is in front.
         private static void BattleKey(string key, string label, InputBinding keyboard, ControllerBinding pad)
         {
-            var action = InputManager.Register(key, label, InputCategory.Game, () => (ScreenManager.Current as Screens.BattleScreen)?.Read(key))
+            var action = InputManager.Register(key, label, InputCategory.Battle, () => (ScreenManager.Current as Screens.BattleScreen)?.Read(key))
                 .AddBinding(keyboard)
                 .When(() => Screens.BattleScreen.Offers(key));
             if (pad != null) action.AddBinding(pad);
@@ -379,6 +384,7 @@ namespace MonsterTrainAccessibility.Module
             try { FocusMode.Shutdown(restore); } catch (Exception e) { _host?.LogError("[dispose] focus: " + e); }
             try { Gamepad.Reset(); } catch (Exception e) { _host?.LogError("[dispose] gamepad: " + e); }
             try { ScreenManager.Shutdown(); } catch (Exception e) { _host?.LogError("[dispose] screens: " + e); }
+            try { KeyBindings.Clear(); } catch (Exception e) { _host?.LogError("[dispose] key bindings: " + e); }
             try { InputManager.Clear(); } catch (Exception e) { _host?.LogError("[dispose] input: " + e); }
             try { LanguageSync.Stop(); } catch (Exception e) { _host?.LogError("[dispose] language: " + e); }
             try { _cueEngine?.Dispose(); } catch (Exception e) { _host?.LogError("[dispose] audio: " + e); }

@@ -26,7 +26,7 @@ namespace MonsterTrainAccessibility.Module.Screens
     /// </summary>
     public sealed class DeckScreen : Screen
     {
-        private static readonly InputCategory[] Categories = { InputCategory.Game, InputCategory.UI };
+        private static readonly InputCategory[] Categories = { InputCategory.Run, InputCategory.UI };
 
         public override string Key => "game.deck";
         public override int Layer => 10;

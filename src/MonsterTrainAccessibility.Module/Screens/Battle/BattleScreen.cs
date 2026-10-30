@@ -34,7 +34,7 @@ namespace MonsterTrainAccessibility.Module.Screens
     /// </summary>
     public sealed partial class BattleScreen : Screen, IGameKeys
     {
-        private static readonly InputCategory[] Categories = { InputCategory.Game, InputCategory.UI };
+        private static readonly InputCategory[] Categories = { InputCategory.Battle, InputCategory.Run, InputCategory.UI };
 
         public override string Key => "game.battle";
         public override int Layer => 3;

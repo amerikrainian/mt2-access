@@ -22,7 +22,7 @@ namespace MonsterTrainAccessibility.Module.Screens
     /// </summary>
     public sealed class RewardScreen : Screen
     {
-        private static readonly InputCategory[] Categories = { InputCategory.Game, InputCategory.UI };
+        private static readonly InputCategory[] Categories = { InputCategory.Run, InputCategory.UI };
 
         public override string Key => "game.reward";
         public override int Layer => 12;

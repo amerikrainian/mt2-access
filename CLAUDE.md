@@ -245,6 +245,18 @@ not the key bound.
 A key that is silent somewhere must say so with `.When(...)`, so the key help lists it only where it
 does something; a screen offers its own keys through `GetActions`.
 
+**Rebinding** (Star Vaders', with the pad: `Core/Input/KeyBindings`, `Module/Screens/KeyBindingScreens`).
+The registered bindings are the defaults (`KeyBindings.Snapshot` after `RegisterInput`); only the actions
+that differ are saved, one line under the store key `key_bindings`
+(`mod.menu=keyboard:M|ctrl,shift controller:LeftTrigger+Start`). The mod menu's All keys lists the
+categories (Global, Navigation = `UI`, Battle, Map, Run: `InputCategory`'s order), each its actions, each
+its bindings: Replace/Remove, Add key, Add button, Reset. A `Fixed` binding (`GameControlBinding`, the
+game's own key) is listed, never removed or saved. Protected actions keep one binding per device. A
+capture (`BindKeyScreen`, `CapturesRawInput`) reads `RawKeys` and `Gamepad` directly; a button is taken
+as it is let go, with the trigger held then as its modifier. Conflicts are refused within a category
+(or with Global) and named across categories. A new action needs nothing more: it is rebindable once
+registered.
+
 ## Buffers (the Harkest Dungeon pattern: `Core/Buffers`, `Module/UI/Buffers`)
 Review lists for the information a focus announcement leaves out, read live on every keypress:
 Ctrl+Right/Left switch buffers, Ctrl+Up/Down step lines. Empty buffers are skipped; a focus change

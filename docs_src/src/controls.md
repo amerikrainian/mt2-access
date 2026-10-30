@@ -2,7 +2,7 @@
 
 The mod drives the game itself: while its navigation is on (it is at launch), the game hears none of your keys or controller buttons except the few listed under Game Keys In Battle. Ctrl+Shift+A hands the keyboard and controller back to the game, and takes them again.
 
-Press F1 anywhere for the keys that do something on the current screen, right now. Enter on a row runs it. The mod menu's All Keys lists every key the mod has.
+Press F1 anywhere for the keys that do something on the current screen, right now. Enter on a row runs it. The mod menu's All Keys lists every key the mod has, and changes them (see Changing Keys below).
 
 On the controller, a trigger is a modifier: LT+A means hold the left trigger and press A. A trigger combination never also fires the button alone.
 
@@ -98,3 +98,15 @@ The controller has no game buttons in battle: everything the game would do on a 
 The Logbook's search fields are edited with the game's own editor, started when you land on one; the mod's keys stand aside while you type. Enter or Escape ends the edit and keeps focus there (Enter edits again); Tab, Shift+Tab, Up and Down end it and move on. On the controller, the bumpers, the D-pad, the left stick and B end it the same way.
 
 When the game's Key Mapping screen waits for a key, the next key you press goes to the game, not the mod.
+
+## Changing Keys
+
+The mod menu's All Keys lists the mod's keys by category: Global, Navigation, Battle, Map and Run. Enter on a category lists its actions with their keys and buttons ("Read ember: R, LT+X"); Enter on an action opens its bindings:
+
+- Each key or button: Enter offers Replace or Remove. An action the mod cannot work without (moving up and down, Activate, Back, the mod menu) keeps at least one key and one button.
+- A key that is the game's own (Run info's Access HUD key, the card keys) reads "set in Bind Keys": change it in the game's Bind Keys. You can still add keys and buttons of your own beside it.
+- Add key: press the key, with Ctrl, Shift or Alt if you want them. Escape alone cancels.
+- Add button: press the button. To use a trigger as a modifier, hold it, then press and let go of the button (LT+A); a trigger pressed and let go on its own is bound alone. B alone, or Escape, cancels.
+- Reset to default, while the bindings differ from the defaults.
+
+A key or button another action of the same category already has (or one in Global) is refused, and the mod says which action has it; press another. One that only an action of another category has is taken, and the mod names that action: wherever both are live, the screen's own category wins. Changes save at once. Reset all keys, at the end of All Keys, puts every key back.
