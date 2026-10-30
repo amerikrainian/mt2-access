@@ -74,21 +74,36 @@ namespace MonsterTrainAccessibility.Module.Screens
     }
 
     /// <summary>
-    /// Every relic the game knows, for Artifact triggered: each set apart from the kind's own settings
-    /// (<see cref="RelicEventScreen"/>). In groups, each a Tab stop, sorted by name: the run's own first,
-    /// then the game's (and the mods') artifacts, mutators, trials (what a trial does to the enemies)
-    /// and souls, read from the game's registries when the page is built, so a mod's relics are there
-    /// without a word of ours. Only what the player has met is listed, as the Logbook lists it: an
-    /// artifact, mutator or trial once discovered (an artifact also when the one it stands in for is),
-    /// a soul once unlocked; the run's own always. A relic reads by its name, then any setting turned
-    /// off ("Shardsoul, Announce: off"). Relics without a name (pyre hearts, covenants) are never
-    /// announced, so never listed.
+    /// Every relic the player has met, for Artifact triggered: each set apart from the kind's own
+    /// settings (<see cref="RelicEventScreen"/>). In groups, each a Tab stop (Tab wraps), sorted by name:
+    /// the run's own first, then the game's (and the mods') artifacts, mutators, trials (what a trial
+    /// does to the enemies) and souls, read from the game's registries when the page is built, so a
+    /// mod's relics are there without a word of ours. Only what the player has met is listed, as the
+    /// Logbook lists it: an artifact, mutator or trial once discovered (an artifact also when the one it
+    /// stands in for is), a soul once unlocked; the run's own always.
+    /// <para>Relics of one name in a group (a trial's tiers: Tough as Nails at Titanskin 1 and at 4) are
+    /// one row: their triggers are said alike ("Tough as Nails triggered."), so they are set together.
+    /// A row reads by the name, then any setting turned off ("Shardsoul, Announce: off"); its buffer
+    /// holds what each version does. Relics without a name (pyre hearts, covenants) are never
+    /// announced, so never listed.</para>
     /// </summary>
     public sealed class RelicEventsScreen : Screen
     {
+        // One relic: its asset name (what its settings are kept by), its name, what it does.
+        private sealed class Relic
+        {
+            public string Asset;
+            public string Name;
+            public Func<string> Description;
+        }
+
         private readonly EventKind _kind;
 
-        public RelicEventsScreen(EventKind kind) => _kind = kind;
+        public RelicEventsScreen(EventKind kind)
+        {
+            _kind = kind;
+            Wrap = true;
+        }
 
         public override string Key => "mod.relicevents";
         public override bool IsActive() => false; // only ever a child of Artifact triggered
@@ -101,9 +116,13 @@ namespace MonsterTrainAccessibility.Module.Screens
             var save = managers.GetSaveManager();
             if (save != null && save.HasRun())
             {
-                var run = new List<KeyValuePair<string, string>>();
+                var run = new List<Relic>();
                 foreach (var relic in save.GetAllRelics())
-                    if (relic != null) run.Add(new KeyValuePair<string, string>(relic.GetAssetName(), relic.GetName()));
+                {
+                    if (relic == null) continue;
+                    var state = relic;
+                    run.Add(new Relic { Asset = state.GetAssetName(), Name = state.GetName(), Description = () => state.GetDescription() });
+                }
                 Group(b, "run", () => Strings.RelicsThisRun, run);
             }
             var meta = save != null ? save.GetMetagameSave() : null;
@@ -126,9 +145,9 @@ namespace MonsterTrainAccessibility.Module.Screens
             return false;
         }
 
-        private static List<KeyValuePair<string, string>> Entries<T>(IReadOnlyList<T> relics, Func<T, bool> met) where T : RelicData
+        private static List<Relic> Entries<T>(IReadOnlyList<T> relics, Func<T, bool> met) where T : RelicData
         {
-            var entries = new List<KeyValuePair<string, string>>();
+            var entries = new List<Relic>();
             if (relics == null) return entries;
             foreach (var relic in relics)
             {
@@ -140,41 +159,64 @@ namespace MonsterTrainAccessibility.Module.Screens
                     Core.CoreLog.Warning("RelicEventsScreen: " + relic.name + "'s name: " + e.Message);
                     continue;
                 }
-                entries.Add(new KeyValuePair<string, string>(relic.name, name));
+                var data = relic;
+                entries.Add(new Relic { Asset = data.name, Name = name, Description = () => data.GetDescription() });
             }
             return entries;
         }
 
-        // One group: its relics with a name, each once, by name.
-        private void Group(GraphBuilder b, string key, Func<string> label, List<KeyValuePair<string, string>> relics)
+        // One group: its relics with a name, a row per name, by name.
+        private void Group(GraphBuilder b, string key, Func<string> label, List<Relic> relics)
         {
             var seen = new HashSet<string>();
-            var shown = new List<KeyValuePair<string, string>>();
+            var rows = new Dictionary<string, List<Relic>>();
             foreach (var relic in relics)
-                if (!string.IsNullOrEmpty(relic.Key) && !string.IsNullOrWhiteSpace(relic.Value)
-                    && !relic.Value.StartsWith("KEY>>", StringComparison.Ordinal) && seen.Add(relic.Key))
-                    shown.Add(relic);
-            if (shown.Count == 0) return;
-            shown.Sort((x, y) => string.Compare(x.Value, y.Value, StringComparison.CurrentCultureIgnoreCase));
+            {
+                if (string.IsNullOrEmpty(relic.Asset) || string.IsNullOrWhiteSpace(relic.Name)
+                    || relic.Name.StartsWith("KEY>>", StringComparison.Ordinal) || !seen.Add(relic.Asset)) continue;
+                string name = relic.Name.Trim();
+                if (!rows.TryGetValue(name, out var versions)) rows[name] = versions = new List<Relic>();
+                versions.Add(relic);
+            }
+            if (rows.Count == 0) return;
+            var names = new List<string>(rows.Keys);
+            names.Sort((x, y) => string.Compare(x, y, StringComparison.CurrentCultureIgnoreCase));
             b.BeginStop("relics:" + key);
             b.PushContext(label(), Strings.RoleList);
             var kind = _kind;
-            foreach (var relic in shown)
+            foreach (var name in names)
             {
-                string asset = relic.Key, name = relic.Value.Trim();
-                b.AddItem(ControlId.Structural("relic:" + key + ":" + asset), GameNodes.Button(() => Row(kind, asset, name),
-                    () => PushChild(new RelicEventScreen(kind, asset, name))));
+                var versions = rows[name];
+                var assets = versions.ConvertAll(r => r.Asset);
+                var vt = GameNodes.Button(() => Row(kind, assets, name), () => PushChild(new RelicEventScreen(kind, assets, name)));
+                vt.Details = () => GameNodes.Lines(Descriptions(versions));
+                b.AddItem(ControlId.Structural("relic:" + key + ":" + versions[0].Asset), vt);
             }
             b.PopContext();
         }
 
-        // "Shardsoul", or "Shardsoul, Announce: off, Add to buffer: off": only what is set apart.
-        private static string Row(EventKind kind, string asset, string name)
+        // What each version does, a line each, for the buffer.
+        private static IEnumerable<string> Descriptions(List<Relic> versions)
         {
-            var store = GameEvents.Store();
+            var lines = new List<string>();
+            foreach (var relic in versions)
+            {
+                try
+                {
+                    string text = relic.Description();
+                    if (!string.IsNullOrWhiteSpace(text)) lines.Add(text);
+                }
+                catch (Exception e) { Core.CoreLog.Warning("RelicEventsScreen: " + relic.Asset + "'s description: " + e.Message); }
+            }
+            return lines;
+        }
+
+        // "Shardsoul", or "Shardsoul, Announce: off, Add to buffer: off": only what is set apart.
+        private static string Row(EventKind kind, List<string> assets, string name)
+        {
             var parts = new List<string> { name };
-            if (!kind.ItemAnnounces(store, asset)) parts.Add(Strings.HelpRow(Strings.EventAnnounce, Strings.StateOff));
-            if (!kind.ItemBuffers(store, asset)) parts.Add(Strings.HelpRow(Strings.EventBuffer, Strings.StateOff));
+            if (!RelicEventScreen.Announces(kind, assets)) parts.Add(Strings.HelpRow(Strings.EventAnnounce, Strings.StateOff));
+            if (!RelicEventScreen.Buffers(kind, assets)) parts.Add(Strings.HelpRow(Strings.EventBuffer, Strings.StateOff));
             return string.Join(", ", parts);
         }
 
@@ -184,33 +226,37 @@ namespace MonsterTrainAccessibility.Module.Screens
         }
     }
 
-    /// <summary>One relic's settings for Artifact triggered: Announce and Add to buffer, each on unless
-    /// turned off here, and each still under the kind's own.</summary>
+    /// <summary>One relic's settings for Artifact triggered (every version of its name in its group):
+    /// Announce and Add to buffer, each on unless turned off here, and each still under the kind's own.
+    /// A setting is on while every version has it.</summary>
     public sealed class RelicEventScreen : Screen
     {
         private readonly EventKind _kind;
-        private readonly string _asset;
+        private readonly List<string> _assets;
         private readonly string _name;
 
-        public RelicEventScreen(EventKind kind, string asset, string name)
+        public RelicEventScreen(EventKind kind, List<string> assets, string name)
         {
             _kind = kind;
-            _asset = asset;
+            _assets = assets;
             _name = name;
         }
 
         public override string Key => "mod.relicevent";
         public override bool IsActive() => false; // only ever a child of the relic list
 
+        public static bool Announces(EventKind kind, List<string> assets) => assets.TrueForAll(a => kind.ItemAnnounces(GameEvents.Store(), a));
+        public static bool Buffers(EventKind kind, List<string> assets) => assets.TrueForAll(a => kind.ItemBuffers(GameEvents.Store(), a));
+
         public override void Build(GraphBuilder b)
         {
             var kind = _kind;
-            string asset = _asset;
+            var assets = _assets;
             b.PushContext(_name, Strings.RoleList);
             b.AddItem(ControlId.Structural("relicsetting:announce"), ModSettingsScreen.Toggle(() => Strings.EventAnnounce,
-                () => kind.ItemAnnounces(GameEvents.Store(), asset), v => kind.SetItemAnnounces(GameEvents.Store(), asset, v)));
+                () => Announces(kind, assets), v => assets.ForEach(a => kind.SetItemAnnounces(GameEvents.Store(), a, v))));
             b.AddItem(ControlId.Structural("relicsetting:buffer"), ModSettingsScreen.Toggle(() => Strings.EventBuffer,
-                () => kind.ItemBuffers(GameEvents.Store(), asset), v => kind.SetItemBuffers(GameEvents.Store(), asset, v)));
+                () => Buffers(kind, assets), v => assets.ForEach(a => kind.SetItemBuffers(GameEvents.Store(), a, v))));
             b.PopContext();
         }
 
