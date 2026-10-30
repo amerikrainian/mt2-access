@@ -104,6 +104,41 @@ namespace MonsterTrainAccessibility.Tests
         }
 
         [Fact]
+        public void ResetAlongWalksToTheTargetSoBackRetracesTheWay()
+        {
+            var cursor = new RouteCursor<string>(stop => Route[stop]);
+            Assert.True(cursor.ResetAlong("battle", stop => stop == "s", 8));
+            Assert.Equal("s", cursor.Current);
+            Assert.Equal(3, cursor.Depth);
+            Assert.Equal("a2", cursor.Back().Stop);
+            Assert.Equal("a1", cursor.Back().Stop);
+            Assert.Equal("battle", cursor.Back().Stop);
+            Assert.Equal(RouteMove.NoBackward, cursor.Back().Move);
+        }
+
+        [Fact]
+        public void ResetAlongLeavesAForkAtTheBranchThatLeadsThere()
+        {
+            var cursor = new RouteCursor<string>(stop => Route[stop]);
+            Assert.True(cursor.ResetAlong("battle", stop => stop == "b1", 8));
+            Assert.Equal("b1", cursor.Current);
+            Assert.Equal(RouteMove.Edge, cursor.Cycle(1).Move);
+            Assert.Equal("a1", cursor.Cycle(-1).Stop);
+            Assert.Equal("battle", cursor.Back().Stop);
+        }
+
+        [Fact]
+        public void ResetAlongToNothingAheadStaysAtTheOrigin()
+        {
+            var cursor = new RouteCursor<string>(stop => Route[stop]);
+            Assert.False(cursor.ResetAlong("s", stop => stop == "a1", 8));
+            Assert.Equal("s", cursor.Current);
+            Assert.Equal(0, cursor.Depth);
+            Assert.False(cursor.ResetAlong("battle", stop => stop == "boss", 2));
+            Assert.Equal("battle", cursor.Current);
+        }
+
+        [Fact]
         public void ResetForgetsThePath()
         {
             var cursor = Make();

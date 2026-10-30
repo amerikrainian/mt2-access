@@ -21,7 +21,8 @@ namespace MonsterTrainAccessibility.Module.Screens
     /// game;</item>
     /// <item>the route preview, a cursor of its own over what lies ahead: Ctrl+Up steps on from the
     /// choice in focus to what follows it (saying "choice" where the route forks), Ctrl+Left and
-    /// Ctrl+Right walk a fork's siblings, Ctrl+Down steps back. Moving the real focus starts the preview
+    /// Ctrl+Right walk a fork's siblings, Ctrl+Down steps back (in a ring, whose stops may be taken in
+    /// any order, down past the stops below the one in focus). Moving the real focus starts the preview
     /// over from there.</item>
     /// </list>
     /// Nothing is declared while the train moves or a battle starts. Letters do not search here.
@@ -120,6 +121,11 @@ namespace MonsterTrainAccessibility.Module.Screens
             string fromKey = from != null ? from.Key : "start";
             if (_preview == null || _previewFrom != fromKey)
             {
+                _preview = focused != null && route.Layout == ChoiceLayout.Column ? AlongRing(route, focused) : null;
+                _previewFrom = fromKey;
+            }
+            if (_preview == null)
+            {
                 _preview = new RouteCursor<MapStop>(route.Next);
                 // From the choice in focus, its fellow choices are the fork Ctrl+Left/Right walk.
                 // Only a fork has fellow choices; a ring's stops one after another are not alternatives.
@@ -148,6 +154,23 @@ namespace MonsterTrainAccessibility.Module.Screens
             string line = MapNodes.Describe(result.Stop, CurrentRing());
             if (result.Move == RouteMove.Moved && result.ArrivedAtFork) line = Strings.MapChoice + ", " + line;
             Core.Speech.Say(line, interrupt: true);
+        }
+
+        // A ring's open stops may be taken in any order: the preview from one in focus starts at the
+        // lowest open stop below it (the one the longest way leads up from) and walks the route up to
+        // it, so Ctrl+Down steps back down past the others. Null when no other open stop is below it.
+        private static RouteCursor<MapStop> AlongRing(IRunRoute route, MapStop focused)
+        {
+            const int RingDepth = 16;
+            RouteCursor<MapStop> best = null;
+            foreach (var choice in route.Choices())
+            {
+                if (choice.SameAs(focused)) continue;
+                var cursor = new RouteCursor<MapStop>(route.Next);
+                if (cursor.ResetAlong(choice, stop => stop.SameAs(focused), RingDepth) && (best == null || cursor.Depth > best.Depth))
+                    best = cursor;
+            }
+            return best;
         }
 
         private MapStop FocusedChoice()

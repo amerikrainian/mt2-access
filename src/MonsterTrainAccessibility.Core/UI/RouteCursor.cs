@@ -74,6 +74,38 @@ namespace MonsterTrainAccessibility.Core.UI
             _index = index >= 0 ? index : 0;
         }
 
+        /// <summary>Start over at a stop and walk on to one ahead of it: the path walked is the one
+        /// <see cref="Back"/> retraces, each fork left at the branch that leads there. False, the cursor
+        /// left at the origin, when no stop within <paramref name="maxDepth"/> steps ahead is the target.</summary>
+        public bool ResetAlong(T origin, Func<T, bool> isTarget, int maxDepth)
+        {
+            if (isTarget == null) throw new ArgumentNullException(nameof(isTarget));
+            Reset(origin);
+            var turns = new List<int>();
+            if (!Find(origin, isTarget, maxDepth, turns)) return false;
+            foreach (int turn in turns)
+            {
+                Forward();
+                for (int i = 0; i < turn; i++) Cycle(1);
+            }
+            return true;
+        }
+
+        // The sibling taken at each step from a stop to the first target ahead of it, depth first.
+        private bool Find(T stop, Func<T, bool> isTarget, int depth, List<int> turns)
+        {
+            if (depth <= 0) return false;
+            var next = _next(stop);
+            if (next == null) return false;
+            for (int i = 0; i < next.Count; i++)
+            {
+                turns.Add(i);
+                if (isTarget(next[i]) || Find(next[i], isTarget, depth - 1, turns)) return true;
+                turns.RemoveAt(turns.Count - 1);
+            }
+            return false;
+        }
+
         private static int IndexOf(IReadOnlyList<T> list, T item)
         {
             for (int i = 0; i < list.Count; i++)
