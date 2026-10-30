@@ -10,17 +10,15 @@ if [ "${#STAGED_CS[@]}" -eq 0 ]; then
 fi
 
 echo "Formatting staged C# files..."
-# Per project: dotnet format cannot open the .slnx solution on every SDK.
-for project in src/*/*.csproj; do
-  dir="$(dirname "$project")/"
-  files=()
-  for file in "${STAGED_CS[@]}"; do
-    case "$file" in "$dir"*) files+=("$file") ;; esac
-  done
-  if [ "${#files[@]}" -gt 0 ]; then
-    dotnet format "$project" --include "${files[@]}" --no-restore
-  fi
-done
+# One workspace of every project, through a throwaway classic .sln: dotnet format cannot open the .slnx
+# on every SDK, and one project opened alone resolves its project references to nothing ("Warnings were
+# encountered while loading the workspace": "Found project reference without a matching metadata
+# reference"), so each project is formatted against references it never loaded.
+SLN_DIR="$(mktemp -d)"
+trap 'rm -rf "$SLN_DIR"' EXIT
+dotnet new sln --format sln --name format --output "$SLN_DIR" > /dev/null
+dotnet sln "$SLN_DIR/format.sln" add src/*/*.csproj > /dev/null
+dotnet format "$SLN_DIR/format.sln" --include "${STAGED_CS[@]}" --no-restore
 
 for file in "${STAGED_CS[@]}"; do
   if [ -f "$file" ]; then
