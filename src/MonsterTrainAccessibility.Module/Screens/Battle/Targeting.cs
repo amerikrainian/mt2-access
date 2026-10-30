@@ -71,17 +71,43 @@ namespace MonsterTrainAccessibility.Module.Screens
             return vt;
         }
 
-        // A place for a new unit: "Spawn point 2" (1 at the front); where a unit stands, whom the new one
-        // goes in front of, the place and then the unit as it reads anywhere (its buffer the unit's).
+        // A place for a new unit. By its neighbours (the preference, on by default), the names of the units
+        // on either side of it: "Before Shield Steward" at the front, "After Fel" at the back, "Between
+        // Shield Steward, Fel" between two, "No friendly units" on a floor with none. Else "Spawn point 2"
+        // (1 at the front); where a unit stands, whom the new one goes in front of, the place and then the
+        // unit as it reads anywhere (its buffer the unit's).
         private static NodeVtable SpawnTarget(CommonSelectionBehavior sel, int index, SpawnPoint spawn)
         {
             Func<string> place = () => spawn != null ? Strings.Battle("spawn_point", spawn.GetIndexInRoom() + 1) : null;
+            if (Preferences.PlacesByNeighbours && spawn != null)
+                return Target(sel, index, () => Between(spawn) ?? Strings.Battle("place_alone"), null);
             var occupant = spawn != null ? spawn.GetCharacterState() : null;
             if (occupant == null || occupant.IsDestroyed) return Target(sel, index, place, null);
             var vt = Target(sel, index, null, occupant);
             vt.Announcements = new List<NodeAnnouncement>(vt.Announcements);
             ((List<NodeAnnouncement>)vt.Announcements).Insert(0, GameNodes.LabelPart(place));
             return vt;
+        }
+
+        // The place by the units on either side of it, front first: the unit standing on it is the one a
+        // new unit goes in front of, the unit on the place before it the one it goes behind. Null on a
+        // floor with none of the player's units.
+        private static string Between(SpawnPoint spawn)
+        {
+            var room = spawn.GetRoomOwner();
+            int at = spawn.GetIndexInRoom();
+            string ahead = at > 0 && room != null ? NameOf(room.GetMonsterPoint(at - 1)) : null;
+            string behind = NameOf(spawn);
+            if (ahead != null && behind != null) return Strings.Battle("place_between", ahead, behind);
+            if (behind != null) return Strings.Battle("place_before", behind);
+            if (ahead != null) return Strings.Battle("place_after", ahead);
+            return null;
+        }
+
+        private static string NameOf(SpawnPoint point)
+        {
+            var unit = point != null ? point.GetCharacterState() : null;
+            return unit != null && !unit.IsDestroyed ? unit.GetName() : null;
         }
 
         // Play on the game's keyboard target, as its submit does; the target was moved by keyboard, which

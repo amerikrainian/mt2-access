@@ -142,6 +142,9 @@ namespace MonsterTrainAccessibility.Core.Strings
             D("card.attack", "{0} attack"),
             D("card.health", "{0} health"),
             D("card.size", "size {0}"),
+            // What an upgrade adds to a card's text, which the game draws in its upgrade colour; {0} = that
+            // text ("new: Ability: Savior.").
+            D("card.upgraded", "new: {0}"),
             // The soul attached to a card in a Soul Savior run ({0} = its name).
             D("card.soul_attached", "{0} attached"),
             // The Logbook. An enemy's numbers beside their icons ({0} = the number), its variant buttons
@@ -208,6 +211,8 @@ namespace MonsterTrainAccessibility.Core.Strings
             D("mod.close", "Close"),
             D("mod.speak_positions", "Speak list positions"),
             D("mod.focus_on_launch", "Keyboard navigation on at launch"),
+            D("mod.mark_upgrades", "Mark upgraded card text"),
+            D("mod.places_by_neighbours", "Name unit places by their neighbours"),
             // The mod sounds (the mod menu's Sounds): the master volume, then a volume row per cue.
             D("mod.sounds", "Sounds"),
             D("sound.master", "Master volume"),
@@ -339,6 +344,13 @@ namespace MonsterTrainAccessibility.Core.Strings
             // Targeting: a card that takes the whole floor; a place for a unit ({0} = 1 at the front).
             D("battle.selected_floor", "Selected floor"),
             D("battle.spawn_point", "Spawn point {0}"),
+            // A place for a new unit by the units around it, by name: at the front ({0} = the unit it goes
+            // before), at the back ({0} = the unit it goes after), between two ({0}, {1}, front first), the
+            // only place on a floor with none of the player's units.
+            D("battle.place_before", "Before {0}"),
+            D("battle.place_after", "After {0}"),
+            D("battle.place_between", "Between {0}, {1}"),
+            D("battle.place_alone", "No friendly units"),
             // What the coming combat does to a unit (I, Ctrl+I, Ctrl+Shift+I).
             D("battle.outcome.eaten", "eaten"),
             D("battle.outcome.burns_out", "burns out"),
@@ -606,6 +618,7 @@ namespace MonsterTrainAccessibility.Core.Strings
         public static string CardAttack(string value) => F("card.attack", value);
         public static string CardHealth(string value) => F("card.health", value);
         public static string CardSize(string value) => F("card.size", value);
+        public static string CardUpgraded(string text) => F("card.upgraded", text);
         public static string CardSoulAttached(string soul) => F("card.soul_attached", soul);
 
         public static string PyreAttack(string value) => F("pyre.attack", value);
@@ -632,6 +645,8 @@ namespace MonsterTrainAccessibility.Core.Strings
         public static string ModClose => Get("mod.close");
         public static string ModSpeakPositions => Get("mod.speak_positions");
         public static string ModFocusOnLaunch => Get("mod.focus_on_launch");
+        public static string ModMarkUpgrades => Get("mod.mark_upgrades");
+        public static string ModPlacesByNeighbours => Get("mod.places_by_neighbours");
         public static string ModSounds => Get("mod.sounds");
         public static string SoundMaster => Get("sound.master");
         public static string SoundPercent(int percent) => F("sound.percent", percent);

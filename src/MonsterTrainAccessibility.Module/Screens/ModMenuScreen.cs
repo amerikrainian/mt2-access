@@ -70,6 +70,10 @@ namespace MonsterTrainAccessibility.Module.Screens
                 () => settings.SpeakPositions, v => settings.SpeakPositions = v));
             b.AddItem(ControlId.Structural("modsettings:focus"), Toggle(() => Strings.ModFocusOnLaunch,
                 () => settings.FocusModeOnLaunch, v => settings.FocusModeOnLaunch = v));
+            b.AddItem(ControlId.Structural("modsettings:upgrades"), Toggle(() => Strings.ModMarkUpgrades,
+                () => Preferences.MarkUpgrades, v => Preferences.MarkUpgrades = v));
+            b.AddItem(ControlId.Structural("modsettings:places"), Toggle(() => Strings.ModPlacesByNeighbours,
+                () => Preferences.PlacesByNeighbours, v => Preferences.PlacesByNeighbours = v));
             b.PopContext();
         }
 
