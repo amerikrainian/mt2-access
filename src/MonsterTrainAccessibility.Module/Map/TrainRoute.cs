@@ -115,12 +115,15 @@ namespace MonsterTrainAccessibility.Module.Map
             if (section != null && section.highlightedBranch != choice.Branch) section.HighlightBranch(choice.Branch);
         }
 
-        // The game shows the branch choice after a battle when the ring forks (MapSection's own test).
+        // The game offers the branch choice after a battle when the ring forks (MapSection's own test).
+        // Its enabled flag, not its branch buttons: those show only in keyboard or pad mode, and the game
+        // falls into mouse mode once the mouse moves (focus mode keeps its keys from bringing it back),
+        // while a press on a branch's node chooses it in either mode.
         private bool BranchChoiceOpen()
         {
             if (Save == null || Save.GetGameSequence() != SaveData.GameSequence.LeavingBattle) return false;
             var section = Section(CurrentRing);
-            return section != null && section.branchChoiceUI != null && section.branchChoiceUI.Active && Branches(CurrentRing).Count > 1;
+            return section != null && section.branchChoiceEnabled && Branches(CurrentRing).Count > 1;
         }
 
         // Where a ring's route starts: the first node of each branch, else of the shared ones, else its
