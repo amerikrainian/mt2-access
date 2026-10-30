@@ -1,11 +1,10 @@
-# Monster Train Accessibility (rewrite) — Accessibility Mod for Monster Train 2
+# Monster Train Accessibility — Accessibility Mod for Monster Train 2
 
-Screen-reader accessibility mod for blind players. This branch (`rewrite`) rebuilds the mod on the
-guildrun-access architecture: a key graph per screen, Core/Module hot reload, the dev server and REPL.
-`main` (checked out at `../monster_traina11y2-main`) is the shipping mod and the loose reference for
-what each screen holds; it is never copied wholesale. Speech is the sole interface: a silent failure
-is invisible to the player, so every catch logs, and nothing caches game state. The plan, its order
-and its open risks are in `docs/plan.md`.
+Screen-reader accessibility mod for blind players, rebuilt from 0.3 on the guildrun-access
+architecture: a key graph per screen, Core/Module hot reload, the dev server and REPL. The old mod
+(the single-DLL one, up to the tag `v0.2.3`) is the loose reference for what each screen held; it is
+never copied wholesale. Speech is the sole interface: a silent failure
+is invisible to the player, so every catch logs, and nothing caches game state.
 
 ## Game facts
 - **Engine**: Unity **2022.3.62f2**, **Mono** (not IL2CPP). Managed code in
@@ -40,8 +39,10 @@ and its open risks are in `docs/plan.md`.
 ## Decompiled reference
 - `game/` — the decompiled game (C#, one file per type, gitignored; never committed). Grep it before
   guessing a shape; it is the full source, bodies included.
-- `../monster_traina11y2-main/MonsterTrainAccessibility/` — the old mod: which game fields hold what,
-  which hooks fire when, what each screen offers. Read it for facts, never for structure.
+- The old mod at the tag `v0.2.3`, under `MonsterTrainAccessibility/`: which game fields hold what,
+  which hooks fire when, what each screen offers. Read it for facts, never for structure:
+  `git show v0.2.3:MonsterTrainAccessibility/<path>`, `git grep <pattern> v0.2.3`, or a throwaway
+  `git worktree add <dir> v0.2.3` for a long read (removed after).
 - For live behavior use the game itself: `GET /gui` for structure, `POST /eval` for values.
 
 ## Tools (`tools/python/`, standard library only; run with `uv run python tools/python/<tool>.py`)
@@ -54,6 +55,9 @@ and its open risks are in `docs/plan.md`.
   icon), `compare [--all-languages]` (against the earlier spelling rule), `screen` (what the open
   screen's buffers gain); `--top N`, `--out FILE`. Cards need a screen with a card open (the Logbook).
 - `make_cues.py [--force]` — the placeholder sound cues under `assets/audio` (writes the missing ones).
+- `carry_translations.py NEWKEY=OLDKEY ...` — a new string's translations from the old mod's JSON
+  files at `v0.2.3`, when it had a string with the same English (`zh-TW` is the game's `zh-HK`, `pt`
+  is `pt-BR`; named placeholders become `{0}` slots).
 
 ## Build & deploy
 ```
@@ -314,7 +318,7 @@ English). Game terms are the game's own: read them from I2 (`LocalizationManager
   nav hints, no fluff, never less information. Users are expert screen-reader users.
 - **Tooltips come from the game's own pipeline**, never rebuilt by hand: `ITooltipProvider.Tooltips`
   for widgets, `CardTooltipContainer.SetSelectedCard` for cards, `CharacterTooltipHelper` for units,
-  `TooltipGenerator` for relics, all yielding `TooltipContent` in the game's order (`docs/plan.md`).
+  `TooltipGenerator` for relics, all yielding `TooltipContent` in the game's order.
   The one addition is the glossary's: definitions the game omits, each drawn by the game's own
   function for it, appended to the buffer after the game's tooltips.
 - **Element factories are named**: a domain object (card, unit, relic) gets a static factory class

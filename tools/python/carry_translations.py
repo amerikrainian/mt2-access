@@ -4,9 +4,9 @@
 
 MAINKEY is main's key without its section ("state.completed"), or "section.key" to pick one section.
 For each pair, every translated language file under lang/ gets `NEWKEY=<main's translation>` appended
-(replacing an existing NEWKEY line), read from main's
-MonsterTrainAccessibility/Localization/Strings/<code>.json in the main worktree (../monster_traina11y2-main
-by default; MTA_MAIN_DIR overrides). main's named placeholders ({attack}) become {0}, {1}... in the order
+(replacing an existing NEWKEY line), read from the old mod's
+MonsterTrainAccessibility/Localization/Strings/<code>.json at its last release, the tag v0.2.3 (git show;
+MTA_MAIN_REF names another ref). main's named placeholders ({attack}) become {0}, {1}... in the order
 they first appear in main's ENGLISH value, which is the order the new key's English template must use.
 Add the key to Core/Strings/Strings.cs first, then regenerate lang/en.txt (MTA_WRITE_LANG_TEMPLATE=1).
 """
@@ -15,12 +15,14 @@ from __future__ import annotations
 import json
 import os
 import re
+import subprocess
 import sys
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[2]
-MAIN = Path(os.environ.get("MTA_MAIN_DIR", REPO.parent / "monster_traina11y2-main"))
-MAIN_STRINGS = MAIN / "MonsterTrainAccessibility" / "Localization" / "Strings"
+# The old mod, the single-DLL one, at its last release.
+MAIN_REF = os.environ.get("MTA_MAIN_REF", "v0.2.3")
+MAIN_STRINGS = "MonsterTrainAccessibility/Localization/Strings"
 LANG = REPO / "lang"
 
 # Our file (the game's I2 code) -> main's file.
@@ -35,8 +37,9 @@ NAMED = re.compile(r"\{([A-Za-z_][A-Za-z0-9_]*)\}")
 def load(code: str) -> dict:
     """main's file flattened: its keys live under sections ("messages", "ui", ...); a key is found by
     its name alone, or as "section.key" when two sections share it."""
-    with open(MAIN_STRINGS / f"{code}.json", encoding="utf-8-sig") as f:
-        sections = json.load(f)
+    raw = subprocess.run(["git", "show", f"{MAIN_REF}:{MAIN_STRINGS}/{code}.json"], cwd=REPO,
+                         capture_output=True, check=True).stdout
+    sections = json.loads(raw.decode("utf-8-sig"))
     flat = {}
     for section, table in sections.items():
         for key, value in table.items():
