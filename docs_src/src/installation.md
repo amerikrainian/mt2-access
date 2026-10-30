@@ -32,11 +32,9 @@ If installation worked, the mod should initialize when the game starts and begin
 
 To update, either launch the installer and hit update or, if doing a manual install extract the latest release zip over the existing game folder and replace files when prompted.
 
-Versions before 0.3.0 installed the mod as a single file, `BepInEx\plugins\MonsterTrainAccessibility.dll`. The installer removes it on update. Updating by hand, delete these from `BepInEx\plugins` first, or the old and new versions load side by side:
+Versions before 0.3.0 installed the mod as a single file, `BepInEx\plugins\MonsterTrainAccessibility.dll`. Both the installer and the mod itself remove it: updating by hand, the first launch of the new version deletes the old plugin, its `MonsterTrainAccessibility.deps.json` and `.pdb`, and its `Localization` strings. The old version never runs beside the new one; the game loads only the newer of the two.
 
-- `MonsterTrainAccessibility.dll`, `MonsterTrainAccessibility.deps.json` and `MonsterTrainAccessibility.pdb`
-- the `Localization` folder
-- `System.Text.Json.dll`, `System.Text.Encodings.Web.dll`, `System.Memory.dll`, `System.Buffers.dll`, `System.Runtime.CompilerServices.Unsafe.dll`, `Microsoft.Bcl.AsyncInterfaces.dll`, `System.Numerics.Vectors.dll` and `System.Threading.Tasks.Extensions.dll`, unless another mod needs them
+The old version also left `System.Text.Json.dll`, `System.Text.Encodings.Web.dll`, `System.Memory.dll`, `System.Buffers.dll`, `System.Runtime.CompilerServices.Unsafe.dll`, `Microsoft.Bcl.AsyncInterfaces.dll`, `System.Numerics.Vectors.dll` and `System.Threading.Tasks.Extensions.dll` in `BepInEx\plugins`. The installer removes them; the mod leaves them, since another mod may use them. They do no harm, and you can delete them unless another mod needs them.
 
 ## Uninstalling
 

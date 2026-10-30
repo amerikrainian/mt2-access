@@ -68,7 +68,11 @@ dotnet test src/MonsterTrainAccessibility.Tests/MonsterTrainAccessibility.Tests.
 Debug builds deploy to `<game>\BepInEx\plugins\MonsterTrainAccessibility\` (host, Contracts, Roslyn
 and its facades, Core, Module, `lang\`) and `prism.dll` next to `MonsterTrain2.exe`. The host deploy
 deletes main's single-DLL layout (`plugins\MonsterTrainAccessibility.dll` and its deps.json): same
-assembly name and plugin GUID, they must never load side by side. Deploying main again means
+assembly name and plugin GUID, they must never load side by side. A player's game does the same at
+launch (`Host/LegacyCleanup`, first thing in `Plugin.Awake`): BepInEx loads only the highest version
+of a GUID and skips the old plugin unloaded, so the host deletes it, its deps.json and pdb and its
+`Localization\Strings` JSONs (not its loose System.* DLLs, which another mod may resolve while the
+game runs; the installer, with the game closed, removes those too). Running v0.2.3 again means
 removing `plugins\MonsterTrainAccessibility\` first.
 - **A host or Contracts change needs the game closed** (their DLLs are locked) and a relaunch.
 - **Core/Module changes need no restart**: the module-only build copies those two DLLs (and `lang\`),

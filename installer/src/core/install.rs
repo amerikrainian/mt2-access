@@ -748,6 +748,43 @@ mod tests {
     }
 
     #[test]
+    fn folder_layout_extracted_by_hand_over_legacy_is_replaced_on_install() {
+        let dir = tempfile::tempdir().unwrap();
+        let state_parent = tempfile::tempdir().unwrap();
+        let state = state_parent.path().join(paths::LEGACY_STATE_DIR);
+        write_legacy_manual_install(dir.path());
+        // The player extracted a 0.3 release over the legacy layout by hand: both plugins, no manifest.
+        write_file(dir.path(), paths::PLUGIN_REL, "hand-extracted plugin");
+        assert!(matches!(
+            classify_install(dir.path()),
+            InstallState::Legacy(_)
+        ));
+
+        let zip_path = dir.path().join("release.zip");
+        folder_layout_zip(&zip_path);
+        install_from_zip_with_legacy_state(
+            &zip_path,
+            dir.path(),
+            &GameSource::Manual,
+            &test_asset(),
+            &InstallState::Legacy(None),
+            Some(&state),
+        )
+        .unwrap();
+
+        assert!(!dir.path().join(paths::LEGACY_PLUGIN_REL).exists());
+        assert!(!dir.path().join("BepInEx/plugins/Localization").exists());
+        assert_eq!(
+            fs::read_to_string(dir.path().join(paths::PLUGIN_REL)).unwrap(),
+            "plugin"
+        );
+        assert!(matches!(
+            classify_install(dir.path()),
+            InstallState::Managed(_)
+        ));
+    }
+
+    #[test]
     fn legacy_installer_files_are_adopted_and_its_state_cleared() {
         let dir = tempfile::tempdir().unwrap();
         let state_parent = tempfile::tempdir().unwrap();

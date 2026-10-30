@@ -36,6 +36,9 @@ namespace MonsterTrainAccessibility
             Log = Logger;
             Log.LogInfo($"{Name} {Version} loading");
 
+            // A pre-0.3.0 install the player extracted this release over: its plugin shares our GUID.
+            LegacyCleanup.Run(Log);
+
             // Headless dev runs set MTA_NO_SPEECH=1 so an unattended session does not depend on a running
             // screen reader. Prism init is skipped; spoken text is still captured for /speech, since the
             // dev tap is upstream of the backend.
