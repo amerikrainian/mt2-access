@@ -79,8 +79,8 @@ namespace MonsterTrainAccessibility.Module.Screens
             b.PushContext(choices.Count > 1 ? Strings.MapChoice : null);
             bool row = route.Layout == ChoiceLayout.Row;
             if (row) b.StartRow();
-            // A ring's stops one after another read as the map draws them, bottom to top: the next stop
-            // at the bottom, where focus starts, Up toward the battle. A fork is a row.
+            // A ring's stops one after another in the route's order, the preview's: the first at the
+            // bottom, Up toward the battle; focus starts on the first not visited yet. A fork is a row.
             var shown = new List<MapStop>(choices);
             if (!row) shown.Reverse();
             foreach (var stop in shown)
@@ -91,7 +91,13 @@ namespace MonsterTrainAccessibility.Module.Screens
             }
             if (row) b.EndRow();
             b.PopContext();
-            if (!row) b.SetStart(ControlId.Structural("map:" + choices[0].Key));
+            if (!row)
+            {
+                var start = choices[0];
+                foreach (var stop in choices)
+                    if (!stop.IsBattle && !stop.Visited) { start = stop; break; }
+                b.SetStart(ControlId.Structural("map:" + start.Key));
+            }
         }
 
         public override IEnumerable<ElementAction> GetActions()

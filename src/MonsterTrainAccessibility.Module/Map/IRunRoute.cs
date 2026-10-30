@@ -18,8 +18,9 @@ namespace MonsterTrainAccessibility.Module.Map
     /// </summary>
     internal interface IRunRoute
     {
-        /// <summary>The stops the player can act on now, in the game's order; empty while the train is
-        /// moving or a battle is starting.</summary>
+        /// <summary>The stops the player can act on now, in the route's order (a fork's branches left to
+        /// right, a ring's stops as <see cref="Next"/> walks them); empty while the train is moving or a
+        /// battle is starting.</summary>
         IReadOnlyList<MapStop> Choices();
 
         ChoiceLayout Layout { get; }

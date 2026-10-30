@@ -36,6 +36,9 @@ namespace MonsterTrainAccessibility.Module.Map
 
         public bool IsBattle => Battle != null;
 
+        /// <summary>A node the player has been to (a merchant can be visited again).</summary>
+        public bool Visited => Node != null && Node.visited;
+
         public Component Widget => IsBattle ? (Component)Battle : Node;
 
         public GameUISelectableButton Button => IsBattle ? Battle.button : Node.button;

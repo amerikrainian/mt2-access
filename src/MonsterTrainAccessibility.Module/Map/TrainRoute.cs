@@ -50,13 +50,11 @@ namespace MonsterTrainAccessibility.Module.Map
                 return choices;
             }
             if (Save.GetGameSequence() != SaveData.GameSequence.DestinationReached) return choices;
+            // In the route's order, the one Next walks (the branch's line, then the shared line), so the
+            // arrows and the preview agree.
             var branchNow = (global::MapScreen.BranchSelection)Save.GetCurrentBranch();
-            var open = Nodes(ring, branchNow).Concat(Nodes(ring, global::MapScreen.BranchSelection.NoBranch))
-                .Where(stop => stop.Node.CanActivate)
-                .OrderBy(stop => stop.Node.transform.position.y)
-                .ToList();
-            choices.AddRange(open.Where(stop => !stop.Node.visited));
-            choices.AddRange(open.Where(stop => stop.Node.visited));
+            choices.AddRange(Nodes(ring, branchNow).Concat(Nodes(ring, global::MapScreen.BranchSelection.NoBranch))
+                .Where(stop => stop.Node.CanActivate));
             var exit = Exit(ring);
             if (exit != null && exit.Battle.gameObject.activeInHierarchy && exit.Button != null && exit.Button.interactable)
                 choices.Add(exit);
