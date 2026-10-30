@@ -13,8 +13,8 @@ namespace MonsterTrainAccessibility.Module.Nodes
     /// <list type="bullet">
     /// <item>the focus line: its name, then its subtypes ("Steward", the player's units only), size (the
     /// player's units), attack (when it has any, or the pyre's), armor and health ("2 armor, 5 of 8
-    /// health"), its statuses with their stacks ("Rage 3"), its ability and where it stands ("Quick
-    /// Strike, ready"), its triggers by keyword ("Slay");</item>
+    /// health"), its statuses with their stacks ("Rage 3"), its equipment ("Windblade"), its
+    /// ability and where it stands ("Quick Strike, ready"), its triggers by keyword ("Slay");</item>
     /// <item>the buffer: that line, then a boss's next action ("targets floor 2"), then the game's own
     /// tooltips for the unit (its equipment, statuses, abilities, triggers, the room's effects on it),
     /// one per line, in the game's order (<see cref="CharacterTooltipHelper"/>).</item>
@@ -57,6 +57,7 @@ namespace MonsterTrainAccessibility.Module.Nodes
                 ? Strings.Battle("armor_hp", armor, unit.GetHP(), unit.GetMaxHP())
                 : Strings.Battle("hp", unit.GetHP(), unit.GetMaxHP()));
             parts.AddRange(Statuses(unit));
+            parts.AddRange(Equipment(unit));
             Add(parts, Ability(unit));
             parts.AddRange(Triggers(unit));
             return parts;
@@ -76,6 +77,19 @@ namespace MonsterTrainAccessibility.Module.Nodes
                 if (id == "armor" || id == "unit_ability" || id == "cooldown") continue;
                 string name = StatusEffectManager.GetLocalizedName(id, stack.Count, inBold: false, showStacks: state.ShowStackCount());
                 if (!string.IsNullOrWhiteSpace(name)) yield return name;
+            }
+        }
+
+        // Each piece of equipment the unit carries, by its card's title ("Windblade"); what it
+        // does is the game's tooltip, in the buffer.
+        private static IEnumerable<string> Equipment(CharacterState unit)
+        {
+            var equipment = unit.GetEquipment();
+            if (equipment == null) yield break;
+            foreach (var card in equipment)
+            {
+                string title = card?.GetTitle();
+                if (!string.IsNullOrWhiteSpace(title)) yield return title.Trim();
             }
         }
 
