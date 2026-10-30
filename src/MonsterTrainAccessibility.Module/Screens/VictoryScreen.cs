@@ -15,8 +15,8 @@ namespace MonsterTrainAccessibility.Module.Screens
 {
     /// <summary>
     /// A battle won (<see cref="VictoryUI"/>, over the battle's own screen). Opening it says the game's
-    /// banner ("Victory!"); then the score as the game draws it, a row of its entries ("Battle won,
-    /// +1,000", "4 damage taken, -8%"), what each entry is for in the buffer, then the total; then the
+    /// banner ("Victory!"); then the score, a row of its total and then its entries as the game draws
+    /// them ("Battle won, +1,000", "4 damage taken, -8%"), what each entry is for in the buffer; then the
     /// row of spoils, each by its tooltip ("Gain 50 Coin.", "Clan Pack: Gain a Clan Pack."); then Collect,
     /// which opens each spoil in turn through the game (the reward, the card draft). Escape collects,
     /// as in the game. Nothing is declared until the game shows Collect, nor while it is
@@ -77,6 +77,9 @@ namespace MonsterTrainAccessibility.Module.Screens
             if (entries.Length == 0 && !total) return;
             b.PushContext(Shown(victory.scoreSectionHeaderLabel), Strings.RoleList);
             b.StartRow();
+            if (total)
+                b.AddItem(ControlId.Structural("victory:total"), Line(
+                    () => Shown(victory.totalScoreLabel), () => Shown(victory.totalScoreAmountLabel), null));
             int i = 0;
             foreach (var entry in entries)
             {
@@ -84,9 +87,6 @@ namespace MonsterTrainAccessibility.Module.Screens
                 b.AddItem(ControlId.Structural("victory:score:" + i++), Line(
                     () => Shown(e.textContentLabel), () => Shown(e.scoreValueLabel), e.tooltipProvider));
             }
-            if (total)
-                b.AddItem(ControlId.Structural("victory:total"), Line(
-                    () => Shown(victory.totalScoreLabel), () => Shown(victory.totalScoreAmountLabel), null));
             b.EndRow();
             b.PopContext();
         }
