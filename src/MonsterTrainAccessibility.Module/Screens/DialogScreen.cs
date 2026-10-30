@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using MonsterTrainAccessibility.Contracts;
 using MonsterTrainAccessibility.Core.Graph;
 using MonsterTrainAccessibility.Core.Strings;
 using MonsterTrainAccessibility.Core.UI;
@@ -13,7 +14,8 @@ namespace MonsterTrainAccessibility.Module.Screens
     /// data's confirmations, notices, Bind Keys' conflicts), its top dialog: its message spoken as it
     /// opens, and again as each dialog that follows it does (Bind Keys asks once per control a key is
     /// taken from); its buttons in the game's captions the only controls. Enter presses through the
-    /// game; Escape closes it when the game lets a key close it.
+    /// game; Escape closes it when the game lets a key close it. A tutorial waiting for the game's own
+    /// arrow keys, with no buttons, hears the arrows.
     /// </summary>
     public sealed class DialogScreen : Screen
     {
@@ -31,8 +33,9 @@ namespace MonsterTrainAccessibility.Module.Screens
             }
         }
 
-        // The dialog whose message was said, and that message: a dialog that follows (or the same
-        // dialog shown again with another message) is said in turn.
+        // The dialog whose message was said, and that message as spoken: a dialog that follows (or the
+        // same dialog shown again with another message) is said in turn. Compared without its markup,
+        // since a tutorial's message reads with the game's <tutpress> tags on its first frame only.
         private Dialog _said;
         private string _saidText;
 
@@ -49,13 +52,14 @@ namespace MonsterTrainAccessibility.Module.Screens
             var dialog = Top;
             if (dialog == null) return;
             string message = dialog.contentLabel != null ? dialog.contentLabel.Content() : null;
-            if (!string.IsNullOrWhiteSpace(message) && (dialog != _said || message != _saidText))
+            string spoken = message != null ? TextFilter.Clean(message) : null;
+            if (!string.IsNullOrWhiteSpace(spoken) && (dialog != _said || spoken != _saidText))
             {
                 // A dialog that follows keeps the buttons' places, so focus stays put: its button is
                 // read again after the message, as the first dialog's landing is.
                 bool follows = _said != null;
                 _said = dialog;
-                _saidText = message;
+                _saidText = spoken;
                 ScreenIntro.Say(message);
                 var focused = (Core.UI.Navigation.Active as GraphNavigator)?.FocusedNodeId;
                 if (follows && focused != null) Core.UI.Navigation.FocusNode(focused);
@@ -69,10 +73,27 @@ namespace MonsterTrainAccessibility.Module.Screens
         public override IEnumerable<ElementAction> GetActions()
         {
             var dialog = Top;
-            if (dialog == null || !dialog.AllowKeyToClose()) yield break;
+            if (dialog == null) yield break;
+            if (WaitsForKeys(dialog))
+            {
+                yield return Forward(UiActions.Up, global::InputManager.Controls.Up);
+                yield return Forward(UiActions.Down, global::InputManager.Controls.Down);
+                yield return Forward(UiActions.Left, global::InputManager.Controls.Left);
+                yield return Forward(UiActions.Right, global::InputManager.Controls.Right);
+            }
+            if (!dialog.AllowKeyToClose()) yield break;
             yield return new ElementAction(ActionIds.Back, Strings.Get("bind.ui.back"),
                 _ => GameInput.Send(global::InputManager.Controls.Escape));
         }
+
+        // A battle tutorial that waits for the game's own key with no button to press ("Press Down now
+        // to try it": the focused card moved down, then up; a room-targeted card moved around): the
+        // game hears no keys in focus mode, so the arrows go to the dialog as the game's own would.
+        private static bool WaitsForKeys(Dialog dialog)
+            => dialog.data != null && dialog.data.hideAllButtons && dialog.data.applyScreenInput != null;
+
+        private static ElementAction Forward(string action, global::InputManager.Controls control)
+            => new ElementAction(action, Strings.Get("bind." + action), _ => GameInput.Send(control));
 
         private static void Choice(GraphBuilder b, string key, ShinyShoe.GameUISelectableButton button, TMPro.TMP_Text caption)
         {
