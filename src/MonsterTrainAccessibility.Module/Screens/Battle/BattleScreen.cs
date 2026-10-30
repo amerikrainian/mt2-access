@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using MonsterTrainAccessibility.Core;
+using MonsterTrainAccessibility.Core.Audio;
 using MonsterTrainAccessibility.Core.Graph;
 using MonsterTrainAccessibility.Core.Input;
 using MonsterTrainAccessibility.Core.Strings;
@@ -68,6 +69,12 @@ namespace MonsterTrainAccessibility.Module.Screens
         // Where a landing on each row goes this render: where it was last left, else its first item.
         private readonly Dictionary<string, ControlId> _rowLanding = new Dictionary<string, ControlId>();
 
+        // The units this render declared, by their item, and the battle's last landing (its item and
+        // row): a move along a floor from one side's unit onto the other's sounds the boundary.
+        private readonly Dictionary<ControlId, CharacterState> _unitAt = new Dictionary<ControlId, CharacterState>();
+        private ControlId _landedOn;
+        private string _landedRow;
+
         // A battle over (won: its victory panel, then the way out) is not the battle's to read. Nor one
         // the player is leaving (the Menu's Back to the Covenant Outpost or the Rift Station): the game
         // closes the Menu and loads the next screen with the battle still up and no longer interactable,
@@ -85,6 +92,7 @@ namespace MonsterTrainAccessibility.Module.Screens
         {
             var screen = Game;
             var rooms = Rooms;
+            _unitAt.Clear();
             if (screen == null || rooms == null || Dealing) return;
             var selection = Selection;
             if (selection == null || !selection.Active) _selectionPrompted = false;
@@ -213,6 +221,7 @@ namespace MonsterTrainAccessibility.Module.Screens
                 var focus = vt.OnFocus;
                 vt.OnFocus = () =>
                 {
+                    TeamBoundary(key, id);
                     _landFloor = -1;
                     _landHand = -1;
                     _lastInRow[key] = id;
@@ -223,6 +232,20 @@ namespace MonsterTrainAccessibility.Module.Screens
             }
             b.EndRow();
             b.PopContext();
+        }
+
+        // Main's boundary beep: a landing on a unit, from a unit of the other side along the same floor,
+        // sounds which side focus crossed onto (yours or the enemy's) before the unit is read.
+        private void TeamBoundary(string row, ControlId id)
+        {
+            var from = _landedOn;
+            bool sameRow = _landedRow == row;
+            _landedOn = id;
+            _landedRow = row;
+            if (!sameRow || from == null || !_unitAt.TryGetValue(from, out var before) || !_unitAt.TryGetValue(id, out var after)) return;
+            var side = after.GetTeamType();
+            if (before.GetTeamType() == side) return;
+            ModuleMain.Cues?.Play(side == Team.Type.Monsters ? AudioCue.TeamFriendly : AudioCue.TeamEnemy);
         }
 
         private static KeyValuePair<ControlId, NodeVtable> Item(string id, NodeVtable vt)
@@ -249,7 +272,9 @@ namespace MonsterTrainAccessibility.Module.Screens
                 var u = unit;
                 var vt = UnitNodes.Unit(u, null);
                 if (u.HasUnitAbility()) vt.OnActivate = () => UseAbility(u);
-                items.Add(Item("unit:" + u.GetInstanceID(), vt));
+                var item = Item("unit:" + u.GetInstanceID(), vt);
+                _unitAt[item.Key] = u;
+                items.Add(item);
             }
             if (items.Count == 0) items.Add(Item("floor:" + room + ":empty", GameNodes.Text(() => Strings.Battle("floor_empty"))));
             Row(b, "floor:" + room, FloorLabel(room), items, () =>

@@ -53,6 +53,7 @@ and its open risks are in `docs/plan.md`.
   `glossary [--all-languages]`, `titles` (no tooltip line says its name twice, titles still reading an
   icon), `compare [--all-languages]` (against the earlier spelling rule), `screen` (what the open
   screen's buffers gain); `--top N`, `--out FILE`. Cards need a screen with a card open (the Logbook).
+- `make_cues.py [--force]` — the placeholder sound cues under `assets/audio` (writes the missing ones).
 
 ## Build & deploy
 ```
@@ -275,6 +276,26 @@ and reports what it set aside, which `LanguageSync` logs. `lang/en.txt` is `Stri
 after adding or rewording a string run the tests once with `MTA_WRITE_LANG_TEMPLATE=1`, then add the
 key to every other file (`LangFilesTests`: one file per game language, complete, same slots as the
 English). Game terms are the game's own: read them from I2 (`LocalizationManager.GetTranslation`).
+
+## Sounds (`Core/Audio`, `Module/Audio`, `assets/audio`; Guildrun's, from dd2a11y)
+- **Cues** (`Core/Audio/AudioCue`): one enum value per sound, one file per cue at
+  `assets/audio/<group>/<snake_case name>.wav` (`AudioCues.RelativePath`); a real sound replaces a
+  placeholder 1:1 by file name. So far main's boundary beeps: `TeamFriendly` and `TeamEnemy`, played by
+  the battle when a move along a floor crosses from one side's unit to the other's
+  (`BattleScreen.TeamBoundary`, from `Row`'s focus hook; a floor change is silent, as on main).
+- **Engine** (`Module/Audio/UnityCueEngine`): MT2 plays everything through Unity audio (its
+  `CoreAudioSystem` pools AudioSources into an AudioMixer). Ours is a hidden object with four
+  AudioSources of our own (never the game's pool, so our pan and pitch never stay on a game source),
+  sent into the game's SFX mixer group (`SoundManager.audioSystem.AudioSystemData.MainSfxMixerGroup`)
+  so the SFX slider applies; clips decoded by `Core/Audio/WavFile` (PCM 8/16/24/32, float) on first play
+  and kept; object and clips destroyed in Dispose. An AudioSource cannot amplify, so volumes stop at
+  100 percent (`SoundVolume.MaxVolume`).
+- **Settings** (`Core/Audio/SoundSettings`, store keys `sound_*`): a master volume and per cue a volume
+  stored as a signed offset from it, plus an interval (least seconds between plays, blank for every
+  event). `ModuleMain.Cues` (`CuePlayer`) is the one door every cue goes through. The mod menu's
+  Sounds (`Screens/ModSoundsScreen`) lists the master and a volume row per cue (Left/Right step, Enter
+  previews); Guildrun's interval rows and its `NumberEdit` wait for a cue that fires often.
+- The module-only build deploys `assets/audio`; `build_release.ps1` ships it beside the dlls.
 
 ## Hard rules
 - **All speech through `Speech.Say`** (Core) -> the host `SpeechPipeline`; never call Prism directly.

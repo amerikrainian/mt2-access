@@ -203,6 +203,14 @@ namespace MonsterTrainAccessibility.Core.Strings
             D("mod.close", "Close"),
             D("mod.speak_positions", "Speak list positions"),
             D("mod.focus_on_launch", "Keyboard navigation on at launch"),
+            // The mod sounds (the mod menu's Sounds): the master volume, then a volume row per cue.
+            D("mod.sounds", "Sounds"),
+            D("sound.master", "Master volume"),
+            // A volume as spoken; {0} = the percent.
+            D("sound.percent", "{0} percent"),
+            // Volume row labels: what the mod plays each cue for (keyed "sound." + the cue's file name).
+            D("sound.team_friendly", "onto your units along a floor"),
+            D("sound.team_enemy", "onto enemy units along a floor"),
             // {0} = the key category, one of the three names below.
             D("mod.key_category", "{0} keys"),
             // The key categories of the "All keys" list: live everywhere, on the focused screen, in a run,
@@ -620,6 +628,11 @@ namespace MonsterTrainAccessibility.Core.Strings
         public static string ModClose => Get("mod.close");
         public static string ModSpeakPositions => Get("mod.speak_positions");
         public static string ModFocusOnLaunch => Get("mod.focus_on_launch");
+        public static string ModSounds => Get("mod.sounds");
+        public static string SoundMaster => Get("sound.master");
+        public static string SoundPercent(int percent) => F("sound.percent", percent);
+        /// <summary>What the mod plays a cue for, the label of its volume row.</summary>
+        public static string SoundLabel(Audio.AudioCue cue) => Get("sound." + Audio.AudioCues.FileName(cue));
         public static string ModKeyCategory(string category)
         {
             string name = "mod.category." + (category ?? "").ToLowerInvariant();

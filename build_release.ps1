@@ -1,6 +1,7 @@
 # Build the distributable mod zip: the vendored BepInEx 5 game-folder layout (BepInEx\core\,
 # winhttp.dll, doorstop_config.ini, .doorstop_version) plus the Release plugin output under
-# BepInEx\plugins\MonsterTrainAccessibility (the host, Contracts, Core and Module dlls, lang files),
+# BepInEx\plugins\MonsterTrainAccessibility (the host, Contracts, Core and Module dlls, lang files,
+# the sound cues under assets\audio),
 # prism.dll next to MonsterTrain2.exe, and the rendered mdbook manual under MT2AccessibilityDocs
 # when docs_src exists. The zip root IS the game folder, so the installer (and a manual user)
 # extracts it straight into the game dir.
@@ -127,6 +128,15 @@ try {
             Copy-Item -Path $langFiles.FullName -Destination $stageLangDir
         }
     }
+
+    # The sound cues, one wav per cue, under assets\audio\<group>\ beside the dlls.
+    $audioDir = Join-Path $scriptDir "assets\audio"
+    if (-not (Test-Path $audioDir)) {
+        throw "Required folder not found: $audioDir"
+    }
+    $stageAssetsDir = Join-Path $pluginDir "assets"
+    New-Item -ItemType Directory -Force $stageAssetsDir | Out-Null
+    Copy-Item -LiteralPath $audioDir -Destination (Join-Path $stageAssetsDir "audio") -Recurse
 
     if ($hasDocs) {
         # Packaging pattern adapted from SayTheSpire2: https://github.com/bradjrenshaw/say-the-spire2
