@@ -417,6 +417,13 @@ namespace MonsterTrainAccessibility.Core.Strings
             D("event_kind.character.chatter.idle", "Unit idle chatter"),
             D("event_kind.character.chatter.trigger", "Unit trigger chatter"),
             D("event_kind.merchant.chatter", "Merchant chatter"),
+            D("event_kind.basic", "Basic events"),
+            // The groups Event announcements lists its kinds under.
+            D("event_group.combat", "Combat"),
+            D("event_group.units", "Units"),
+            D("event_group.resources", "Resources"),
+            D("event_group.chatter", "Chatter"),
+            D("event_group.other", "Other"),
         };
 
         private static readonly Dictionary<string, string> _defaults = BuildDefaults();
@@ -672,5 +679,6 @@ namespace MonsterTrainAccessibility.Core.Strings
         public static string EventBuffer => Get("event_settings.buffer");
         public static string EventFriendly => Get("event_settings.friendly");
         public static string EventEnemy => Get("event_settings.enemy");
+        public static string EventGroup(string group) => Get("event_group." + (group ?? "").ToLowerInvariant());
     }
 }

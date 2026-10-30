@@ -89,5 +89,43 @@ namespace MonsterTrainAccessibility.Tests
                 GameEvents.Quotes.Clear();
             }
         }
+
+        [Fact]
+        public void AReportedEventIsLoggedAtOnceAndSaysWhetherToSpeakIt()
+        {
+            var store = new Store();
+            GameEvents.Store = () => store;
+            GameEvents.Suppressed = () => true;
+            GameEvents.Events.Clear();
+            try
+            {
+                // Never held back for a replay: what a screen shows now is not a replayed event.
+                Assert.True(GameEvents.Report(EventKinds.Basic, "Choose a reward."));
+                Assert.Equal(new[] { "Choose a reward." }, GameEvents.Events.Lines);
+                store.SetBool(EventKinds.Basic.AnnounceKey, false);
+                Assert.False(GameEvents.Report(EventKinds.Basic, "Gain 50 Coin."));
+                Assert.Equal("Gain 50 Coin.", GameEvents.Events.Lines[0]);
+                store.SetBool(EventKinds.Basic.BufferKey, false);
+                store.SetBool(EventKinds.Basic.AnnounceKey, true);
+                Assert.True(GameEvents.Report(EventKinds.Basic, "Not logged."));
+                Assert.Equal(2, GameEvents.Events.Lines.Count);
+            }
+            finally
+            {
+                GameEvents.Store = () => null;
+                GameEvents.Suppressed = () => false;
+                GameEvents.Events.Clear();
+            }
+        }
+
+        [Fact]
+        public void EveryKindHasALabelAndAGroupTheSettingsList()
+        {
+            foreach (var kind in EventKinds.All)
+            {
+                Assert.False(string.IsNullOrWhiteSpace(kind.Label()), kind.Key);
+                Assert.False(string.IsNullOrWhiteSpace(Core.Strings.Strings.EventGroup(kind.Group.ToString())), kind.Key);
+            }
+        }
     }
 }

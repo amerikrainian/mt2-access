@@ -60,7 +60,8 @@ namespace MonsterTrainAccessibility.Module.Screens
                 bool follows = _said != null;
                 _said = dialog;
                 _saidText = spoken;
-                ScreenIntro.Say(message);
+                // Basic events: the message goes to the events log, and is said unless turned off.
+                if (Core.Events.GameEvents.Report(Core.Events.EventKinds.Basic, message)) ScreenIntro.Say(message);
                 var focused = (Core.UI.Navigation.Active as GraphNavigator)?.FocusedNodeId;
                 if (follows && focused != null) Core.UI.Navigation.FocusNode(focused);
             }

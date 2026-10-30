@@ -20,8 +20,7 @@ Many controls have more information than should be spoken every time focus lands
 
 Press Ctrl+Shift+M (LT+Start) for the mod menu:
 
-- **Settings**: whether list items speak their position ("3 of 10"), and whether the mod's navigation is on at launch.
+- **Settings**: whether list items speak their position ("3 of 10"), whether the mod's navigation is on at launch, whether a card's text marks what an upgrade added ("new:"), and whether a place for a new unit is named by the units around it ("Between Shield Steward, Fel") or by its number.
+- **Event announcements**: the game's events in groups (Combat, Units, Resources, Chatter, Other). Each event has its own page: whether it is announced, whether it goes to the events buffer, and for events about units, whether they are reported for friendly units, enemy units or both. Other holds Basic events: dialog messages, character dialogue and story text.
 - **Sounds**: the volume of each sound the mod plays, with a master volume. Left and Right change a volume, Enter plays the sound.
 - **All Keys**: every key the mod has, by category.
-
-Which game events are announced, and which go to the events buffer, is set per event in the config file, `BepInEx\config\com.accessibility.monstertrain.cfg`, in the game folder.

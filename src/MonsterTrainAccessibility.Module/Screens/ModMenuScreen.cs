@@ -15,9 +15,9 @@ namespace MonsterTrainAccessibility.Module.Screens
     using ScreenManager = Core.Screens.ScreenManager;
 
     /// <summary>
-    /// The mod's own menu (Ctrl+Shift+M anywhere): Settings, Sounds, Key help, Close. An overlay above every
-    /// game screen, opened and closed by a static flag the poll picks up; its sub-screens are child
-    /// screens, so Escape walks back through them to the game.
+    /// The mod's own menu (Ctrl+Shift+M anywhere): Settings, Event announcements, Sounds, Key help,
+    /// Close. An overlay above every game screen, opened and closed by a static flag the poll picks up;
+    /// its sub-screens are child screens, so Escape walks back through them to the game.
     /// </summary>
     public sealed class ModMenuScreen : Screen
     {
@@ -37,6 +37,7 @@ namespace MonsterTrainAccessibility.Module.Screens
         {
             b.PushContext(Strings.ScreenModMenu, Strings.RoleList);
             b.AddItem(ControlId.Structural("modmenu:settings"), GameNodes.Button(() => Strings.ModSettings, () => PushChild(new ModSettingsScreen())));
+            b.AddItem(ControlId.Structural("modmenu:events"), GameNodes.Button(() => Strings.EventSettings, () => PushChild(new EventSettingsScreen())));
             b.AddItem(ControlId.Structural("modmenu:sounds"), GameNodes.Button(() => Strings.ModSounds, () => PushChild(new ModSoundsScreen())));
             b.AddItem(ControlId.Structural("modmenu:keys"), GameNodes.Button(() => Strings.ModKeyHelp, () => PushChild(new KeyHelpScreen())));
             b.AddItem(ControlId.Structural("modmenu:close"), GameNodes.Button(() => Strings.ModClose, Close));
@@ -78,7 +79,7 @@ namespace MonsterTrainAccessibility.Module.Screens
         }
 
         // The new state is spoken once, through StateText, as the game's own toggles speak theirs.
-        private static NodeVtable Toggle(Func<string> label, Func<bool> get, Action<bool> set)
+        internal static NodeVtable Toggle(Func<string> label, Func<bool> get, Action<bool> set)
         {
             Func<string> state = () => get() ? Strings.StateOn : Strings.StateOff;
             return new NodeVtable

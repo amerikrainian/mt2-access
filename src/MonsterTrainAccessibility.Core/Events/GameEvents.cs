@@ -86,6 +86,20 @@ namespace MonsterTrainAccessibility.Core.Events
             }
         }
 
+        /// <summary>
+        /// An event its screen speaks itself, at the moment it chooses (a dialog's message ahead of its
+        /// buttons): logged now as its kind's settings say; true when the kind is to be spoken. Never muted
+        /// or held back for a replay: it is what the screen shows now, not a replayed event.
+        /// </summary>
+        public static bool Report(EventKind kind, string text, EventSide side = EventSide.None)
+        {
+            if (kind == null || string.IsNullOrWhiteSpace(text)) return false;
+            var store = Store();
+            if (!kind.Passes(store, side)) return false;
+            if (kind.Buffers(store)) (kind.Log == EventLogKind.Quotes ? Quotes : Events).Add(text);
+            return kind.Announces(store);
+        }
+
         /// <summary>Drop what was raised and not yet flushed (a teardown).</summary>
         public static void Discard() => _pending.Clear();
     }

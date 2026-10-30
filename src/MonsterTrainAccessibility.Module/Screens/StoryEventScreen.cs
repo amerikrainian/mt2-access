@@ -101,8 +101,10 @@ namespace MonsterTrainAccessibility.Module.Screens
             string saidKey = _spokenKey;
             _spoken = text;
             _spokenKey = key;
-            Speech.Say(said != null && key.StartsWith(saidKey, System.StringComparison.Ordinal) && text.StartsWith(said, System.StringComparison.Ordinal)
-                ? text.Substring(said.Length) : text);
+            string added = said != null && key.StartsWith(saidKey, System.StringComparison.Ordinal) && text.StartsWith(said, System.StringComparison.Ordinal)
+                ? text.Substring(said.Length) : text;
+            // Basic events: what the page adds goes to the events log, and is said unless turned off.
+            if (Core.Events.GameEvents.Report(Core.Events.EventKinds.Basic, added)) Speech.Say(added);
         }
 
         private static readonly System.Text.RegularExpressions.Regex Markup = new System.Text.RegularExpressions.Regex(@"<[^>]*>|\s+");

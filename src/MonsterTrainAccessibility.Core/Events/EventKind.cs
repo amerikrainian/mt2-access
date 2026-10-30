@@ -20,6 +20,16 @@ namespace MonsterTrainAccessibility.Core.Events
         Quotes,
     }
 
+    /// <summary>The settings' groups of event kinds, in the order the settings list them.</summary>
+    public enum EventGroup
+    {
+        Combat,
+        Units,
+        Resources,
+        Chatter,
+        Other,
+    }
+
     /// <summary>
     /// One kind of game event the mod reports ("Unit damage", "Combat turn"), with its settings: whether
     /// it is spoken, whether it goes to its log, and, for kinds about units, which sides it is reported
@@ -35,12 +45,15 @@ namespace MonsterTrainAccessibility.Core.Events
         /// <summary>Whether the kind is reported per side (the units' kinds).</summary>
         public bool HasSourceFilter { get; }
         public EventLogKind Log { get; }
+        /// <summary>The settings' group the kind is listed under.</summary>
+        public EventGroup Group { get; }
 
         public EventKind(string key, Func<string> label, bool announce = true, bool buffer = true,
-            bool sourceFilter = false, EventLogKind log = EventLogKind.Events)
+            bool sourceFilter = false, EventLogKind log = EventLogKind.Events, EventGroup group = EventGroup.Other)
         {
             Key = key;
             Label = label;
+            Group = group;
             AnnounceDefault = announce;
             BufferDefault = buffer;
             HasSourceFilter = sourceFilter;
@@ -74,35 +87,38 @@ namespace MonsterTrainAccessibility.Core.Events
         private static readonly List<EventKind> _all = new List<EventKind>();
         public static IReadOnlyList<EventKind> All => _all;
 
-        private static EventKind K(string key, bool announce = true, bool sourceFilter = false, EventLogKind log = EventLogKind.Events)
+        private static EventKind K(string key, EventGroup group, bool announce = true, bool sourceFilter = false, EventLogKind log = EventLogKind.Events)
         {
-            var kind = new EventKind(key, () => Strings.Strings.Get("event_kind." + key), announce, true, sourceFilter, log);
+            var kind = new EventKind(key, () => Strings.Strings.Get("event_kind." + key), announce, true, sourceFilter, log, group);
             _all.Add(kind);
             return kind;
         }
 
-        public static readonly EventKind Phase = K("combat.phase");
-        public static readonly EventKind Turn = K("combat.turn");
-        public static readonly EventKind MoonPhase = K("combat.moon_phase");
-        public static readonly EventKind DeckShuffled = K("card.deck_shuffled");
-        public static readonly EventKind Ember = K("resource.energy");
-        public static readonly EventKind Gold = K("resource.gold");
-        public static readonly EventKind ForgePoints = K("resource.forge_points");
-        public static readonly EventKind PyreHp = K("pyre.hp");
-        public static readonly EventKind PyreArmor = K("pyre.armor");
-        public static readonly EventKind RelicTriggered = K("relic.triggered");
-        public static readonly EventKind Spawned = K("character.spawned", sourceFilter: true);
-        public static readonly EventKind Moved = K("character.moved", sourceFilter: true);
-        public static readonly EventKind Died = K("character.died", sourceFilter: true);
-        public static readonly EventKind Damage = K("character.damage", sourceFilter: true);
-        public static readonly EventKind Hp = K("character.hp", sourceFilter: true);
-        public static readonly EventKind Status = K("character.status", sourceFilter: true);
-        public static readonly EventKind Ability = K("character.ability", sourceFilter: true);
-        public static readonly EventKind ChatterSummoned = K("character.chatter.summoned", false, true, EventLogKind.Quotes);
-        public static readonly EventKind ChatterAttacking = K("character.chatter.attacking", false, true, EventLogKind.Quotes);
-        public static readonly EventKind ChatterSlay = K("character.chatter.slay", false, true, EventLogKind.Quotes);
-        public static readonly EventKind ChatterIdle = K("character.chatter.idle", false, true, EventLogKind.Quotes);
-        public static readonly EventKind ChatterTrigger = K("character.chatter.trigger", false, true, EventLogKind.Quotes);
-        public static readonly EventKind MerchantChatter = K("merchant.chatter", log: EventLogKind.Quotes);
+        public static readonly EventKind Phase = K("combat.phase", EventGroup.Combat);
+        public static readonly EventKind Turn = K("combat.turn", EventGroup.Combat);
+        public static readonly EventKind MoonPhase = K("combat.moon_phase", EventGroup.Combat);
+        public static readonly EventKind DeckShuffled = K("card.deck_shuffled", EventGroup.Combat);
+        public static readonly EventKind RelicTriggered = K("relic.triggered", EventGroup.Combat);
+        public static readonly EventKind Ember = K("resource.energy", EventGroup.Resources);
+        public static readonly EventKind Gold = K("resource.gold", EventGroup.Resources);
+        public static readonly EventKind ForgePoints = K("resource.forge_points", EventGroup.Resources);
+        public static readonly EventKind PyreHp = K("pyre.hp", EventGroup.Resources);
+        public static readonly EventKind PyreArmor = K("pyre.armor", EventGroup.Resources);
+        public static readonly EventKind Spawned = K("character.spawned", EventGroup.Units, sourceFilter: true);
+        public static readonly EventKind Moved = K("character.moved", EventGroup.Units, sourceFilter: true);
+        public static readonly EventKind Died = K("character.died", EventGroup.Units, sourceFilter: true);
+        public static readonly EventKind Damage = K("character.damage", EventGroup.Units, sourceFilter: true);
+        public static readonly EventKind Hp = K("character.hp", EventGroup.Units, sourceFilter: true);
+        public static readonly EventKind Status = K("character.status", EventGroup.Units, sourceFilter: true);
+        public static readonly EventKind Ability = K("character.ability", EventGroup.Units, sourceFilter: true);
+        public static readonly EventKind ChatterSummoned = K("character.chatter.summoned", EventGroup.Chatter, false, true, EventLogKind.Quotes);
+        public static readonly EventKind ChatterAttacking = K("character.chatter.attacking", EventGroup.Chatter, false, true, EventLogKind.Quotes);
+        public static readonly EventKind ChatterSlay = K("character.chatter.slay", EventGroup.Chatter, false, true, EventLogKind.Quotes);
+        public static readonly EventKind ChatterIdle = K("character.chatter.idle", EventGroup.Chatter, false, true, EventLogKind.Quotes);
+        public static readonly EventKind ChatterTrigger = K("character.chatter.trigger", EventGroup.Chatter, false, true, EventLogKind.Quotes);
+        public static readonly EventKind MerchantChatter = K("merchant.chatter", EventGroup.Chatter, log: EventLogKind.Quotes);
+        /// <summary>The text a screen says as it appears: a dialog's message, a character's dialogue, a
+        /// story's page (the old mod's "Basic events").</summary>
+        public static readonly EventKind Basic = K("basic", EventGroup.Other);
     }
 }

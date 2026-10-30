@@ -43,10 +43,11 @@ namespace MonsterTrainAccessibility.Module.Screens
             if (screen == null) return;
             string phrase = Phrase(screen);
             // The first phrase is read by focus landing on it; each after it replaces it in place, said
-            // as it starts.
+            // as it starts unless Basic events are turned off. Every phrase goes to the events log.
             if (phrase != null && phrase != _said)
             {
-                if (_said != null) Speech.Say(phrase, interrupt: true);
+                bool say = Core.Events.GameEvents.Report(Core.Events.EventKinds.Basic, phrase);
+                if (_said != null && say) Speech.Say(phrase, interrupt: true);
                 _said = phrase;
             }
             if (phrase == null) return;
