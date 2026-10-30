@@ -2,6 +2,8 @@
 
 ## V0.3.1
 
+The mod has been rebuilt from the ground up. We expect some regressions, though not too many. Most things should read the same. Some notable highlights.
+
 - The mod's own menu is now Ctrl+Shift+M (was Ctrl+M).
 - F1 lists only the keys that do something on the current screen and control; Enter on a row runs it.
 - Ctrl+Shift+A turns the mod's navigation off and hands the keyboard and controller back to the game, and on again.
