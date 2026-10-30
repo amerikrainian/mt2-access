@@ -1,24 +1,36 @@
-//! Monster Train 2 installer constants.
-//!
-//! This installer is adapted with permission from the SayTheSpire2 installer:
-//! https://github.com/bradjrenshaw/say-the-spire2
+// Adapted from the Non-Visual Calculus installer by Rashad Naqeeb (MIT),
+// https://github.com/rashadnaqeeb/NonVisualCalculus
 
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
-pub const GITHUB_API_URL: &str =
-    "https://api.github.com/repos/amerikrainian/mt2-access/releases/latest";
+// The full release list, newest first: one call serves both the latest-version
+// lookup and the per-version release notes shown after an update.
 pub const GITHUB_RELEASES_URL: &str =
-    "https://api.github.com/repos/amerikrainian/mt2-access/releases";
-pub const GAME_DIR_NAME: &str = "Monster Train 2";
-pub const INSTALLER_USER_AGENT: &str = "MonsterTrainAccessibilityInstaller";
-pub const BEPINEX_BOOTSTRAP_URL: &str =
-    "https://github.com/BepInEx/BepInEx/releases/download/v5.4.23.4/BepInEx_win_x64_5.4.23.4.zip";
+    "https://api.github.com/repos/amerikrainian/mt2-access/releases?per_page=100";
+pub const MOD_ZIP_PREFIX: &str = "MonsterTrainAccessibility-v";
+pub const MOD_ZIP_SUFFIX: &str = ".zip";
+pub const GAME_EXES: &[&str] = &["MonsterTrain2.exe"];
+pub const GAME_FOLDERS: &[&str] = &["Monster Train 2"];
+// The game is Unity on Mono: its code is Assembly-CSharp.dll in the data folder's Managed dir, in
+// every install, so together with the exe it identifies the game dir.
+pub const GAME_ASSEMBLY_MARKER: &str = "MonsterTrain2_Data/Managed/Assembly-CSharp.dll";
+pub const PLUGIN_REL: &str =
+    "BepInEx/plugins/MonsterTrainAccessibility/MonsterTrainAccessibility.dll";
+pub const MANIFEST_REL: &str = "BepInEx/config/MonsterTrainAccessibility/install.json";
+pub const BACKUPS_REL: &str = "BepInEx/config/MonsterTrainAccessibility/backups";
 
-pub const MOD_DLL: &str = "BepInEx/plugins/MonsterTrainAccessibility.dll";
-
-pub const MOD_OWNED_PATHS: &[&str] = &[
-    "BepInEx/plugins/MonsterTrainAccessibility.dll",
+// The single-DLL layout every release before 0.3.0 shipped (the main branch), straight into
+// BepInEx/plugins. Its plugin has the same assembly name and BepInEx GUID as the folder layout's
+// host, so the two must never load side by side: an install over it removes these files.
+pub const LEGACY_PLUGIN_REL: &str = "BepInEx/plugins/MonsterTrainAccessibility.dll";
+pub const LEGACY_FILES: &[&str] = &[
+    LEGACY_PLUGIN_REL,
+    // Shipped by both layouts; adopted so the new copy replaces it without a backup.
+    "prism.dll",
     "BepInEx/plugins/MonsterTrainAccessibility.deps.json",
+    "BepInEx/plugins/MonsterTrainAccessibility.pdb",
+    // Its System.Text.Json family, shipped loose into plugins. Removed only beside the legacy
+    // plugin (or listed by the legacy installer), so a copy another mod placed alone is kept.
     "BepInEx/plugins/System.Text.Json.dll",
     "BepInEx/plugins/System.Text.Encodings.Web.dll",
     "BepInEx/plugins/System.Memory.dll",
@@ -27,129 +39,43 @@ pub const MOD_OWNED_PATHS: &[&str] = &[
     "BepInEx/plugins/Microsoft.Bcl.AsyncInterfaces.dll",
     "BepInEx/plugins/System.Numerics.Vectors.dll",
     "BepInEx/plugins/System.Threading.Tasks.Extensions.dll",
+    // Its strings (the folder layout reads lang/<code>.txt beside the plugin).
+    "BepInEx/plugins/Localization/Strings/de.json",
+    "BepInEx/plugins/Localization/Strings/en.json",
+    "BepInEx/plugins/Localization/Strings/es.json",
+    "BepInEx/plugins/Localization/Strings/fr.json",
+    "BepInEx/plugins/Localization/Strings/ja.json",
+    "BepInEx/plugins/Localization/Strings/ko.json",
+    "BepInEx/plugins/Localization/Strings/pt.json",
+    "BepInEx/plugins/Localization/Strings/ru.json",
+    "BepInEx/plugins/Localization/Strings/zh-CN.json",
+    "BepInEx/plugins/Localization/Strings/zh-TW.json",
 ];
+// The manual both layouts ship; the legacy one's pages are adopted so stale ones are pruned.
+pub const DOCS_DIR_REL: &str = "MT2AccessibilityDocs";
+// The legacy installer's state, under %APPDATA%: `version` (also written by the legacy plugin on
+// every load) and `install_manifest.json` ({"files": [...]}, the game-relative files it owned).
+pub const LEGACY_STATE_DIR: &str = "MonsterTrainAccessibility";
+pub const LEGACY_STATE_FILES: &[&str] = &["version", "install_manifest.json"];
 
-pub const MOD_OWNED_PREFIXES: &[&str] = &["BepInEx/plugins/Localization/", "BepInEx/core/"];
-
-pub const SKIP_ZIP_PREFIXES: &[&str] = &["BepInEx/cache/"];
-
-pub const SKIP_ZIP_FILES: &[&str] = &[
-    "BepInEx/LogOutput.log",
-    "BepInEx/plugins/MonsterTrainAccessibility.pdb",
-    "readme.html",
-];
-
-/// Files we used to ship or may install as bootstrap/shared files. Uninstall
-/// only removes these if the install manifest says this installer created them.
-pub const BOOTSTRAP_FILES: &[&str] = &[
-    ".doorstop_version",
-    "doorstop_config.ini",
-    "winhttp.dll",
-    "prism.dll",
-];
-
-pub fn user_data_dir() -> PathBuf {
-    if cfg!(target_os = "windows") {
-        dirs::config_dir()
-            .unwrap_or_else(|| PathBuf::from("C:\\Users\\Default\\AppData\\Roaming"))
-            .join("MonsterTrainAccessibility")
-    } else if cfg!(target_os = "macos") {
-        dirs::home_dir()
-            .unwrap_or_else(|| PathBuf::from("/"))
-            .join("Library")
-            .join("Application Support")
-            .join("MonsterTrainAccessibility")
-    } else {
-        dirs::home_dir()
-            .unwrap_or_else(|| PathBuf::from("/"))
-            .join(".local")
-            .join("share")
-            .join("MonsterTrainAccessibility")
-    }
+pub fn manifest_path(game_dir: &Path) -> PathBuf {
+    game_dir.join(MANIFEST_REL)
 }
 
-pub fn appdata_mod_dir() -> PathBuf {
-    user_data_dir()
+/// %APPDATA%\MonsterTrainAccessibility, where the legacy installer kept its state.
+pub fn legacy_state_dir() -> Option<PathBuf> {
+    std::env::var_os("APPDATA").map(|appdata| PathBuf::from(appdata).join(LEGACY_STATE_DIR))
 }
 
-pub fn version_file() -> PathBuf {
-    appdata_mod_dir().join("version")
+pub fn normalize_rel(path: &str) -> String {
+    path.replace('\\', "/").trim_start_matches("./").to_string()
 }
 
-pub fn install_manifest_file() -> PathBuf {
-    appdata_mod_dir().join("install_manifest.json")
-}
-
-pub fn steam_defaults() -> Vec<PathBuf> {
-    if cfg!(target_os = "windows") {
-        vec![PathBuf::from("C:\\Program Files (x86)\\Steam")]
-    } else if cfg!(target_os = "macos") {
-        let home = dirs::home_dir().unwrap_or_else(|| PathBuf::from("/"));
-        vec![home
-            .join("Library")
-            .join("Application Support")
-            .join("Steam")]
-    } else {
-        let home = dirs::home_dir().unwrap_or_else(|| PathBuf::from("/"));
-        vec![
-            home.join(".steam").join("steam"),
-            home.join(".local").join("share").join("Steam"),
-        ]
-    }
-}
-
-pub fn normalized(path: &str) -> String {
-    path.replace('\\', "/")
-}
-
-pub fn is_mod_owned_path(path: &str) -> bool {
-    let path = normalized(path);
-    MOD_OWNED_PATHS.iter().any(|p| *p == path)
-        || MOD_OWNED_PREFIXES
-            .iter()
-            .any(|prefix| path.starts_with(prefix))
-}
-
-pub fn should_skip_zip_entry(path: &str) -> bool {
-    let path = normalized(path);
-    SKIP_ZIP_FILES.iter().any(|p| *p == path)
-        || SKIP_ZIP_PREFIXES
-            .iter()
-            .any(|prefix| path.starts_with(prefix))
-}
-
-pub fn is_bootstrap_path(path: &str) -> bool {
-    let path = normalized(path);
-    BOOTSTRAP_FILES.iter().any(|p| *p == path)
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn user_data_dir_is_not_empty() {
-        let dir = user_data_dir();
-        assert!(dir.to_string_lossy().contains("MonsterTrainAccessibility"));
-    }
-
-    #[test]
-    fn mod_owned_paths_cover_plugin_and_localization() {
-        assert!(is_mod_owned_path(
-            "BepInEx/plugins/MonsterTrainAccessibility.dll"
-        ));
-        assert!(is_mod_owned_path(
-            "BepInEx/plugins/Localization/strings/en.json"
-        ));
-        assert!(is_mod_owned_path("BepInEx/core/BepInEx.dll"));
-    }
-
-    #[test]
-    fn skip_entries_cover_logs_and_cache() {
-        assert!(should_skip_zip_entry("BepInEx/LogOutput.log"));
-        assert!(should_skip_zip_entry(
-            "BepInEx/cache/chainloader_typeloader.dat"
-        ));
-        assert!(!should_skip_zip_entry("BepInEx/core/BepInEx.dll"));
-    }
+pub fn required_loader_files() -> &'static [&'static str] {
+    &[
+        "winhttp.dll",
+        "doorstop_config.ini",
+        "BepInEx/core/BepInEx.dll",
+        PLUGIN_REL,
+    ]
 }

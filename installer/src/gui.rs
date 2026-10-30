@@ -1,41 +1,37 @@
-//! Accessible GUI installer.
-//!
-//! This installer is adapted with permission from the SayTheSpire2 installer:
-//! https://github.com/bradjrenshaw/say-the-spire2
+// Adapted from the Non-Visual Calculus installer by Rashad Naqeeb (MIT),
+// https://github.com/rashadnaqeeb/NonVisualCalculus
 
-use std::cell::RefCell;
-use std::path::PathBuf;
-use std::rc::Rc;
-
+use semver::Version;
 use wxdragon::prelude::*;
 
-use crate::core::{detect, github, install, uninstall};
-
-struct State {
-    release: Option<github::ReleaseInfo>,
-    all_releases: Vec<github::ReleaseInfo>,
-}
+use crate::core::detect::{self, GameInstall, GameSource};
+use crate::core::github::{self, Asset, ReleaseInfo};
+use crate::core::install::{self, InstallState};
+use crate::core::process;
+use crate::core::uninstall;
+use crate::i18n::{self, Strings, fill};
 
 pub fn run() {
-    wxdragon::main(|_app| {
+    let s = i18n::get();
+    wxdragon::main(move |_app| {
         let frame = Frame::builder()
-            .with_title("Monster Train 2 Accessibility Installer")
-            .with_size(Size::new(650, 500))
+            .with_title(s.app_title)
+            .with_size(Size::new(680, 430))
             .build();
 
         let panel = Panel::builder(&frame).build();
         let main_sizer = BoxSizer::builder(Orientation::Vertical).build();
 
         let status = StaticText::builder(&panel)
-            .with_label("Detecting game directory...")
+            .with_label(s.status_detecting)
             .build();
 
         let path_sizer = BoxSizer::builder(Orientation::Horizontal).build();
         let path_label = StaticText::builder(&panel)
-            .with_label("Game directory:")
+            .with_label(s.game_dir_label)
             .build();
         let path_input = TextCtrl::builder(&panel).build();
-        let browse_btn = Button::builder(&panel).with_label("Browse...").build();
+        let browse_btn = Button::builder(&panel).with_label(s.browse).build();
 
         path_sizer.add(&path_label, 0, SizerFlag::All, 4);
         path_sizer.add(&path_input, 1, SizerFlag::Expand | SizerFlag::All, 4);
@@ -48,16 +44,16 @@ pub fn run() {
             .build();
 
         let btn_sizer = BoxSizer::builder(Orientation::Horizontal).build();
-        let install_btn = Button::builder(&panel).with_label("Install").build();
-        let install_file_btn = Button::builder(&panel)
-            .with_label("Install from file...")
-            .build();
-        let uninstall_btn = Button::builder(&panel).with_label("Uninstall").build();
+        let install_btn = Button::builder(&panel).with_label(s.btn_install).build();
+        let reinstall_btn = Button::builder(&panel).with_label(s.btn_reinstall).build();
+        let uninstall_btn = Button::builder(&panel).with_label(s.btn_uninstall).build();
+        let close_btn = Button::builder(&panel).with_label(s.btn_close).build();
 
         btn_sizer.add_stretch_spacer(1);
         btn_sizer.add(&install_btn, 0, SizerFlag::All, 4);
-        btn_sizer.add(&install_file_btn, 0, SizerFlag::All, 4);
+        btn_sizer.add(&reinstall_btn, 0, SizerFlag::All, 4);
         btn_sizer.add(&uninstall_btn, 0, SizerFlag::All, 4);
+        btn_sizer.add(&close_btn, 0, SizerFlag::All, 4);
 
         main_sizer.add(&status, 0, SizerFlag::Expand | SizerFlag::All, 8);
         main_sizer.add_sizer(
@@ -68,96 +64,124 @@ pub fn run() {
         );
         main_sizer.add(&log, 1, SizerFlag::Expand | SizerFlag::All, 8);
         main_sizer.add_sizer(&btn_sizer, 0, SizerFlag::Expand | SizerFlag::All, 4);
-
         panel.set_sizer(main_sizer, true);
 
         install_btn.enable(false);
-        install_file_btn.enable(false);
+        reinstall_btn.enable(false);
         uninstall_btn.enable(false);
 
-        let state = Rc::new(RefCell::new(State {
-            release: None,
-            all_releases: Vec::new(),
-        }));
-
-        if let Some(detected) = detect::detect_game_path() {
-            path_input.set_value(&detected.to_string_lossy());
-            log_append(&log, &format!("Game directory: {}", detected.display()));
-            update_state(
-                &status,
-                &install_btn,
-                &install_file_btn,
-                &uninstall_btn,
-                &detected,
-                &state,
-                &log,
-            );
+        let releases = match github::fetch_releases() {
+            Ok(releases) => {
+                log_append(&log, s.log_connected);
+                releases
+            }
+            Err(e) => {
+                log_append(&log, &fill(s.log_github_error, &[("error", &e)]));
+                Vec::new()
+            }
+        };
+        let asset = github::latest_release(&releases).and_then(github::find_mod_zip);
+        if let Some(asset) = asset.as_ref() {
+            log_append(&log, &fill(s.log_latest_asset, &[("name", &asset.name)]));
         } else {
-            status.set_label("Game directory not found. Please browse to select it.");
-            log_append(&log, "Could not auto-detect game directory.");
+            log_append(&log, s.log_no_asset);
         }
 
-        match github::fetch_all_releases() {
-            Ok(releases) => {
-                let latest = releases.iter().find(|release| !release.prerelease).cloned();
-                if let Some(info) = latest.as_ref() {
-                    log_append(&log, &format!("Latest version: {}", info.tag_name));
+        let detected = detect::detect_game();
+        if let Some(detected) = detected.as_ref() {
+            path_input.set_value(&detected.path.to_string_lossy());
+            log_append(
+                &log,
+                &fill(
+                    s.log_detected_dir,
+                    &[("path", &detected.path.display().to_string())],
+                ),
+            );
+        } else {
+            status.set_label(s.status_not_found);
+            log_append(&log, s.log_could_not_detect);
+            // Name every folder that exists but failed validation, so a bug
+            // report says which file the rejected install was missing.
+            for candidate in detect::game_candidates() {
+                if !candidate.path.is_dir() {
+                    continue;
                 }
-                {
-                    let mut state_mut = state.borrow_mut();
-                    state_mut.all_releases = releases;
-                    state_mut.release = latest;
-                }
-                let path = PathBuf::from(path_input.get_value());
-                if detect::validate_game_path(&path) {
-                    update_state(
-                        &status,
-                        &install_btn,
-                        &install_file_btn,
-                        &uninstall_btn,
-                        &path,
-                        &state,
+                if let Some(missing) = detect::missing_marker(&candidate.path) {
+                    log_append(
                         &log,
+                        &fill(
+                            s.log_invalid_dir,
+                            &[
+                                ("path", &candidate.path.display().to_string()),
+                                ("missing", &missing),
+                            ],
+                        ),
                     );
                 }
             }
-            Err(e) => {
-                log_append(&log, &format!("Failed to check for updates: {}", e));
-                status.set_label("Could not connect to GitHub. Install/update unavailable.");
-            }
         }
+
+        refresh_state(
+            s,
+            &path_input,
+            detected.as_ref(),
+            &status,
+            &install_btn,
+            &reinstall_btn,
+            &uninstall_btn,
+            asset.as_ref(),
+            &log,
+        );
 
         {
             let frame_c = frame.clone();
             let path_input_c = path_input.clone();
             let status_c = status.clone();
             let install_btn_c = install_btn.clone();
-            let install_file_btn_c = install_file_btn.clone();
+            let reinstall_btn_c = reinstall_btn.clone();
             let uninstall_btn_c = uninstall_btn.clone();
             let log_c = log.clone();
-            let state_c = state.clone();
+            let asset_c = asset.clone();
+            let detected_c = detected.clone();
 
             browse_btn.on_click(move |_| {
-                let dialog =
-                    DirDialog::builder(&frame_c, "Select Monster Train 2 game directory", "")
-                        .build();
+                let dialog = DirDialog::builder(&frame_c, s.dir_dialog_title, "").build();
                 if dialog.show_modal() != ID_OK {
                     return;
                 }
-
                 let Some(path_str) = dialog.get_path() else {
                     return;
                 };
-                let path = PathBuf::from(&path_str);
-                apply_game_path(
-                    &path,
+                let path = std::path::PathBuf::from(&path_str);
+                if let Some(missing) = detect::missing_marker(&path) {
+                    log_append(
+                        &log_c,
+                        &fill(
+                            s.log_invalid_dir,
+                            &[
+                                ("path", &path.display().to_string()),
+                                ("missing", &missing),
+                            ],
+                        ),
+                    );
+                    status_c.set_label(s.status_invalid_dir);
+                    return;
+                }
+                path_input_c.set_value(&path.to_string_lossy());
+                log_append(
+                    &log_c,
+                    &fill(s.log_game_dir, &[("path", &path.display().to_string())]),
+                );
+                refresh_state(
+                    s,
                     &path_input_c,
+                    detected_c.as_ref(),
                     &status_c,
                     &install_btn_c,
-                    &install_file_btn_c,
+                    &reinstall_btn_c,
                     &uninstall_btn_c,
+                    asset_c.as_ref(),
                     &log_c,
-                    &state_c,
                 );
             });
         }
@@ -167,402 +191,367 @@ pub fn run() {
             let path_input_c = path_input.clone();
             let status_c = status.clone();
             let install_btn_c = install_btn.clone();
-            let install_file_btn_c = install_file_btn.clone();
+            let reinstall_btn_c = reinstall_btn.clone();
             let uninstall_btn_c = uninstall_btn.clone();
-            let browse_btn_c = browse_btn.clone();
             let log_c = log.clone();
-            let state_c = state.clone();
+            let asset_c = asset.clone();
+            let detected_c = detected.clone();
+            let releases_c = releases.clone();
 
             install_btn.on_click(move |_| {
-                let game_path = PathBuf::from(path_input_c.get_value());
-                let borrow = state_c.borrow();
-                if borrow.all_releases.is_empty() {
-                    return;
-                }
-
-                let choices: Vec<String> = borrow
-                    .all_releases
-                    .iter()
-                    .map(|release| {
-                        if release.prerelease {
-                            format!("{} (pre-release)", release.tag_name)
-                        } else {
-                            release.tag_name.clone()
-                        }
-                    })
-                    .collect();
-                let choice_refs: Vec<&str> = choices.iter().map(|choice| choice.as_str()).collect();
-                drop(borrow);
-
-                let dialog = SingleChoiceDialog::builder(
-                    &frame_c,
-                    "Select a version to install:",
-                    "Choose Version",
-                    &choice_refs,
-                )
-                .build();
-
-                if dialog.show_modal() != ID_OK {
-                    return;
-                }
-                let selection = dialog.get_selection();
-                if selection < 0 {
-                    return;
-                }
-
-                let borrow = state_c.borrow();
-                let info = &borrow.all_releases[selection as usize];
-                if !confirm_release_notes(&frame_c, info) {
-                    return;
-                }
-
-                let Some(asset) = github::find_zip_asset(&info.assets) else {
-                    log_append(&log_c, "Error: No .zip asset found in the release.");
+                let Some(asset) = asset_c.as_ref() else {
+                    show_logged_error(s, &frame_c, &log_c, s.err_no_zip);
                     return;
                 };
-
-                let url = asset.browser_download_url.clone();
-                let version = info.tag_name.clone();
-                drop(borrow);
-
-                set_buttons_enabled(
-                    false,
-                    &install_btn_c,
-                    &install_file_btn_c,
-                    &uninstall_btn_c,
-                    &browse_btn_c,
-                );
-                log_append(&log_c, "Downloading...");
-                status_c.set_label("Downloading...");
-
-                let result = install::download_and_extract(&url, &game_path, |_pct| {});
-
-                set_buttons_enabled(
-                    true,
-                    &install_btn_c,
-                    &install_file_btn_c,
-                    &uninstall_btn_c,
-                    &browse_btn_c,
-                );
-
-                match result {
-                    Ok(()) => {
-                        if let Err(e) = install::save_installed_version(&version) {
-                            log_append(&log_c, &format!("Warning: {}", e));
-                        }
-                        log_append(
-                            &log_c,
-                            &format!("Successfully installed version {}.", version),
-                        );
-                        update_state(
-                            &status_c,
-                            &install_btn_c,
-                            &install_file_btn_c,
-                            &uninstall_btn_c,
-                            &game_path,
-                            &state_c,
-                            &log_c,
-                        );
-                        MessageDialog::builder(
-                            &frame_c,
-                            &format!(
-                                "Monster Train 2 Accessibility version {} installed successfully.",
-                                version
-                            ),
-                            "Installation Complete",
-                        )
-                        .with_style(MessageDialogStyle::OK | MessageDialogStyle::IconInformation)
-                        .build()
-                        .show_modal();
-                    }
-                    Err(e) => {
-                        log_append(&log_c, &format!("Error: {}", e));
-                        MessageDialog::builder(&frame_c, &e, "Installation Failed")
-                            .with_style(MessageDialogStyle::OK | MessageDialogStyle::IconError)
-                            .build()
-                            .show_modal();
-                    }
-                }
-            });
-        }
-
-        {
-            let frame_c = frame.clone();
-            let path_input_c = path_input.clone();
-            let status_c = status.clone();
-            let install_btn_c = install_btn.clone();
-            let install_file_btn_c = install_file_btn.clone();
-            let uninstall_btn_c = uninstall_btn.clone();
-            let log_c = log.clone();
-            let state_c = state.clone();
-
-            install_file_btn.on_click(move |_| {
-                let game_path = PathBuf::from(path_input_c.get_value());
-                let dialog = FileDialog::builder(&frame_c)
-                    .with_message("Select mod zip file")
-                    .with_wildcard("Zip files (*.zip)|*.zip")
-                    .with_style(FileDialogStyle::Open | FileDialogStyle::FileMustExist)
-                    .build();
-
-                if dialog.show_modal() != ID_OK {
-                    return;
-                }
-                let Some(zip_path_str) = dialog.get_path() else {
+                let Some(game) = game_from_input(&path_input_c, detected_c.as_ref()) else {
+                    show_logged_error(s, &frame_c, &log_c, s.err_select_valid);
                     return;
                 };
-                let zip_path = PathBuf::from(&zip_path_str);
-
-                match install::install_from_file(&zip_path, &game_path) {
-                    Ok(()) => {
-                        log_append(
-                            &log_c,
-                            &format!(
-                                "Installed from {}.",
-                                zip_path.file_name().unwrap_or_default().to_string_lossy()
-                            ),
-                        );
-                        update_state(
-                            &status_c,
-                            &install_btn_c,
-                            &install_file_btn_c,
-                            &uninstall_btn_c,
-                            &game_path,
-                            &state_c,
-                            &log_c,
-                        );
-                        MessageDialog::builder(
-                            &frame_c,
-                            "Monster Train 2 Accessibility installed successfully from file.",
-                            "Installation Complete",
-                        )
-                        .with_style(MessageDialogStyle::OK | MessageDialogStyle::IconInformation)
-                        .build()
-                        .show_modal();
-                    }
-                    Err(e) => {
-                        log_append(&log_c, &format!("Error: {}", e));
-                        MessageDialog::builder(&frame_c, &e, "Error")
-                            .with_style(MessageDialogStyle::OK | MessageDialogStyle::IconError)
-                            .build()
-                            .show_modal();
-                    }
-                }
-            });
-        }
-
-        {
-            let frame_c = frame.clone();
-            let path_input_c = path_input.clone();
-            let status_c = status.clone();
-            let install_btn_c = install_btn.clone();
-            let install_file_btn_c = install_file_btn.clone();
-            let uninstall_btn_c = uninstall_btn.clone();
-            let log_c = log.clone();
-            let state_c = state.clone();
-
-            uninstall_btn.on_click(move |_| {
-                let game_path = PathBuf::from(path_input_c.get_value());
-                let dialog = MessageDialog::builder(
-                    &frame_c,
-                    "Remove files installed by the Monster Train 2 Accessibility installer?",
-                    "Confirm Uninstall",
-                )
-                .with_style(MessageDialogStyle::YesNo | MessageDialogStyle::IconQuestion)
-                .build();
-
-                if dialog.show_modal() != ID_YES {
-                    return;
-                }
-
-                let removed = uninstall::uninstall_mod(&game_path);
-                if removed.is_empty() {
-                    log_append(&log_c, "No installer-owned mod files found to remove.");
-                } else {
-                    log_append(&log_c, &format!("Removed: {}", removed.join(", ")));
-                }
-
-                let remove_state = MessageDialog::builder(
-                    &frame_c,
-                    "Also remove installer version and manifest state?",
-                    "Remove Installer State",
-                )
-                .with_style(MessageDialogStyle::YesNo | MessageDialogStyle::IconQuestion)
-                .build()
-                .show_modal();
-
-                if remove_state == ID_YES {
-                    match uninstall::remove_installer_state() {
-                        Ok(()) => log_append(&log_c, "Removed installer state."),
-                        Err(e) => log_append(&log_c, &format!("Error: {}", e)),
-                    }
-                }
-
-                update_state(
+                install_asset(s, &frame_c, &game, asset, false, &releases_c, &log_c);
+                refresh_state(
+                    s,
+                    &path_input_c,
+                    detected_c.as_ref(),
                     &status_c,
                     &install_btn_c,
-                    &install_file_btn_c,
+                    &reinstall_btn_c,
                     &uninstall_btn_c,
-                    &game_path,
-                    &state_c,
+                    Some(asset),
                     &log_c,
                 );
-                MessageDialog::builder(
+            });
+        }
+
+        {
+            let frame_c = frame.clone();
+            let path_input_c = path_input.clone();
+            let status_c = status.clone();
+            let install_btn_c = install_btn.clone();
+            let reinstall_btn_c = reinstall_btn.clone();
+            let uninstall_btn_c = uninstall_btn.clone();
+            let log_c = log.clone();
+            let asset_c = asset.clone();
+            let detected_c = detected.clone();
+            let releases_c = releases.clone();
+
+            reinstall_btn.on_click(move |_| {
+                let Some(asset) = asset_c.as_ref() else {
+                    show_logged_error(s, &frame_c, &log_c, s.err_no_zip);
+                    return;
+                };
+                let Some(game) = game_from_input(&path_input_c, detected_c.as_ref()) else {
+                    show_logged_error(s, &frame_c, &log_c, s.err_select_valid);
+                    return;
+                };
+                install_asset(s, &frame_c, &game, asset, true, &releases_c, &log_c);
+                refresh_state(
+                    s,
+                    &path_input_c,
+                    detected_c.as_ref(),
+                    &status_c,
+                    &install_btn_c,
+                    &reinstall_btn_c,
+                    &uninstall_btn_c,
+                    Some(asset),
+                    &log_c,
+                );
+            });
+        }
+
+        {
+            let frame_c = frame.clone();
+            let path_input_c = path_input.clone();
+            let status_c = status.clone();
+            let install_btn_c = install_btn.clone();
+            let reinstall_btn_c = reinstall_btn.clone();
+            let uninstall_btn_c = uninstall_btn.clone();
+            let log_c = log.clone();
+            let asset_c = asset.clone();
+            let detected_c = detected.clone();
+
+            uninstall_btn.on_click(move |_| {
+                let Some(game) = game_from_input(&path_input_c, detected_c.as_ref()) else {
+                    show_logged_error(s, &frame_c, &log_c, s.err_select_valid);
+                    return;
+                };
+                let state = install::classify_install(&game.path);
+                let InstallState::Managed(manifest) = state else {
+                    show_logged_error(s, &frame_c, &log_c, s.err_uninstall_managed_only);
+                    return;
+                };
+                let confirm = MessageDialog::builder(
                     &frame_c,
-                    "Monster Train 2 Accessibility has been uninstalled.",
-                    "Uninstall Complete",
+                    s.confirm_uninstall,
+                    s.confirm_uninstall_title,
                 )
-                .with_style(MessageDialogStyle::OK | MessageDialogStyle::IconInformation)
+                .with_style(MessageDialogStyle::YesNo | MessageDialogStyle::IconQuestion)
                 .build()
                 .show_modal();
+                if confirm != ID_YES {
+                    return;
+                }
+                if process::is_game_running() {
+                    show_logged_error(s, &frame_c, &log_c, s.err_close_game_uninstall);
+                    return;
+                }
+                match uninstall::uninstall(&game.path, &manifest) {
+                    Ok(()) => {
+                        log_append(&log_c, s.msg_uninstall_complete);
+                        show_info(s, &frame_c, s.msg_uninstall_complete);
+                    }
+                    Err(e) => show_logged_error(
+                        s,
+                        &frame_c,
+                        &log_c,
+                        &fill(s.msg_uninstall_failed, &[("error", &e)]),
+                    ),
+                }
+                refresh_state(
+                    s,
+                    &path_input_c,
+                    detected_c.as_ref(),
+                    &status_c,
+                    &install_btn_c,
+                    &reinstall_btn_c,
+                    &uninstall_btn_c,
+                    asset_c.as_ref(),
+                    &log_c,
+                );
+            });
+        }
+
+        {
+            let frame_c = frame.clone();
+            close_btn.on_click(move |_| {
+                frame_c.close(true);
             });
         }
 
         frame.show(true);
     })
-    .expect("Failed to start application");
+    .expect("Failed to start installer UI");
 }
 
-fn confirm_release_notes(parent: &impl WxWidget, info: &github::ReleaseInfo) -> bool {
-    if info.body.is_empty() {
-        return true;
+fn game_from_input(path_input: &TextCtrl, detected: Option<&GameInstall>) -> Option<GameInstall> {
+    let path = std::path::PathBuf::from(path_input.get_value());
+    if !detect::validate_game_dir(&path) {
+        return None;
     }
-
-    MessageDialog::builder(
-        parent,
-        &format!(
-            "Release notes for {}:\n\n{}\n\nProceed?",
-            info.tag_name, info.body
-        ),
-        &format!("Install {}", info.tag_name),
-    )
-    .with_style(MessageDialogStyle::YesNo | MessageDialogStyle::IconQuestion)
-    .build()
-    .show_modal()
-        == ID_YES
+    // The input is pre-filled from auto-detection; only a path the user changed is manual.
+    let source = match detected {
+        Some(detected) if detected.path == path => detected.source.clone(),
+        _ => GameSource::Manual,
+    };
+    Some(GameInstall { path, source })
 }
 
-fn apply_game_path(
-    path: &std::path::Path,
+fn refresh_state(
+    s: &'static Strings,
     path_input: &TextCtrl,
+    detected: Option<&GameInstall>,
     status: &StaticText,
     install_btn: &Button,
-    install_file_btn: &Button,
+    reinstall_btn: &Button,
     uninstall_btn: &Button,
+    asset: Option<&Asset>,
     log: &TextCtrl,
-    state: &Rc<RefCell<State>>,
 ) {
-    if !detect::validate_game_path(path) {
-        log_append(log, &format!("Invalid game directory: {}", path.display()));
-        status.set_label("Invalid game directory. Please browse to select it.");
+    let Some(game) = game_from_input(path_input, detected) else {
+        install_btn.enable(false);
+        reinstall_btn.enable(false);
+        uninstall_btn.enable(false);
+        return;
+    };
+
+    let state = install::classify_install(&game.path);
+    let has_asset = asset.is_some();
+
+    match &state {
+        InstallState::Fresh => {
+            status.set_label(s.status_ready);
+            install_btn.set_label(s.btn_install);
+            install_btn.enable(has_asset);
+            reinstall_btn.enable(false);
+            uninstall_btn.enable(false);
+        }
+        InstallState::Unmanaged => {
+            status.set_label(s.status_unmanaged);
+            install_btn.set_label(s.btn_repair);
+            install_btn.enable(has_asset);
+            reinstall_btn.enable(false);
+            uninstall_btn.enable(false);
+        }
+        InstallState::Legacy(version) => {
+            match version {
+                Some(version) => {
+                    status.set_label(&fill(s.status_legacy_version, &[("version", version)]))
+                }
+                None => status.set_label(s.status_legacy),
+            }
+            install_btn.set_label(s.btn_update);
+            install_btn.enable(has_asset);
+            reinstall_btn.enable(false);
+            uninstall_btn.enable(false);
+        }
+        InstallState::DamagedState(reason) => {
+            status.set_label(s.status_damaged);
+            log_append(log, &fill(s.log_damaged_state, &[("reason", reason)]));
+            install_btn.set_label(s.btn_repair);
+            install_btn.enable(has_asset);
+            reinstall_btn.enable(false);
+            uninstall_btn.enable(false);
+        }
+        InstallState::Managed(manifest) => {
+            let update_available = match (
+                Version::parse(&manifest.mod_version).ok(),
+                asset
+                    .and_then(|a| a.version())
+                    .and_then(|v| Version::parse(&v).ok()),
+            ) {
+                (Some(installed), Some(latest)) => installed < latest,
+                _ => has_asset,
+            };
+            if update_available {
+                status.set_label(&fill(
+                    s.status_update_available,
+                    &[("version", &manifest.mod_version)],
+                ));
+                install_btn.set_label(s.btn_update);
+                install_btn.enable(has_asset);
+            } else {
+                status.set_label(&fill(
+                    s.status_up_to_date,
+                    &[("version", &manifest.mod_version)],
+                ));
+                install_btn.set_label(s.btn_update);
+                install_btn.enable(false);
+            }
+            reinstall_btn.enable(has_asset);
+            uninstall_btn.enable(true);
+        }
+    }
+}
+
+fn install_asset(
+    s: &'static Strings,
+    parent: &impl WxWidget,
+    game: &GameInstall,
+    asset: &Asset,
+    force: bool,
+    releases: &[ReleaseInfo],
+    log: &TextCtrl,
+) {
+    if process::is_game_running() {
+        show_logged_error(s, parent, log, s.err_close_game_install);
         return;
     }
 
-    path_input.set_value(&path.to_string_lossy());
-    log_append(log, &format!("Game directory: {}", path.display()));
-    update_state(
-        status,
-        install_btn,
-        install_file_btn,
-        uninstall_btn,
-        path,
-        state,
-        log,
-    );
-}
+    let state = install::classify_install(&game.path);
+    if !force {
+        if let (Some(installed), Some(latest)) = (
+            install::installed_version(&state),
+            asset.version().and_then(|v| Version::parse(&v).ok()),
+        ) {
+            if installed >= latest {
+                log_append(log, s.msg_already_up_to_date);
+                show_info(s, parent, s.msg_already_up_to_date);
+                return;
+            }
+        }
+    }
 
-fn update_state(
-    status: &StaticText,
-    install_btn: &Button,
-    install_file_btn: &Button,
-    uninstall_btn: &Button,
-    game_path: &std::path::Path,
-    state: &Rc<RefCell<State>>,
-    log: &TextCtrl,
-) {
-    let mod_installed = detect::is_mod_installed(game_path);
-    let installed_version = install::get_installed_version();
-    let has_valid_path = detect::validate_game_path(game_path);
+    let temp_dir = install::temp_session_dir();
+    let zip_path = temp_dir.join(&asset.name);
+    log_append(log, &fill(s.log_downloading, &[("name", &asset.name)]));
 
-    install_file_btn.enable(has_valid_path);
-    uninstall_btn.enable(mod_installed);
+    let result = (|| {
+        github::download_asset(asset, &zip_path)?;
+        if let Some(expected) = asset.sha256_digest() {
+            log_append(log, s.log_verifying);
+            install::verify_sha256(&zip_path, &expected)?;
+        }
+        log_append(log, s.log_installing);
+        install::install_from_zip(&zip_path, &game.path, &game.source, asset, &state)?;
+        Ok::<(), String>(())
+    })();
+    let _ = std::fs::remove_dir_all(&temp_dir);
 
-    if mod_installed {
-        log_append(
+    match result {
+        Ok(()) => {
+            log_append(log, s.msg_install_complete);
+            log_append(log, s.msg_first_launch_note);
+            for line in changelog_lines(s, &state, asset, releases) {
+                log_append(log, &line);
+            }
+            show_info(
+                s,
+                parent,
+                &format!("{}\n\n{}", s.msg_install_complete, s.msg_first_launch_note),
+            );
+        }
+        Err(e) => show_logged_error(
+            s,
+            parent,
             log,
-            &format!(
-                "Installed version: {}",
-                installed_version.as_deref().unwrap_or("unknown")
-            ),
-        );
-    }
-
-    let borrow = state.borrow();
-    if let Some(info) = borrow.release.as_ref() {
-        let latest = &info.tag_name;
-        if !has_valid_path {
-            install_btn.enable(false);
-            return;
-        }
-
-        if !mod_installed {
-            install_btn.set_label("Install");
-            install_btn.enable(true);
-            status.set_label(&format!("Ready to install version {}.", latest));
-        } else if is_up_to_date(installed_version.as_deref(), latest) {
-            install_btn.set_label("Install");
-            install_btn.enable(true);
-            status.set_label(&format!(
-                "Monster Train 2 Accessibility is up to date (version {}). Select Install to choose a version.",
-                latest
-            ));
-        } else {
-            install_btn.set_label("Update");
-            install_btn.enable(true);
-            status.set_label(&format!(
-                "Update available: {} to {}",
-                installed_version.as_deref().unwrap_or("unknown"),
-                latest
-            ));
-        }
+            &fill(s.msg_install_failed, &[("error", &e)]),
+        ),
     }
 }
 
-fn set_buttons_enabled(
-    enabled: bool,
-    install_btn: &Button,
-    install_file_btn: &Button,
-    uninstall_btn: &Button,
-    browse_btn: &Button,
-) {
-    install_btn.enable(enabled);
-    install_file_btn.enable(enabled);
-    uninstall_btn.enable(enabled);
-    browse_btn.enable(enabled);
-}
-
-fn parse_version(s: &str) -> Option<semver::Version> {
-    let trimmed = s
-        .strip_prefix('v')
-        .or_else(|| s.strip_prefix('V'))
-        .unwrap_or(s);
-    semver::Version::parse(trimmed).ok()
-}
-
-fn is_up_to_date(installed: Option<&str>, latest: &str) -> bool {
-    let Some(installed) = installed else {
-        return false;
+/// The release notes of every version this install crossed, as displayable lines:
+/// a header, then each version's heading and body, oldest first. Empty for a fresh
+/// install (no starting version) and for a reinstall of the same version.
+fn changelog_lines(
+    s: &Strings,
+    state_before: &InstallState,
+    asset: &Asset,
+    releases: &[ReleaseInfo],
+) -> Vec<String> {
+    let Some(from) = install::installed_version(state_before) else {
+        return Vec::new();
     };
-    match (parse_version(installed), parse_version(latest)) {
-        (Some(installed_version), Some(latest_version)) => installed_version >= latest_version,
-        _ => installed == latest,
+    let Some(to) = asset.version().and_then(|v| Version::parse(&v).ok()) else {
+        return Vec::new();
+    };
+    let entries = github::changelog_between(releases, &from, &to);
+    if entries.is_empty() {
+        return Vec::new();
     }
+    let mut lines = vec![fill(s.log_whats_new, &[("version", &from.to_string())])];
+    for (version, body) in entries {
+        lines.push(fill(
+            s.log_whats_new_version,
+            &[("version", &version.to_string())],
+        ));
+        lines.push(body.to_string());
+    }
+    lines
 }
 
-fn log_append(log: &TextCtrl, msg: &str) {
+fn log_append(log: &TextCtrl, message: &str) {
     let current = log.get_value();
     if current.is_empty() {
-        log.set_value(msg);
+        log.set_value(message);
     } else {
-        log.set_value(&format!("{}\n{}", current, msg));
+        log.set_value(&format!("{current}\n{message}"));
     }
+}
+
+fn show_info(s: &Strings, parent: &impl WxWidget, message: &str) {
+    MessageDialog::builder(parent, message, s.app_title)
+        .with_style(MessageDialogStyle::OK | MessageDialogStyle::IconInformation)
+        .build()
+        .show_modal();
+}
+
+fn show_error(s: &Strings, parent: &impl WxWidget, message: &str) {
+    MessageDialog::builder(parent, message, s.app_title)
+        .with_style(MessageDialogStyle::OK | MessageDialogStyle::IconError)
+        .build()
+        .show_modal();
+}
+
+fn show_logged_error(s: &Strings, parent: &impl WxWidget, log: &TextCtrl, message: &str) {
+    log_append(log, message);
+    show_error(s, parent, message);
 }

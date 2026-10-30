@@ -14,9 +14,11 @@ and its open risks are in `docs/plan.md`.
 - **Install**: `C:\Program Files (x86)\Steam\steamapps\common\Monster Train 2` (Steam app **2742830**).
   The build resolves it itself (`Directory.Build.props`: `-p:GameDir=`, `MONSTER_TRAIN_PATH`, the
   Steam registry, the default path, or a gitignored `Directory.Build.local.props`).
-- **Modding framework**: **BepInEx 5.4.23** (Mono), installed in the game folder. HarmonyX in
+- **Modding framework**: **BepInEx 5.4.23.4** (Mono), vendored as the release zip in
+  `third_party\bepinex` and installed in the game folder by `setup-bepinex.ps1`. HarmonyX in
   `BepInEx\core\0Harmony.dll`, Mono.Cecil beside it.
-- **Speech**: Prism (`prism\native\win-x64\prism.dll`, deployed next to `MonsterTrain2.exe`) via
+- **Speech**: Prism v0.16.7 (`third_party\prism\prism.dll`, vendored with its header and licenses:
+  `third_party\prism\README.md`; deployed next to `MonsterTrain2.exe`) via
   hand-written P/Invoke in the host (`src/MonsterTrainAccessibility/Speech/`).
 - **Input**: the game reads input through `ShinyShoe.CoreInput` and its drivers
   (`CoreInputDriverKeyboard` polls the legacy `UnityEngine.Input.GetKey` per key it tracks,
@@ -72,8 +74,44 @@ removing `plugins\MonsterTrainAccessibility\` first.
 - Launch: `"/c/Program Files (x86)/Steam/steam.exe" -applaunch 2742830`, then wait with
   `curl -s --retry 60 --retry-connrefused --retry-delay 2 --retry-all-errors http://127.0.0.1:8772/health`.
   Kill from the Bash tool: `MSYS_NO_PATHCONV=1 taskkill.exe /F /IM MonsterTrain2.exe`.
-- Release builds (`-c Release`) compile without deploying. Release packaging and the installer still
-  target main's layout: see `docs/plan.md`.
+- First-time setup: `.\setup-bepinex.ps1` (extracts the vendored BepInEx over the game folder the
+  build resolves), then build. `.\build.ps1 [-ModuleOnly]` checks BepInEx is there and runs the
+  Debug build.
+- Release builds (`-c Release`) compile without deploying.
+
+## Releases (Guildrun's tooling, the dd2a11y / Non-Visual Calculus pattern)
+The version lives in `Directory.Build.props` alone (`<Version>`; the host's `BuildVersion` constant
+is generated from it). A release is: bump the version, add a `## Vx.y.z` section to `CHANGELOG.md`
+(the release notes are read from it; a missing file or an empty section fails), commit, tag `vx.y.z`
+and push the tag, then:
+- `build_release.ps1 [-GameDir X]` — `releases\MonsterTrainAccessibility-vX.Y.Z.zip`: the vendored
+  BepInEx 5 zip's game-folder layout (`BepInEx\core\`, `winhttp.dll`, `doorstop_config.ini`,
+  `.doorstop_version`; its `changelog.txt` dropped), the four mod DLLs (host, Contracts, Core, Module)
+  from a clean Release build under `BepInEx\plugins\MonsterTrainAccessibility`, `lang\*.txt` beside
+  them, `prism.dll` at the root, and the mdbook manual (`docs_src`) as `MT2AccessibilityDocs`. The
+  DLLs are picked by name: the dev server's Roslyn assemblies and `_RoslynFacade`s are Debug-only and
+  are NOT shipped (the Release host compiles the dev server out with `#if DEBUG`). No `BepInEx.cfg`
+  (BepInEx 5 keeps its console off by default) and no pdb. The zip root is the game folder: a manual
+  user extracts it over the game dir.
+- `build-installer.ps1` — `releases\MonsterTrainAccessibilityInstaller.exe` from `installer\` (Rust +
+  wxWidgets: needs cargo, libclang, ninja; `test-installer.ps1` runs its unit tests, which touch only
+  temp dirs; `cargo run --release --example cli` is the CLI without the elevation manifest). It finds
+  the Steam install (`MONSTER_TRAIN_PATH`, registry, library folders), downloads the newest release's
+  zip from GitHub, verifies the digest, installs with backups and an install manifest
+  (`BepInEx\config\MonsterTrainAccessibility\install.json`), updates, repairs, uninstalls. The mod
+  never writes installer state; the installed version is the manifest's. Its game facts are the
+  constants in `installer\src\core\paths.rs` (exe, folder name, the Mono marker
+  `MonsterTrain2_Data/Managed/Assembly-CSharp.dll`, the plugin path, the releases URL:
+  `amerikrainian/mt2-access`). An install over main's single-DLL layout (`core\legacy.rs`, evidence:
+  `plugins\MonsterTrainAccessibility.dll`) adopts that layout's files (`LEGACY_FILES`, the legacy
+  installer's `%APPDATA%\MonsterTrainAccessibility\install_manifest.json` list, the old manual's
+  pages) as the prior install's, so they are pruned without backups, then deletes that `%APPDATA%`
+  state.
+- `create-release.ps1 vX.Y.Z` — the GitHub release (gh) for the pushed tag, uploading the zip and the
+  installer with the CHANGELOG section as notes. The installer matches assets by the exact name
+  `MonsterTrainAccessibility-vX.Y.Z.zip`, so tags are strict three-part versions; main's releases
+  (v0.2.3 and before) carry an unversioned `MonsterTrainAccessibility.zip` the new installer ignores.
+`releases\`, `installer\target\` and `docs_src\book\` are gitignored.
 
 ## Logs
 Our lines go through the BepInEx logger with a `[Monster Train Accessibility]` source into

@@ -1,1 +1,2 @@
-1 24 "app.manifest"
+#define RT_MANIFEST 24
+1 RT_MANIFEST "app.manifest"

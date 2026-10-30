@@ -92,7 +92,7 @@
     <MakeDir Directories="$(PluginDeployDir)" />
     <Copy SourceFiles="@(_DeployDll);@(_RoslynFacade);$(CoreDll);$(ModuleDll)"
           DestinationFolder="$(PluginDeployDir)" ContinueOnError="true" Retries="0" />
-    <Copy SourceFiles="$(RepoRoot)prism\native\win-x64\prism.dll"
+    <Copy SourceFiles="$(RepoRoot)third_party\prism\prism.dll"
           DestinationFolder="$(GameDir)" SkipUnchangedFiles="true" ContinueOnError="true" />
     <Copy SourceFiles="@(_LangFile)" DestinationFolder="$(PluginDeployDir)\lang"
           SkipUnchangedFiles="true" ContinueOnError="true" Condition="'@(_LangFile)' != ''" />

@@ -1,207 +1,222 @@
-//! Command-line installer mode.
-//!
-//! This installer is adapted with permission from the SayTheSpire2 installer:
-//! https://github.com/bradjrenshaw/say-the-spire2
+// Adapted from the Non-Visual Calculus installer by Rashad Naqeeb (MIT),
+// https://github.com/rashadnaqeeb/NonVisualCalculus
 
 use std::io::{self, Write};
 use std::path::PathBuf;
 
-use crate::core::{detect, github, install, uninstall};
+use semver::Version;
+
+use crate::core::detect::{self, GameInstall, GameSource};
+use crate::core::github::{self, Asset, ReleaseInfo};
+use crate::core::install::{self, InstallState};
+use crate::core::process;
+use crate::core::uninstall;
+use crate::i18n::{self, Strings, fill};
 
 pub fn run() {
-    println!("=== Monster Train 2 Accessibility Installer ===");
-    println!();
-
-    let Some(game_path) = get_game_path() else {
-        println!("Error: Invalid game directory.");
+    let s = i18n::get();
+    println!("{}", s.cli_header);
+    let Some(game) = get_game_install(s) else {
+        println!("{}", s.cli_no_valid_install);
         return;
     };
 
-    println!();
-    show_status(&game_path);
-    println!();
-
     loop {
-        println!("Options:");
-        println!("  1. Install / Update from GitHub");
-        println!("  2. Install from local zip file");
-        println!("  3. Uninstall");
-        println!("  4. Exit");
+        let state = install::classify_install(&game.path);
         println!();
-
-        let choice = prompt("Choose an option (1-4): ");
-
+        println!(
+            "{}",
+            fill(s.log_game_dir, &[("path", &game.path.display().to_string())])
+        );
+        print_state(s, &state);
         println!();
-        match choice.as_str() {
-            "1" => install_from_github(&game_path),
-            "2" => install_from_file(&game_path),
-            "3" => do_uninstall(&game_path),
+        println!("{}", s.cli_menu_install);
+        println!("{}", s.cli_menu_reinstall);
+        println!("{}", s.cli_menu_uninstall);
+        println!("{}", s.cli_menu_exit);
+
+        match prompt(s.cli_choose).as_str() {
+            "1" => install_latest(s, &game, false),
+            "2" => install_latest(s, &game, true),
+            "3" => uninstall_managed(s, &game.path, &state),
             "4" => return,
-            _ => println!("Invalid option."),
+            _ => println!("{}", s.cli_invalid_option),
         }
-        println!();
     }
 }
 
-fn get_game_path() -> Option<PathBuf> {
-    if let Some(detected) = detect::detect_game_path() {
-        println!("Detected game directory: {}", detected.display());
-        let response = prompt("Use this path? (Y/n): ");
-        if response != "n" && response != "no" {
+fn get_game_install(s: &Strings) -> Option<GameInstall> {
+    if let Some(detected) = detect::detect_game() {
+        println!(
+            "{}",
+            fill(
+                s.log_detected_dir,
+                &[("path", &detected.path.display().to_string())]
+            )
+        );
+        let answer = prompt(s.cli_use_path);
+        if !is_no(s, &answer) {
             return Some(detected);
         }
     }
 
-    let input = prompt("Press B to browse for the game directory, or type the path: ");
-    if input.eq_ignore_ascii_case("b") {
-        match rfd::FileDialog::new()
-            .set_title("Select Monster Train 2 game directory")
-            .pick_folder()
-        {
-            Some(path) if detect::validate_game_path(&path) => Some(path),
-            Some(_) => {
-                println!("Error: Selected directory does not appear to be a valid game install.");
-                None
-            }
-            None => {
-                println!("Browse cancelled.");
-                None
-            }
+    let input = prompt(s.cli_type_path);
+    let path = PathBuf::from(input.trim_matches('"'));
+    match detect::missing_marker(&path) {
+        None => Some(GameInstall {
+            path,
+            source: GameSource::Manual,
+        }),
+        Some(missing) => {
+            println!(
+                "{}",
+                fill(
+                    s.log_invalid_dir,
+                    &[
+                        ("path", &path.display().to_string()),
+                        ("missing", &missing),
+                    ],
+                )
+            );
+            None
         }
-    } else {
-        let path = PathBuf::from(&input);
-        detect::validate_game_path(&path).then_some(path)
     }
 }
 
-fn show_status(game_path: &PathBuf) {
-    if detect::is_mod_installed(game_path) {
-        let version = install::get_installed_version().unwrap_or_else(|| "unknown".to_string());
-        println!("Mod is installed (version: {}).", version);
-    } else {
-        println!("Mod is not currently installed.");
+fn print_state(s: &Strings, state: &InstallState) {
+    match state {
+        InstallState::Fresh => println!("{}", s.cli_state_not_installed),
+        InstallState::Managed(manifest) => {
+            println!(
+                "{}",
+                fill(s.cli_state_installed, &[("version", &manifest.mod_version)])
+            );
+        }
+        InstallState::Unmanaged => {
+            println!("{}", s.cli_state_unmanaged);
+        }
+        InstallState::Legacy(None) => println!("{}", s.cli_state_legacy),
+        InstallState::Legacy(Some(version)) => {
+            println!("{}", fill(s.cli_state_legacy_version, &[("version", version)]));
+        }
+        InstallState::DamagedState(reason) => {
+            println!("{}", fill(s.cli_state_damaged, &[("reason", reason)]));
+        }
     }
 }
 
-fn install_from_github(game_path: &PathBuf) {
-    println!("Checking for latest release...");
-
-    let release = match github::fetch_latest_release() {
-        Ok(release) => release,
-        Err(e) => {
-            println!("Error: {}", e);
-            return;
-        }
-    };
-
-    println!("Latest version: {}", release.tag_name);
-
-    let installed = install::get_installed_version();
-    if installed.as_deref() == Some(&release.tag_name) && detect::is_mod_installed(game_path) {
-        let response = prompt("You already have the latest version. Reinstall anyway? (y/N): ");
-        if response != "y" && response != "yes" {
-            return;
-        }
-    }
-
-    if !release.body.is_empty() {
-        println!();
-        println!("Release notes:");
-        println!("{}", release.body);
-        println!();
-    }
-
-    let confirm = prompt("Proceed with installation? (Y/n): ");
-    if confirm == "n" || confirm == "no" {
+fn install_latest(s: &Strings, game: &GameInstall, force: bool) {
+    if process::is_game_running() {
+        println!("{}", s.err_close_game_install);
         return;
     }
 
-    let Some(asset) = github::find_zip_asset(&release.assets) else {
-        println!("Error: No .zip asset found in the release.");
+    let state = install::classify_install(&game.path);
+    let releases = match github::fetch_releases() {
+        Ok(r) => r,
+        Err(e) => {
+            println!("{}", fill(s.cli_error, &[("error", &e)]));
+            return;
+        }
+    };
+    let Some(asset) = github::latest_release(&releases).and_then(github::find_mod_zip) else {
+        println!("{}", s.log_no_asset);
         return;
     };
 
-    println!("Downloading {}...", asset.name);
-
-    match install::download_and_extract(&asset.browser_download_url, game_path, |pct| {
-        print!("\rProgress: {}%   ", pct);
-        io::stdout().flush().ok();
-    }) {
-        Ok(()) => {
-            println!();
-            if let Err(e) = install::save_installed_version(&release.tag_name) {
-                println!("Warning: Failed to save version: {}", e);
-            }
-            println!("Successfully installed version {}.", release.tag_name);
-        }
-        Err(e) => {
-            println!();
-            println!("Error: {}", e);
-        }
-    }
-}
-
-fn install_from_file(game_path: &PathBuf) {
-    let input = prompt("Press B to browse for the zip file, or type the path: ");
-    let zip_path = if input.eq_ignore_ascii_case("b") {
-        match rfd::FileDialog::new()
-            .set_title("Select mod zip file")
-            .add_filter("Zip files", &["zip"])
-            .pick_file()
-        {
-            Some(path) => path,
-            None => {
-                println!("Browse cancelled.");
+    if !force {
+        if let (Some(installed), Some(latest)) = (
+            install::installed_version(&state),
+            asset.version().and_then(|v| Version::parse(&v).ok()),
+        ) {
+            if installed >= latest {
+                println!("{}", s.msg_already_up_to_date);
                 return;
             }
         }
-    } else {
-        PathBuf::from(&input)
-    };
-
-    if !zip_path.exists() {
-        println!("Error: File not found.");
-        return;
     }
 
-    match install::install_from_file(&zip_path, game_path) {
-        Ok(()) => println!(
-            "Installed from {}.",
-            zip_path.file_name().unwrap_or_default().to_string_lossy()
-        ),
-        Err(e) => println!("Error: {}", e),
-    }
-}
-
-fn do_uninstall(game_path: &PathBuf) {
-    let confirm =
-        prompt("Remove Monster Train 2 Accessibility files installed by this installer? (y/N): ");
-    if confirm != "y" && confirm != "yes" {
-        return;
-    }
-
-    let removed = uninstall::uninstall_mod(game_path);
-    if removed.is_empty() {
-        println!("No installer-owned mod files found to remove.");
-    } else {
-        println!("Removed: {}", removed.join(", "));
-    }
-
-    let remove_state = prompt("Also remove installer version/manifest state? (y/N): ");
-    if remove_state == "y" || remove_state == "yes" {
-        match uninstall::remove_installer_state() {
-            Ok(()) => println!("Removed installer state."),
-            Err(e) => println!("Error: {}", e),
+    let temp_dir = install::temp_session_dir();
+    let zip_path = temp_dir.join(&asset.name);
+    println!("{}", fill(s.log_downloading, &[("name", &asset.name)]));
+    let result = (|| {
+        github::download_asset(&asset, &zip_path)?;
+        if let Some(expected) = asset.sha256_digest() {
+            println!("{}", s.log_verifying);
+            install::verify_sha256(&zip_path, &expected)?;
         }
-    }
+        println!("{}", s.log_installing);
+        install::install_from_zip(&zip_path, &game.path, &game.source, &asset, &state)?;
+        Ok::<(), String>(())
+    })();
+    let _ = std::fs::remove_dir_all(&temp_dir);
 
-    println!("Uninstall complete.");
+    match result {
+        Ok(()) => {
+            println!("{}", s.msg_install_complete);
+            println!("{}", s.msg_first_launch_note);
+            print_changelog(s, &state, &asset, &releases);
+        }
+        Err(e) => println!("{}", fill(s.cli_error, &[("error", &e)])),
+    }
 }
 
-fn prompt(msg: &str) -> String {
-    print!("{}", msg);
-    io::stdout().flush().ok();
+/// Print the release notes of every version this install crossed, oldest first.
+/// Prints nothing for a fresh install or a reinstall of the same version.
+fn print_changelog(s: &Strings, state_before: &InstallState, asset: &Asset, releases: &[ReleaseInfo]) {
+    let Some(from) = install::installed_version(state_before) else {
+        return;
+    };
+    let Some(to) = asset.version().and_then(|v| Version::parse(&v).ok()) else {
+        return;
+    };
+    let entries = github::changelog_between(releases, &from, &to);
+    if entries.is_empty() {
+        return;
+    }
+    println!();
+    println!("{}", fill(s.log_whats_new, &[("version", &from.to_string())]));
+    for (version, body) in entries {
+        println!(
+            "{}",
+            fill(s.log_whats_new_version, &[("version", &version.to_string())])
+        );
+        println!("{body}");
+    }
+}
+
+fn uninstall_managed(s: &Strings, game_path: &std::path::Path, state: &InstallState) {
+    if process::is_game_running() {
+        println!("{}", s.err_close_game_uninstall);
+        return;
+    }
+    let InstallState::Managed(manifest) = state else {
+        println!("{}", s.err_uninstall_managed_only);
+        return;
+    };
+    let answer = prompt(s.cli_confirm_uninstall);
+    if !is_yes(s, &answer) {
+        return;
+    }
+    match uninstall::uninstall(game_path, manifest) {
+        Ok(()) => println!("{}", s.msg_uninstall_complete),
+        Err(e) => println!("{}", fill(s.cli_error, &[("error", &e)])),
+    }
+}
+
+// Yes/no answers accept the localized key from the prompt plus English y/n.
+fn is_yes(s: &Strings, answer: &str) -> bool {
+    answer == s.cli_yes_key || answer == "y" || answer == "yes"
+}
+
+fn is_no(s: &Strings, answer: &str) -> bool {
+    answer == s.cli_no_key || answer == "n" || answer == "no"
+}
+
+fn prompt(message: &str) -> String {
+    print!("{message}");
+    let _ = io::stdout().flush();
     let mut input = String::new();
-    io::stdin().read_line(&mut input).ok();
+    let _ = io::stdin().read_line(&mut input);
     input.trim().to_lowercase()
 }

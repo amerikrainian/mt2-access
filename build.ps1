@@ -13,19 +13,21 @@ if ($Help) {
     Write-Host "Usage: .\build.ps1 [-ModuleOnly] [-Help]"
     Write-Host "  Builds the solution and deploys the mod into the game folder."
     Write-Host "  -ModuleOnly builds just the reloadable Core + Module (the hot loop)."
+    Write-Host "  Run setup-bepinex.ps1 once first."
     exit 0
 }
 
 $ErrorActionPreference = "Stop"
 
-$Game = $env:MONSTER_TRAIN_PATH
-if (-not $Game) { $Game = "C:\Program Files (x86)\Steam\steamapps\common\Monster Train 2" }
-if (-not (Test-Path "$Game\MonsterTrain2.exe")) {
-    Write-Host "ERROR: Monster Train 2 not found at: $Game (set MONSTER_TRAIN_PATH)" -ForegroundColor Red
+# The game dir the build itself resolves (Directory.Build.props: Directory.Build.local.props,
+# MONSTER_TRAIN_PATH, Steam's registry, the default path), so this check and the deploy agree.
+$Game = (dotnet msbuild "$PSScriptRoot\src\MonsterTrainAccessibility\MonsterTrainAccessibility.csproj" -getProperty:GameDir).Trim()
+if (-not $Game -or -not (Test-Path "$Game\MonsterTrain2.exe")) {
+    Write-Host "ERROR: Monster Train 2 not found (GameDir='$Game'). Set MONSTER_TRAIN_PATH or create Directory.Build.local.props." -ForegroundColor Red
     exit 1
 }
 if (-not (Test-Path "$Game\BepInEx\core\BepInEx.dll")) {
-    Write-Host "ERROR: BepInEx 5 is not installed at $Game\BepInEx." -ForegroundColor Red
+    Write-Host "ERROR: BepInEx 5 is not installed at $Game\BepInEx. Run setup-bepinex.ps1 first." -ForegroundColor Red
     exit 1
 }
 

@@ -92,11 +92,20 @@ main's `Events/` (combat narration) and `Map/` logic are game knowledge: port th
 when their screens come up.
 
 ### 3.5 Phase 5: release
-- Release packaging: main's `build_release.bat` targeted the single-DLL layout and was removed. Port
-  Guildrun's `build_release.ps1` for the `plugins\MonsterTrainAccessibility\` folder layout, Release
-  builds only (no dev server, no Roslyn).
-- Installer: `installer/src/core/paths.rs` lists main's files (`MOD_DLL`, the System.Text.Json
-  family). Point it at the folder layout and drop the old files on upgrade.
+- Release packaging (done): Guildrun's `build_release.ps1`, `create-release.ps1`, `build-installer.ps1`,
+  `test-installer.ps1` and `setup-bepinex.ps1`, adapted (CLAUDE.md, Releases). The zip is the vendored
+  BepInEx 5.4.23.4 (`third_party/bepinex`) plus the four Release DLLs and `lang\` under
+  `plugins\MonsterTrainAccessibility\`, `prism.dll` and `MT2AccessibilityDocs`; no Roslyn, no pdb.
+  main's `scripts/add_docs_to_release.py` and the root `winhttp.dll`/`doorstop_config.ini`/
+  `.doorstop_version` are gone (the vendored zip carries them).
+- Installer (done): Guildrun's installer (lib target and tests, install manifest in the game dir,
+  backups, orphan pruning, digest check, i18n table, the `cli` example), with MT2's constants in
+  `paths.rs`. `core/legacy.rs` replaces main's single-DLL layout on install: its files are adopted
+  and pruned, and the legacy installer's `%APPDATA%` state is removed. Dropped from main's installer:
+  install from a local zip, and BepInEx downloaded at install time (the zip carries it).
+- Open: the first release needs a `CHANGELOG.md` (`create-release.ps1` reads its `## Vx.y.z` section).
+  Players on main's installer exe who update with it get the new zip extracted beside the old plugin
+  (it never deletes); the new installer, or the manual steps in `docs_src/src/installation.md`, fix it.
 - Docs (`docs_src`): rewrite the key list once the screens settle.
 
 ## 4. Merging back

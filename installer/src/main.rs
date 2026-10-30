@@ -1,13 +1,9 @@
+// Adapted from the Non-Visual Calculus installer by Rashad Naqeeb (MIT),
+// https://github.com/rashadnaqeeb/NonVisualCalculus
+
 #![windows_subsystem = "windows"]
 
-// Monster Train 2 Accessibility installer.
-//
-// This installer is adapted with permission from the SayTheSpire2 installer:
-// https://github.com/bradjrenshaw/say-the-spire2
-
-mod cli;
-mod core;
-mod gui;
+use monster_train_accessibility_installer::{cli, gui};
 
 fn main() {
     if std::env::args().any(|a| a == "--cli") {
@@ -18,7 +14,6 @@ fn main() {
     }
 }
 
-/// Attach to the parent console so --cli mode can do stdin/stdout.
 fn attach_console() {
     #[cfg(target_os = "windows")]
     unsafe {

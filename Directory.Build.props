@@ -34,6 +34,6 @@
   <!-- Only the engine-coupled projects need the game; warn there if detection failed or BepInEx is missing. -->
   <Target Name="_CheckGameDir" BeforeTargets="ResolveAssemblyReferences"
           Condition="('$(MSBuildProjectName)' == 'MonsterTrainAccessibility' or '$(MSBuildProjectName)' == 'MonsterTrainAccessibility.Module') and ('$(GameDir)' == '' or !Exists('$(BepInExDir)\core\BepInEx.dll'))">
-    <Warning Text="Game or BepInEx 5 not found. GameDir='$(GameDir)'. Set MONSTER_TRAIN_PATH, pass -p:GameDir=..., or create Directory.Build.local.props; BepInEx 5 must be installed in the game folder." />
+    <Warning Text="Game or BepInEx 5 not found. GameDir='$(GameDir)'. Set MONSTER_TRAIN_PATH, pass -p:GameDir=..., or create Directory.Build.local.props; BepInEx 5 must be installed in the game folder (setup-bepinex.ps1)." />
   </Target>
 </Project>

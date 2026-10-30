@@ -10,12 +10,13 @@ obj/
 # Machine-specific build overrides
 Directory.Build.local.props
 
-# Release artifacts and the installer's cargo output
+# Release artifacts (build_release.ps1, build-installer.ps1) and the installer's cargo output
 releases/
-release/
 installer/target/
-*.zip
-*.exe
+# main's release outputs, left in the root by its build_release.bat
+/release/
+/MonsterTrainAccessibility.zip
+/MonsterTrainAccessibilityInstaller.exe
 
 # The rendered manual (mdbook build docs_src)
 docs_src/book/

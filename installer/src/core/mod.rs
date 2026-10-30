@@ -1,10 +1,11 @@
-//! Core installer modules.
-//!
-//! This installer is adapted with permission from the SayTheSpire2 installer:
-//! https://github.com/bradjrenshaw/say-the-spire2
+// Adapted from the Non-Visual Calculus installer by Rashad Naqeeb (MIT),
+// https://github.com/rashadnaqeeb/NonVisualCalculus
 
 pub mod detect;
 pub mod github;
 pub mod install;
+pub mod legacy;
+pub mod manifest;
 pub mod paths;
+pub mod process;
 pub mod uninstall;
