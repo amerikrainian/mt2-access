@@ -53,6 +53,11 @@ namespace MonsterTrainAccessibility.Module.Screens
         private readonly SearchField _enemySearch = new SearchField("logbook:enemies:search");
 
         public override string Key => "game.logbook";
+
+        // Above every screen the game opens the Logbook over: the run's end (its new checklist entries,
+        // with the game-over screen waiting underneath), and from the pause menu the merchant, an event,
+        // a draft, the deck, the rewards, the HUD. Below Card Details, which opens over it.
+        public override int Layer => 18;
         public override object InitialFocusStop => "sections";
         public override bool AllowsTypeahead => !_cardSearch.Focused && !_enemySearch.Focused;
 
