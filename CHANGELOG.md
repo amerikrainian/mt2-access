@@ -1,5 +1,9 @@
 # Changelog
 
+## V0.3.4
+
+- Fix the checklist softlock after winning a run.
+
 ## V0.3.3
 
 - Fixed the tutorial lockup for draggable cards.
