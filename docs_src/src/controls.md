@@ -50,6 +50,7 @@ On the run's map these keys preview the route instead; see [Map And Travel](map-
 | Run info (the game's HUD) | The game's Access HUD key, Tab by default | Y |
 | Read coin | Ctrl+G | RT+A |
 | Read pyre health | Ctrl+H | LT+A |
+| Read the Monolith (a Punished run) | Shift with the game's Monolith key (Shift+G by default) | LT+RB |
 
 Run info replaces Tab's control group cycling while a run is on screen; Shift+Tab and the bumpers still cycle.
 
@@ -69,6 +70,7 @@ Run info replaces Tab's control group cycling while a run is on screen; Shift+Ta
 | Jump to the hand | Shift+Down | None |
 | Read card 1 to 10 | Shift with the game's Card 1 to Card 10 keys (Shift+1 to Shift+0 by default) | None |
 | Go to floor 1 to 9 | Ctrl+1 to Ctrl+9 | None |
+| Offer tribute to the Monolith (a Punished run) | The game's Monolith key, G by default | LT+LB |
 
 In battle, RT+D-pad Up and RT+D-pad Down read capacity and the moon phase instead of jumping sections.
 

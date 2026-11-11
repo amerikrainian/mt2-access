@@ -64,13 +64,22 @@ namespace MonsterTrainAccessibility.Core.Text
         private readonly List<GlossaryEntry> _entries = new List<GlossaryEntry>();
         // Resolution is a pure function of the entries' names: an inflected mention is worked out once.
         private readonly Dictionary<string, GlossaryEntry> _inflected = new Dictionary<string, GlossaryEntry>(StringComparer.OrdinalIgnoreCase);
+        private readonly HashSet<string> _names = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
         /// <summary>The entries in order; a name already taken keeps its first entry, and the id of the one
         /// set aside then means the kept one (reported through <see cref="Duplicates"/>). With
-        /// <paramref name="inflect"/> (an English glossary) mentions also match their inflected forms.</summary>
-        public Glossary(IEnumerable<GlossaryEntry> entries, bool inflect = false)
+        /// <paramref name="inflect"/> (an English glossary) mentions also match their inflected forms, except
+        /// a mention that is exactly one of <paramref name="names"/>: the game's names for things that are no
+        /// keyword (a clan: "Punished" is the clan, not an inflected Punish).</summary>
+        public Glossary(IEnumerable<GlossaryEntry> entries, bool inflect = false, IEnumerable<string> names = null)
         {
             Inflected = inflect;
+            if (names != null)
+                foreach (var name in names)
+                {
+                    string normalized = Normalize(name);
+                    if (!string.IsNullOrEmpty(normalized)) _names.Add(normalized);
+                }
             foreach (var entry in entries)
             {
                 if (entry == null || string.IsNullOrEmpty(entry.Name)) continue;
@@ -150,7 +159,7 @@ namespace MonsterTrainAccessibility.Core.Text
         public GlossaryEntry Resolve(string mention)
         {
             var exact = Find(mention);
-            if (exact != null || !Inflected || string.IsNullOrEmpty(mention)) return exact;
+            if (exact != null || !Inflected || string.IsNullOrEmpty(mention) || _names.Contains(mention)) return exact;
             if (_inflected.TryGetValue(mention, out var known)) return known;
             GlossaryEntry found = null;
             int best = int.MaxValue;

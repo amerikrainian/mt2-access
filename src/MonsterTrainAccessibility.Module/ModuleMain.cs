@@ -219,6 +219,10 @@ namespace MonsterTrainAccessibility.Module
             BattleKey(Screens.BattleScreen.KeyAllCapacity, "Read all floor capacity", new KeyboardBinding(KeyCode.B, shift: true), new ControllerBinding(ControllerInput.DpadUp, ControllerInput.RightTrigger));
             BattleKey(Screens.BattleScreen.KeyTop, "Jump to top panel", new KeyboardBinding(KeyCode.UpArrow, shift: true), null);
             BattleKey(Screens.BattleScreen.KeyHand, "Jump to hand", new KeyboardBinding(KeyCode.DownArrow, shift: true), null);
+            // A Punished run's tribute to the Monolith: the game's Monolith key (G, or its Bind Keys
+            // binding), which in the game only moves its own HUD selection onto the Monolith.
+            BattleKey(Screens.BattleScreen.KeyDevote, "Offer tribute to the Monolith", new GameControlBinding(global::InputManager.Controls.Monolith),
+                new ControllerBinding(ControllerInput.LeftShoulder, ControllerInput.LeftTrigger));
             // Shift and a card's key (the game's Card 1 to Card 10, digits by default): read that card.
             var cardControls = new[]
             {
@@ -241,6 +245,10 @@ namespace MonsterTrainAccessibility.Module
                 .AddBinding(new KeyboardBinding(KeyCode.H, ctrl: true))
                 .AddBinding(new ControllerBinding(ControllerInput.A, ControllerInput.LeftTrigger))
                 .When(() => Screens.HudScreen.Available);
+            InputManager.Register("run.monolith", "Read Monolith", InputCategory.Run, Combat.Monolith.Read)
+                .AddBinding(new GameControlBinding(global::InputManager.Controls.Monolith, shift: true))
+                .AddBinding(new ControllerBinding(ControllerInput.RightShoulder, ControllerInput.LeftTrigger))
+                .When(() => Screens.HudScreen.Available && Combat.Monolith.Widget != null);
 
             // Global: always live, so the player can hand the keyboard back to the game and reclaim it.
             InputManager.Register("mod.focus", "Toggle navigation", InputCategory.Global, ToggleFocus)

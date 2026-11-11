@@ -8,8 +8,8 @@ using MonsterTrainAccessibility.Module.UI;
 namespace MonsterTrainAccessibility.Module.Combat
 {
     /// <summary>
-    /// The run's events outside any one screen: coin gained or spent ("Coin +25.") and forge points
-    /// ("Forge 3."), wherever they change (a shop, an event, a battle). Listens to the live save manager,
+    /// The run's events outside any one screen: coin gained or spent ("Coin +25."), forge points
+    /// ("Forge 3.") and the Monolith ("Devotion: 3/10."), wherever they change (a shop, an event, a battle). Listens to the live save manager,
     /// re-attaching when the game replaces it; every listener comes off in <see cref="Shutdown"/>.
     /// </summary>
     internal static class RunEvents
@@ -25,6 +25,8 @@ namespace MonsterTrainAccessibility.Module.Combat
             if (save == null) return;
             save.goldChangedSignal.AddListener(OnGold);
             save.forgePointsChangedSignal.AddListener(OnForge);
+            save.devotionLevelChangedSignal.AddListener(OnMonolithLevel);
+            save.devotionPointsChangedSignal.AddListener(OnDevotion);
         }
 
         public static void Shutdown()
@@ -32,6 +34,8 @@ namespace MonsterTrainAccessibility.Module.Combat
             if (s_save == null) return;
             s_save.goldChangedSignal.RemoveListener(OnGold);
             s_save.forgePointsChangedSignal.RemoveListener(OnForge);
+            s_save.devotionLevelChangedSignal.RemoveListener(OnMonolithLevel);
+            s_save.devotionPointsChangedSignal.RemoveListener(OnDevotion);
             s_save = null;
         }
 
@@ -48,6 +52,21 @@ namespace MonsterTrainAccessibility.Module.Combat
         {
             int now = s_save != null ? s_save.GetForgePoints() : newPoints;
             if (now != oldPoints) GameEvents.Raise(EventKinds.ForgePoints, Strings.Event("forge_points", now));
+        }
+
+        // The Monolith's level and Devotion, in the game's words, as a tribute or a card changes them
+        // (a level gained is said before the Devotion left toward the next one). A new run resets
+        // both without a signal.
+        private static void OnMonolithLevel(int newLevel, int oldLevel)
+        {
+            string level = Monolith.Level();
+            if (newLevel != oldLevel && level != null) GameEvents.Raise(EventKinds.Monolith, level + ".", EventSide.Friendly);
+        }
+
+        private static void OnDevotion(int points, int threshold)
+        {
+            string devotion = Monolith.Points();
+            if (devotion != null) GameEvents.Raise(EventKinds.Monolith, devotion + ".", EventSide.Friendly);
         }
     }
 

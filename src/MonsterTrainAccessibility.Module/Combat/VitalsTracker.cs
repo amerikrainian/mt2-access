@@ -95,7 +95,7 @@ namespace MonsterTrainAccessibility.Module.Combat
         }
 
         // The hit just dealt: the latest loss it accounts for (health down by the hit, or to 0 by it).
-        private void OnDamage(int damage, CharacterState.ApplyDamageParams damageParams)
+        private void OnDamage(int damage, CharacterState.ApplyDamageParams damageParams, Team.Type team)
         {
             if (damage <= 0) return;
             for (int i = _losses.Count - 1; i >= 0; i--)

@@ -86,6 +86,21 @@ namespace MonsterTrainAccessibility.Module.Nodes
                 + "|" + terms;
         }
 
+        // The clans' names in a language: a bold clan name is the clan, never an inflected keyword
+        // ("Punished" in the Pain status's text is not Punish).
+        private static List<string> ClanNames(string language)
+        {
+            var names = new List<string>();
+            var data = AllGameManagers.Instance != null ? AllGameManagers.Instance.GetAllGameData() : null;
+            if (data == null) return names;
+            foreach (var clan in data.GetAllClassDatas())
+            {
+                string name = clan != null ? Raw(clan.GetTitleKey(), language) : null;
+                if (!string.IsNullOrWhiteSpace(name)) names.Add(name);
+            }
+            return names;
+        }
+
         private static Glossary Build()
         {
             var found = new List<Found>();
@@ -101,7 +116,8 @@ namespace MonsterTrainAccessibility.Module.Nodes
             // A title can itself be a token (the Infused trait's is "[infused]"): its English name is the
             // token's English text.
             var englishNames = new Glossary(found.Select(f => new GlossaryEntry(
-                Glossary.Normalize(Expanded(f.TitleKey != null ? Raw(f.TitleKey, english) : null, english)), f.Id, null, null)), inflect: true);
+                Glossary.Normalize(Expanded(f.TitleKey != null ? Raw(f.TitleKey, english) : null, english)), f.Id, null, null)), inflect: true,
+                names: ClanNames(english));
             var tokens = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             var entries = new List<GlossaryEntry>();
             foreach (var f in found)
@@ -112,7 +128,7 @@ namespace MonsterTrainAccessibility.Module.Nodes
                 entries.Add(new GlossaryEntry(Glossary.Normalize(title), f.Id, body, () => TooltipReader.Format(title, body()), references));
             }
             bool inflect = LocalizationManager.CurrentLanguageCode.StartsWith("en", StringComparison.OrdinalIgnoreCase);
-            var glossary = new Glossary(entries, inflect);
+            var glossary = new Glossary(entries, inflect, ClanNames(language));
             int linked = glossary.Entries.Count(e => e.References != null && e.References.Count > 0);
             int keyless = glossary.Entries.Count(e => e.References == null);
             CoreLog.Info("Glossary (" + LocalizationManager.CurrentLanguageCode + "): " + glossary.Entries.Count + " definitions from "

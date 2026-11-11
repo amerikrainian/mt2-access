@@ -135,6 +135,7 @@ namespace MonsterTrainAccessibility.Core.Events
         public static readonly EventKind Ember = K("resource.energy", EventGroup.Resources);
         public static readonly EventKind Gold = K("resource.gold", EventGroup.Resources);
         public static readonly EventKind ForgePoints = K("resource.forge_points", EventGroup.Resources);
+        public static readonly EventKind Monolith = K("resource.monolith", EventGroup.Resources);
         public static readonly EventKind PyreHp = K("pyre.hp", EventGroup.Resources);
         public static readonly EventKind PyreArmor = K("pyre.armor", EventGroup.Resources);
         public static readonly EventKind Spawned = K("character.spawned", EventGroup.Units, sourceFilter: true);

@@ -411,6 +411,8 @@ namespace MonsterTrainAccessibility.Module.Screens
             if (hud != null) Counter(items, "ember", hud.energyUI, hud.energyUI != null ? hud.energyUI.count : null, null, hud.energyIncreaseUI);
             // The run's HUD holds the forge points, shown in a battle once a card can forge.
             if (top != null && Shown(top.forgePointsUI)) items.Add(Item("top:forge", HudNodes.ForgePoints(top.forgePointsUI)));
+            // A Punished run's Monolith: its level, Devotion, and the button that offers tribute.
+            if (top != null && Shown(top.monolithUI)) items.Add(Item("top:monolith", HudNodes.Monolith(top.monolithUI)));
             if (hud != null)
             {
                 Pile(items, "draw", hud.deckUI, hud.cardIncreaseUI);

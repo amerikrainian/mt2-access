@@ -273,6 +273,7 @@ namespace MonsterTrainAccessibility.Module.Dev
             foreach (var unit in data.GetAllCharacterData()) AddName(content, unit.GetName());
             foreach (var upgrade in data.GetAllCardUpgradeData()) AddName(content, Interop.GameText.TryTerm(upgrade.GetUpgradeTitleKey()));
             foreach (var relic in Relics(data)) AddName(content, relic.GetName());
+            foreach (var clan in data.GetAllClassDatas()) AddName(content, Interop.GameText.TryTerm(clan.GetTitleKey()));
 
             Items(item =>
             {

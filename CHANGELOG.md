@@ -1,5 +1,9 @@
 # Changelog
 
+## V0.3.5
+
+- We now should in full support the new punished DLC.
+
 ## V0.3.4
 
 - Fix the checklist softlock after winning a run.

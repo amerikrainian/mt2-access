@@ -64,6 +64,33 @@ namespace MonsterTrainAccessibility.Module.Nodes
             };
         }
 
+        /// <summary>"The Monolith, button, Monolith Level 2, Devotion: 3/10": the Punished's Monolith in
+        /// the game's words. In a battle it is the game's tribute button (locked outside the player's
+        /// turn), pressed through the game; elsewhere a line. Its tooltip is the one the game has live
+        /// (the battle's tells how to offer tribute), never both.</summary>
+        public static NodeVtable Monolith(MonolithUI monolith)
+        {
+            Func<string> label = () => GameText.Term("HudTooltip_Monolith_Title")?.Trim();
+            var level = new NodeAnnouncement(Combat.Monolith.Level, kind: AnnouncementKinds.Value);
+            var points = new NodeAnnouncement(Combat.Monolith.Points, kind: AnnouncementKinds.Value);
+            NodeVtable vt;
+            if (Combat.Monolith.IsButton(monolith)) vt = GameWidgets.Button(monolith.devoteButton, label, null, level, points);
+            else
+                vt = new NodeVtable
+                {
+                    ControlType = ControlTypes.Text,
+                    Announcements = new List<NodeAnnouncement> { GameNodes.LabelPart(label), level, points },
+                    SearchText = label,
+                };
+            vt.Details = () =>
+            {
+                var provider = monolith.devoteTooltipProvider != null && monolith.devoteTooltipProvider.enabled
+                    ? monolith.devoteTooltipProvider : monolith.tooltipProvider;
+                return GameNodes.Lines(provider != null && provider.Tooltips != null ? TooltipReader.Lines(provider.Tooltips) : new List<string>());
+            };
+            return vt;
+        }
+
         /// <summary>"Game Speed, button, Current speed: Ultra": a toggle the game names in its tooltip.</summary>
         public static NodeVtable Tooltipped(Component widget, IGameUIComponent press)
         {

@@ -290,6 +290,8 @@ namespace MonsterTrainAccessibility.Core.Strings
             D("event.ember", "Ember {0}."),
             // {0} = the forge points the player has now.
             D("event.forge_points", "Forge {0}."),
+            // {0} = the card's name: the card a tribute to the Monolith discarded at random.
+            D("event.discarded", "Discarded {0}."),
             // {0} = the game's word for the currency ("Coin"), {1} = the amount gained / lost.
             D("event.gold_gained", "{0} +{1}."),
             D("event.gold_lost", "{0} -{1}."),
@@ -409,6 +411,8 @@ namespace MonsterTrainAccessibility.Core.Strings
             D("bind.battle.forge_points", "Read forge points"),
             D("bind.run.gold", "Read coin"),
             D("bind.run.pyre", "Read pyre health"),
+            D("bind.run.monolith", "Read Monolith"),
+            D("bind.battle.devote", "Offer tribute to the Monolith"),
             D("bind.battle.moon", "Read moon phase"),
             D("bind.battle.outcome", "Read unit outcome"),
             D("bind.battle.floor_outcomes", "Read floor outcomes"),
@@ -435,6 +439,7 @@ namespace MonsterTrainAccessibility.Core.Strings
             D("event_kind.resource.energy", "Ember changes"),
             D("event_kind.resource.gold", "Coin changes"),
             D("event_kind.resource.forge_points", "Forge point changes"),
+            D("event_kind.resource.monolith", "Monolith changes"),
             D("event_kind.pyre.hp", "Pyre health changes"),
             D("event_kind.pyre.armor", "Pyre armor"),
             D("event_kind.relic.triggered", "Artifact triggered"),

@@ -86,6 +86,7 @@ These are listed in [Controls](controls.md) but are repeated here for your conve
 - Ctrl+R: read forge points.
 - Ctrl+G: read gold.
 - Ctrl+H: read pyre health.
+- G: offer tribute to the Monolith (a Punished run); Shift+G: read its Monolith Level and Devotion.
 - P: read the moon phase.
 - B: read the focused floor's capacity; Shift+B every floor's.
 

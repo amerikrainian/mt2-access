@@ -168,6 +168,18 @@ namespace MonsterTrainAccessibility.Tests
             => Assert.False(Glossary.Inflects(mention, name));
 
         [Fact]
+        public void AGameNameIsNeverAnInflection()
+        {
+            // The Pain status: "Powers <b>Punished</b> units' abilities." Punished is the clan, not Punish.
+            var entries = new[] { Entry("Punish", "Triggers when being hit by a friendly spell."), Entry("Pain", "Powers <b>Punished</b> units' abilities.") };
+            Assert.Equal("Punish", new Glossary(entries, inflect: true).Resolve("Punished").Name);
+            var glossary = new Glossary(entries, inflect: true, names: new[] { "Punished" });
+            Assert.Null(glossary.Resolve("Punished"));
+            // An exact name is still the entry's.
+            Assert.Equal("Punish", new Glossary(entries, inflect: true, names: new[] { "Punish" }).Resolve("Punish").Name);
+        }
+
+        [Fact]
         public void OnlyAnEnglishGlossaryMatchesInflections()
         {
             var entries = new[] { Entry("Ability", "a") };

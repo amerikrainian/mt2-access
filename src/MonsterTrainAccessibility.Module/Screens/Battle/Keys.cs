@@ -14,8 +14,9 @@ namespace MonsterTrainAccessibility.Module.Screens
     // jumps: the top panel (Shift+Up) and the hand (Shift+Down), each where it was last left; a floor
     // by its number (Ctrl+1 for Floor 1), said as its heading alone ("Floor 1, 3/5"), the floor
     // selected as arrowing there does. Shift and the game's key for the hand's nth card (a digit by
-    // default) reads that card as a landing on it does, focus staying where it is. Coin (Ctrl+G) and
-    // the pyre (Ctrl+H) are the run's, live on the map too.
+    // default) reads that card as a landing on it does, focus staying where it is. The game's Monolith
+    // key (G) offers tribute in a Punished run, pressed through the game's button. Coin (Ctrl+G), the
+    // pyre (Ctrl+H) and the Monolith (Shift and the Monolith key) are the run's, live on the map too.
     public sealed partial class BattleScreen
     {
         public const string KeyEmber = "battle.ember";
@@ -28,6 +29,7 @@ namespace MonsterTrainAccessibility.Module.Screens
         public const string KeyAllCapacity = "battle.all_capacity";
         public const string KeyHand = "battle.hand";
         public const string KeyTop = "battle.top";
+        public const string KeyDevote = "battle.devote";
         private const string CardPrefix = "battle.card.";
         private const string FloorPrefix = "battle.floor.";
 
@@ -56,6 +58,7 @@ namespace MonsterTrainAccessibility.Module.Screens
                 case KeyCapacity: return screen.CurrentFloor >= 0;
                 case KeyHand:
                 case KeyTop: return Targeting == null;
+                case KeyDevote: return Targeting == null && Monolith.CanPress();
                 default: return true;
             }
         }
@@ -108,6 +111,9 @@ namespace MonsterTrainAccessibility.Module.Screens
                     break;
                 case KeyTop:
                     if (Targeting == null && _rowLanding.TryGetValue("top", out var top)) Navigation.MoveTo(top);
+                    break;
+                case KeyDevote:
+                    if (Offers(KeyDevote)) Monolith.Devote();
                     break;
             }
         }
