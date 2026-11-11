@@ -318,3 +318,4 @@ run.clean=클린 런
 run.favorite=즐겨찾기됨
 run.unfavorite=즐겨찾기 해제됨
 event_kind.basic=기본 이벤트
+card.banner_unit=배너 유닛

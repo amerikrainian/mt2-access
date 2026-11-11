@@ -318,3 +318,4 @@ run.clean=partie parfaite
 run.favorite=mis en favori
 run.unfavorite=retiré des favoris
 event_kind.basic=Événements de base
+card.banner_unit=unité de bannière

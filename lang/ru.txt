@@ -318,3 +318,4 @@ run.clean=чистый забег
 run.favorite=в избранном
 run.unfavorite=убрано из избранного
 event_kind.basic=Основные события
+card.banner_unit=знаменное существо

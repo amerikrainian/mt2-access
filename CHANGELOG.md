@@ -1,5 +1,10 @@
 # Changelog
 
+## V0.3.6
+
+- A card now holds the clan it comes from in its buffer.
+- Likewise, we now also include whether the given unit is a banner unit in its buffer.
+
 ## V0.3.5
 
 - We now should in full support the new punished DLC.

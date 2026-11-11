@@ -318,3 +318,4 @@ run.clean=partida limpa
 run.favorite=marcado como favorito
 run.unfavorite=removido dos favoritos
 event_kind.basic=Eventos básicos
+card.banner_unit=unidade de estandarte

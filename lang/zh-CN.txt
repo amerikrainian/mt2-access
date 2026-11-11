@@ -318,3 +318,4 @@ run.clean=无重开通关
 run.favorite=已收藏
 run.unfavorite=已取消收藏
 event_kind.basic=基础事件
+card.banner_unit=旗帜单位

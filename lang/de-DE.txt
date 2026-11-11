@@ -318,3 +318,4 @@ run.clean=sauberer Durchlauf
 run.favorite=favorisiert
 run.unfavorite=nicht mehr favorisiert
 event_kind.basic=Grundereignisse
+card.banner_unit=Bannereinheit

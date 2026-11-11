@@ -318,3 +318,4 @@ run.clean=乾淨通關
 run.favorite=已加入最愛
 run.unfavorite=已移除最愛
 event_kind.basic=基本事件
+card.banner_unit=旗幟單位

@@ -11,8 +11,8 @@ namespace MonsterTrainAccessibility.Module.Nodes
 {
     /// <summary>
     /// A card as the game drew it, wherever a <see cref="CardUI"/> stands (the Logbook, later the
-    /// draft, the shop, the hand), from what its face draws; only its type and rarity are named from its
-    /// data, in the game's own terms:
+    /// draft, the shop, the hand), from what its face draws; only its type, clan, banner and rarity are
+    /// named from its data:
     /// <list type="bullet">
     /// <item>the focus line: the name, the card's type in the game's word for it in the role word's
     /// place ("Spell", "Friendly Unit"), why the screen will not take it where the face says so
@@ -21,8 +21,10 @@ namespace MonsterTrainAccessibility.Module.Nodes
     /// unit's pips draw, the soul attached to it (<see cref="Soul"/>), then the card
     /// text as rendered (its inline icons read as words at the speech
     /// seam), what an upgrade adds marked;</item>
-    /// <item>the buffer's head line ends with the card's type and rarity ("Firestarter, cost 1, Spell,
-    /// Common"), the rarity never spoken on landing;</item>
+    /// <item>the buffer's head line ends with the card's type, clan, banner and rarity ("Collector of
+    /// Sorrows, cost 1, Friendly Unit, Punished, banner unit, Uncommon"), none of the three spoken on
+    /// landing: the face shows them only as art (the frame for clan and rarity, <see cref="ClanOf"/>, a
+    /// clanless card naming none; the banner for <see cref="Banner"/>);</item>
     /// <item>the control buffer holds the card's tooltips, populated in the card's own
     /// <see cref="CardTooltipContainer"/> by the very call hover makes (<c>CardUI.UpdateTooltip</c>,
     /// with the lore setting the screen's hover uses) and read off what it instantiated.</item>
@@ -45,6 +47,8 @@ namespace MonsterTrainAccessibility.Module.Nodes
                 new NodeAnnouncement(() => Soul(card), kind: AnnouncementKinds.Value),
             };
             parts.AddRange(TextParts(card, elixir));
+            parts.Add(new NodeAnnouncement(() => ClanOf(card), kind: AnnouncementKinds.Review));
+            parts.Add(new NodeAnnouncement(() => Banner(card), kind: AnnouncementKinds.Review));
             parts.Add(new NodeAnnouncement(() => RarityOf(card), kind: AnnouncementKinds.Review));
             return new NodeVtable
             {
@@ -69,6 +73,8 @@ namespace MonsterTrainAccessibility.Module.Nodes
             parts.Add(new NodeAnnouncement(() => Face(card), kind: AnnouncementKinds.Value) { Spoken = !elixir || !FreeToPlay(card) });
             parts.Add(new NodeAnnouncement(() => Soul(card), kind: AnnouncementKinds.Value));
             parts.AddRange(TextParts(card, elixir));
+            parts.Add(new NodeAnnouncement(() => ClanOf(card), kind: AnnouncementKinds.Review));
+            parts.Add(new NodeAnnouncement(() => Banner(card), kind: AnnouncementKinds.Review));
             parts.Add(new NodeAnnouncement(() => RarityOf(card), kind: AnnouncementKinds.Review));
             return new NodeVtable
             {
@@ -106,6 +112,8 @@ namespace MonsterTrainAccessibility.Module.Nodes
                     new NodeAnnouncement(() => shown() != null ? Face(shown()) : null, kind: AnnouncementKinds.Value),
                     locked,
                     GameNodes.TooltipPart(() => shown() != null ? Text(shown()) : null),
+                    new NodeAnnouncement(() => shown() != null ? ClanOf(shown()) : null, kind: AnnouncementKinds.Review),
+                    new NodeAnnouncement(() => shown() != null ? Banner(shown()) : null, kind: AnnouncementKinds.Review),
                     new NodeAnnouncement(() => shown() != null ? RarityOf(shown()) : null, kind: AnnouncementKinds.Review),
                 },
                 SearchText = name,
@@ -157,6 +165,33 @@ namespace MonsterTrainAccessibility.Module.Nodes
             if (state == null) return null;
             string type = state.GetCardType().GetCardText();
             return string.IsNullOrWhiteSpace(type) ? null : type;
+        }
+
+        // The card's clan by the clan's own title ("Pyreborne"): on review only, before the rarity. The
+        // face draws it only as the frame's art (CardFrameUI's ClassSpriteSelector). A clanless card (a
+        // Steward) has none.
+        private static string ClanOf(CardUI card)
+        {
+            var state = card.GetCardState();
+            string id = state != null ? state.GetLinkedClassID() : null;
+            if (string.IsNullOrEmpty(id)) return null;
+            var data = AllGameManagers.Instance != null ? AllGameManagers.Instance.GetAllGameData() : null;
+            var clan = data != null ? data.FindClassData(id) : null;
+            string title = clan != null ? clan.GetTitle() : null;
+            return string.IsNullOrWhiteSpace(title) ? null : title;
+        }
+
+        // "banner unit" for a card whose unit is one (CardData.IsBannerUnit): the face shows only the
+        // banner art (CardUI.UpdateBannerRoot) and the subtype plate leaves the subtype's name out. A
+        // banner unit is always drawn into the battle's opening deployment hand
+        // (CardManager.DrawDeploymentPhaseHand), after the champion.
+        private static string Banner(CardUI card)
+        {
+            var state = card.GetCardState();
+            if (state == null) return null;
+            var data = AllGameManagers.Instance != null ? AllGameManagers.Instance.GetAllGameData() : null;
+            var cardData = data != null ? data.FindCardData(state.GetCardDataID()) : null;
+            return cardData != null && cardData.IsBannerUnit() ? Strings.CardBannerUnit : null;
         }
 
         // The card's rarity in the game's word ("Common"): on review only, ending the buffer's head line.
