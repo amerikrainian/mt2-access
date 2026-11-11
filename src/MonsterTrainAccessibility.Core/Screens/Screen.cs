@@ -16,8 +16,9 @@ namespace MonsterTrainAccessibility.Core.Screens
     /// </summary>
     public abstract class Screen
     {
-        /// <summary>Whether Tab wraps from the last stop back to the first.</summary>
-        public bool Wrap { get; set; }
+        /// <summary>Whether Tab wraps from the last stop back to the first. On for every screen; one
+        /// opts out by setting it false.</summary>
+        public bool Wrap { get; set; } = true;
 
         /// <summary>Screen-level actions (Back/Escape handlers and the like), dispatched by id.</summary>
         public virtual IEnumerable<ElementAction> GetActions() { yield break; }

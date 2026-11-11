@@ -228,10 +228,9 @@ namespace MonsterTrainAccessibility.Tests
             }
         }
 
-        // A wrapping screen laid out as a single Tab-stop (the Dimensional Portal).
+        // A screen (wrapping, as every screen does) laid out as a single Tab-stop (the Dimensional Portal).
         private sealed class OneStopScreen : Screen
         {
-            public OneStopScreen() { Wrap = true; }
             public override string Key => "test.onestop";
             public override bool IsActive() => true;
             public override void Build(GraphBuilder b)

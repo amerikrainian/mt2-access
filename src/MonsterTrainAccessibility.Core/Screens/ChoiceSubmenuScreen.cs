@@ -59,7 +59,6 @@ namespace MonsterTrainAccessibility.Core.Screens
             _speakTitle = speakTitle;
             _options = options ?? new ChoiceOption[0];
             _current = current;
-            Wrap = true;
         }
 
         /// <summary>Open the submenu as a child of the current screen.</summary>

@@ -43,11 +43,6 @@ namespace MonsterTrainAccessibility.Module.Screens
         public const string PagePrev = "page.prev";
         public const string PageNext = "page.next";
 
-        public CompendiumScreen()
-        {
-            Wrap = true;
-        }
-
         // The card and enemy searches: each landing starts the game's own field editing.
         private readonly SearchField _cardSearch = new SearchField("logbook:cards:search");
         private readonly SearchField _enemySearch = new SearchField("logbook:enemies:search");

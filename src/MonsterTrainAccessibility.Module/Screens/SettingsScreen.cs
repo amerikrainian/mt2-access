@@ -23,12 +23,6 @@ namespace MonsterTrainAccessibility.Module.Screens
     /// </summary>
     public sealed class SettingsScreen : Screen
     {
-        public SettingsScreen()
-        {
-            // Tab past the rows comes round to the tabs.
-            Wrap = true;
-        }
-
         public override string Key => "game.settings";
         public override int Layer => 21;
         public override bool Exclusive => true;

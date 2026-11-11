@@ -13,15 +13,14 @@ namespace MonsterTrainAccessibility.Module.Screens
 {
     /// <summary>
     /// The run setup's mutator picker (<see cref="MutatorSelectionDialog"/>). Opening it says what it is,
-    /// the game's instructions and its warning; then three Tab-stops:
+    /// the game's instructions and its warning; then two Tab-stops:
     /// <list type="bullet">
-    /// <item>every mutator as a toggle
-    /// (<see cref="StartingConditionsNodes.MutatorChoice"/>; the game appears them a few per frame,
-    /// and each is listed as it appears);</item>
+    /// <item>Remove All Mutators and Randomize Mutators, which both close the picker as in the game,
+    /// then every mutator as a toggle (<see cref="StartingConditionsNodes.MutatorChoice"/>; the game
+    /// appears them a few per frame, and each is listed as it appears);</item>
     /// <item>the chosen ones in the game's order, each read off its own button in the list: the game's
     /// tooltips on the chosen slots localize the description without the card-effect context, so their
-    /// numbers come out blank ("cost + ember"); the button draws the full text;</item>
-    /// <item>Remove All Mutators and Randomize Mutators, which both close the picker as in the game.</item>
+    /// numbers come out blank ("cost + ember"); the button draws the full text.</item>
     /// </list>
     /// Escape is the game's: it closes the picker, keeping the choice.
     /// </summary>
@@ -67,6 +66,8 @@ namespace MonsterTrainAccessibility.Module.Screens
             b.PushContext(null, null, positions: false);
 
             b.BeginStop("mutators");
+            Button(b, "removeall", dialog.removeAllButton, "ScreenClassSelection_RemoveAllMutatorsButton");
+            Button(b, "randomize", dialog.randomizeButton, "ScreenClassSelection_RandomizeMutators");
             b.PushContext(null);
             foreach (var mutator in dialog.mutatorButtons)
             {
@@ -86,10 +87,6 @@ namespace MonsterTrainAccessibility.Module.Screens
                 }
                 b.PopContext();
             }
-
-            b.BeginStop("actions");
-            Button(b, "removeall", dialog.removeAllButton, "ScreenClassSelection_RemoveAllMutatorsButton");
-            Button(b, "randomize", dialog.randomizeButton, "ScreenClassSelection_RandomizeMutators");
             b.PopContext();
         }
 

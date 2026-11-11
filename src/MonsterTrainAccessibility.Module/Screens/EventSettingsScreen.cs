@@ -102,7 +102,6 @@ namespace MonsterTrainAccessibility.Module.Screens
         public RelicEventsScreen(EventKind kind)
         {
             _kind = kind;
-            Wrap = true;
         }
 
         public override string Key => "mod.relicevents";

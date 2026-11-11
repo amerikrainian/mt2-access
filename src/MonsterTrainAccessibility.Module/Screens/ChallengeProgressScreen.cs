@@ -30,11 +30,6 @@ namespace MonsterTrainAccessibility.Module.Screens
     /// </summary>
     public sealed class ChallengeProgressScreen : Screen
     {
-        public ChallengeProgressScreen()
-        {
-            Wrap = true;
-        }
-
         public override string Key => "game.dimensional_portal";
         public override bool KeepStateOnPop => true;
 
