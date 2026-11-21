@@ -118,6 +118,11 @@ namespace MonsterTrainAccessibility.Module.Screens
                             Core.Speech.Say(CardNodes.Refused(card) ?? Strings.StateDisabled, interrupt: true);
                             return;
                         }
+                        // The game's Submit picks its focused card (_focusedCardIndex), set by hover alone.
+                        // Landing's hover can go unheard (a pick opened by a story event's choice left it
+                        // at -1, and Enter did nothing), so hover again first: the game ignores a hover on
+                        // the card already focused.
+                        GameInput.Hover(card.SelectableUI);
                         GameInput.Submit(card.SelectableUI);
                     };
                 }

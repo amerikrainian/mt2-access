@@ -27,7 +27,9 @@ namespace MonsterTrainAccessibility.Module.Nodes
     /// clanless card naming none; the banner for <see cref="Banner"/>);</item>
     /// <item>the control buffer holds the card's tooltips, populated in the card's own
     /// <see cref="CardTooltipContainer"/> by the very call hover makes (<c>CardUI.UpdateTooltip</c>,
-    /// with the lore setting the screen's hover uses) and read off what it instantiated.</item>
+    /// with the lore setting the screen's hover uses) and read off what it instantiated, then the
+    /// Inscryption event's path code where the face draws one (<see cref="PathCode"/>: "010"), never
+    /// spoken on landing.</item>
     /// </list>
     /// A locked or unknown card is a <see cref="LockedCardUI"/>: its own tooltip, the game's words.
     /// </summary>
@@ -56,7 +58,7 @@ namespace MonsterTrainAccessibility.Module.Nodes
                 Announcements = parts,
                 SearchText = name,
                 OnFocus = hover,
-                Details = () => GameNodes.Lines(Tooltips(card, lore)),
+                Details = () => Details(card, lore),
             };
         }
 
@@ -83,7 +85,7 @@ namespace MonsterTrainAccessibility.Module.Nodes
                 SearchText = title,
                 OnFocus = hover,
                 OnActivate = take,
-                Details = () => GameNodes.Lines(Tooltips(card, lore)),
+                Details = () => Details(card, lore),
             };
         }
 
@@ -118,7 +120,7 @@ namespace MonsterTrainAccessibility.Module.Nodes
                 },
                 SearchText = name,
                 OnFocus = () => GameInput.Hover(item.SelectableUI),
-                Details = () => shown() != null ? GameNodes.Lines(Tooltips(shown(), CardTooltipContainer.LoreTooltipSetting.Preferences)) : null,
+                Details = () => shown() != null ? Details(shown(), CardTooltipContainer.LoreTooltipSetting.Preferences) : null,
             };
         }
 
@@ -147,6 +149,14 @@ namespace MonsterTrainAccessibility.Module.Nodes
         /// <summary>Whether the card's face is drawn yet (a card being dealt has no name on it).</summary>
         public static bool Drawn(CardUI card) => Name(card) != null;
 
+        // The control buffer's lines: the card's tooltips, then its path code.
+        private static IEnumerable<string> Details(CardUI card, CardTooltipContainer.LoreTooltipSetting lore)
+        {
+            var lines = Tooltips(card, lore);
+            lines.Add(PathCode(card));
+            return GameNodes.Lines(lines);
+        }
+
         /// <summary>The card's tooltips: hover's own population of its container, read as drawn.</summary>
         public static List<string> Tooltips(CardUI card, CardTooltipContainer.LoreTooltipSetting lore)
         {
@@ -157,6 +167,12 @@ namespace MonsterTrainAccessibility.Module.Nodes
             card.UpdateTooltip(state);
             return TooltipReader.Container(container);
         }
+
+        // The Inscryption event's path code ("010"), drawn on a card carrying one of the event's marks
+        // until the event is solved (CardUI.UpdateInscryptionEventData): the run's path as three binary
+        // digits, one per branch choice on the map from the event's distance on
+        // (FollowupConditionInscryptionEvent: the first digit is the first choice).
+        private static string PathCode(CardUI card) => Shown(card._inscryptionPathCode);
 
         // The card's type in the game's word for it on a card ("Spell", "Friendly Unit", "Equipment").
         private static string TypeOf(CardUI card)
