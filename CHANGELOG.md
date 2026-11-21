@@ -1,5 +1,9 @@
 # Changelog
 
+## V0.3.7
+
+- The Inscryption event is once again properly handled.
+
 ## V0.3.6
 
 - A card now holds the clan it comes from in its buffer.
