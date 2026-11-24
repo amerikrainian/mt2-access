@@ -133,7 +133,8 @@ namespace MonsterTrainAccessibility.Module.UI
         private static bool Usable(GameUISelectableButton button)
             => IsLocked(button) || (button.interactable && button.state != GameUISelectableButton.State.Disabled);
 
-        private static string StateOf(GameUISelectableToggle toggle)
+        /// <summary>The toggle's state as it draws it (its own on or off caption), else "on" or "off".</summary>
+        public static string StateOf(GameUISelectableToggle toggle)
         {
             TMP_Text caption = toggle.isOn ? toggle.onLabel : toggle.offLabel;
             if (caption != null && !string.IsNullOrWhiteSpace(caption.Content())) return caption.Content();

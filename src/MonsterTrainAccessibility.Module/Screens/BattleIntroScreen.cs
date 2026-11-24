@@ -1,8 +1,10 @@
 using System.Collections.Generic;
+using MonsterTrainAccessibility.Core;
 using MonsterTrainAccessibility.Core.Graph;
 using MonsterTrainAccessibility.Core.Input;
 using MonsterTrainAccessibility.Core.Strings;
 using MonsterTrainAccessibility.Core.UI;
+using MonsterTrainAccessibility.Module.Input;
 using MonsterTrainAccessibility.Module.Interop;
 using MonsterTrainAccessibility.Module.Nodes;
 using MonsterTrainAccessibility.Module.UI;
@@ -28,15 +30,28 @@ namespace MonsterTrainAccessibility.Module.Screens
     /// <item>Start Battle.</item>
     /// </list>
     /// Nothing is declared until the game has played the intro in, when it starts taking the fight.
-    /// Escape is the game's: the Menu. The run keys (Tab's HUD) are live here.
+    /// Escape is the game's: the Menu. The run keys (Tab's HUD) are live here. The game's own trial key
+    /// (its Context Action, F unless rebound in Bind Keys) reaches the game (<see cref="IGameKeys"/>),
+    /// which flips the trial from anywhere on the panel; the new state is said (<see cref="TrialToggled"/>).
+    /// Typeahead stands down, so the letter is the game's.
     /// </summary>
-    public sealed class BattleIntroScreen : Screen
+    public sealed class BattleIntroScreen : Screen, IGameKeys
     {
         private static readonly InputCategory[] Categories = { InputCategory.Run, InputCategory.UI };
 
+        private static readonly global::InputManager.Controls[] PassedControls =
+        {
+            global::InputManager.Controls.ContextAction,
+        };
+
+        internal static readonly ControlId TrialId = ControlId.Structural("intro:trial");
+
         public override string Key => "game.battle_intro";
         public override int Layer => 5;
+        public override bool AllowsTypeahead => false;
         public override IReadOnlyList<InputCategory> InputCategories => Categories;
+
+        IEnumerable<global::InputManager.Controls> IGameKeys.GameControls => PassedControls;
 
         private static global::BattleIntroScreen Game
         {
@@ -132,7 +147,7 @@ namespace MonsterTrainAccessibility.Module.Screens
                     }
                     return GameNodes.Lines(lines);
                 };
-                b.AddItem(ControlId.Structural("intro:trial"), vt);
+                b.AddItem(TrialId, vt);
                 return;
             }
             for (int i = 0; i < relics.Count; i++)
@@ -147,7 +162,7 @@ namespace MonsterTrainAccessibility.Module.Screens
         }
 
         // The label the panel heads the toggle with ("Trial"): the text of its "Title" row, beside it.
-        private static string TrialLabel(GameUISelectableToggle toggle)
+        internal static string TrialLabel(GameUISelectableToggle toggle)
         {
             for (var t = toggle.transform; t != null; t = t.parent)
             {
@@ -189,6 +204,32 @@ namespace MonsterTrainAccessibility.Module.Screens
         {
             string content = text != null && text.gameObject.activeInHierarchy ? text.Content() : null;
             return string.IsNullOrWhiteSpace(content) ? null : content;
+        }
+    }
+    /// <summary>
+    /// The trial's new state when the game flips it ("Trial, On"): the game's trial key, passed through
+    /// (<see cref="BattleIntroScreen"/>), works from anywhere on the panel, and the game says nothing
+    /// but a sound. Enter on the toggle itself flips it the same way, and the toggle's own state part
+    /// says it there, so this stays quiet while the toggle has focus.
+    /// </summary>
+    [HarmonyLib.HarmonyPatch(typeof(global::BattleIntroScreen), nameof(global::BattleIntroScreen.HandleTrialToggleButton))]
+    internal static class TrialToggled
+    {
+        private static void Prefix(global::BattleIntroScreen __instance, out bool __state)
+            => __state = __instance.trialToggleButton != null && __instance.trialToggleButton.isOn;
+
+        private static void Postfix(global::BattleIntroScreen __instance, bool __state)
+        {
+            try
+            {
+                var toggle = __instance.trialToggleButton;
+                if (toggle == null || toggle.isOn == __state) return;
+                if (Equals(Navigation.FocusedNode?.Id, BattleIntroScreen.TrialId)) return;
+                string label = BattleIntroScreen.TrialLabel(toggle);
+                string state = GameWidgets.StateOf(toggle);
+                Speech.Say(label != null ? label + ", " + state : state, interrupt: true);
+            }
+            catch (System.Exception e) { CoreLog.Warning("trial toggle: " + e.Message); }
         }
     }
 }
