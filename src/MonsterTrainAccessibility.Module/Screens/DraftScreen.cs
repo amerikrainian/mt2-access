@@ -17,7 +17,8 @@ namespace MonsterTrainAccessibility.Module.Screens
     /// it is registered for (the artifact draft so far). Opening it says the draft's header and the
     /// game's instructions ("Herzal's Hoard. Choose an artifact."); then the items side by side as the
     /// game lays them out, each read by its kind (an artifact by <see cref="RelicNodes"/>, a card by
-    /// <see cref="CardNodes"/>, a soul by <see cref="SoulNodes.Offer"/>, an endless pair of mutators by
+    /// <see cref="CardNodes"/> with the bonus card a card draft draws beneath it (a covenant's Calcified
+    /// Ember: <see cref="CardNodes.WithBonusCard"/>), a soul by <see cref="SoulNodes.Offer"/>, an endless pair of mutators by
     /// its title and each half's description, the cards and artifacts it gives, the game's preview of it
     /// on hovering, in its buffer: what a curse does), then Skip with what skipping gives. Nothing is declared while the game
     /// deals the items in, and an item the game has taken out of play (all of them, once one is
@@ -134,8 +135,19 @@ namespace MonsterTrainAccessibility.Module.Screens
                 if (card.GetCardState() == null || !card.IsCardInteractable()) return null;
                 var vt = CardNodes.Card(card, CardTooltipContainer.LoreTooltipSetting.Preferences, () => GameInput.Hover(card.SelectableUI));
                 vt.OnActivate = () => GameInput.Submit(card.SelectableUI);
+                if (draft is CardDraftScreen cards) vt = CardNodes.WithBonusCard(vt, () => BonusCard(cards, card));
                 return vt;
             }
+            return null;
+        }
+
+        // The bonus card the draft draws beneath this card ("+Calcified Ember"), while it shows one.
+        private static BonusCardSummaryItem BonusCard(CardDraftScreen draft, CardUI card)
+        {
+            var state = card.GetCardState();
+            if (state == null || draft._bonusCardSummaryItems == null) return null;
+            foreach (var bonus in draft._bonusCardSummaryItems)
+                if (bonus != null && bonus.gameObject.activeInHierarchy && bonus.ParentCardState == state) return bonus;
             return null;
         }
 

@@ -124,6 +124,47 @@ namespace MonsterTrainAccessibility.Module.Nodes
             };
         }
 
+        /// <summary>A drafted card's bonus card, as a card draft draws it beneath the card
+        /// (<see cref="BonusCardSummaryItem"/>: "+Calcified Ember", the blight a covenant adds to one
+        /// card of each draft, taken with it): its label spoken after the card's face, before its text
+        /// ("Torch, Spell, cost 1, +Calcified Ember, Deal 10 damage"), and in the buffer
+        /// after the card's own tooltips the bonus card's tooltip as hovering the label shows it
+        /// (<c>CardUI.SetBonusCardTooltip</c>: the game's added-card tooltip), then the bonus card's text
+        /// where that tooltip leaves it out. <paramref name="bonus"/>
+        /// is read on every use; null while the card has none.</summary>
+        public static NodeVtable WithBonusCard(NodeVtable vt, Func<BonusCardSummaryItem> bonus)
+        {
+            vt.Announcements = new List<NodeAnnouncement>(vt.Announcements)
+            {
+                new NodeAnnouncement(() => Shown(bonus()?.nameLabel), kind: AnnouncementKinds.Value),
+            };
+            var details = vt.Details;
+            vt.Details = () =>
+            {
+                var lines = new List<string>();
+                if (details != null) lines.AddRange(details());
+                lines.AddRange(BonusLines(bonus()));
+                return lines;
+            };
+            return vt;
+        }
+
+        // The bonus card's tooltip, then its card text where the tooltip leaves it out: the game's
+        // added-card tooltip gives most blights only their name, cost and type
+        // (CardTooltipHelper.GetTooltipContentForGeneratedCard), and Calcified Ember's "Purge" is what
+        // taking it costs.
+        private static IEnumerable<string> BonusLines(BonusCardSummaryItem bonus)
+        {
+            var state = bonus != null ? bonus.CardState : null;
+            var save = AllGameManagers.Instance != null ? AllGameManagers.Instance.GetSaveManager() : null;
+            if (state == null || save == null) yield break;
+            var data = save.GetAllGameData().FindCardData(state.GetCardDataID());
+            if (!CardTooltipHelper.TryGetAddedCardTooltipContent(data, out var tooltip, state, save)) yield break;
+            foreach (var line in TooltipReader.Lines(new[] { tooltip })) yield return line;
+            string text = state.GetCardText((CardUpgradeState)null)?.Trim();
+            if (!string.IsNullOrEmpty(text) && (tooltip.body == null || !tooltip.body.Contains(text))) yield return text;
+        }
+
         public static NodeVtable Locked(LockedCardUI card, Action hover)
         {
             Func<string> title = () => { var lines = TooltipReader.Lines(card.Tooltips); return lines.Count > 0 ? lines[0] : null; };
