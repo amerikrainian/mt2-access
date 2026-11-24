@@ -3,6 +3,7 @@
 ## V0.3.8
 
 - The added calcified ember announcement has been restored.
+- During the pre-battle screen, you can once again press f to toggle trials. The old mod used to be more permissive about this, we now explicitly have to opt into doing so.
 
 ## V0.3.7
 
