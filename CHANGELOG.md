@@ -1,5 +1,9 @@
 # Changelog
 
+## V0.3.8
+
+- The added calcified ember announcement has been restored.
+
 ## V0.3.7
 
 - The Inscryption event is once again properly handled.
