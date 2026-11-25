@@ -79,6 +79,18 @@ namespace MonsterTrainAccessibility.Core.Input
             return false;
         }
 
+        // UI actions are the navigator's, which already keeps a live search's letters for itself. An
+        // action silent here (no Monolith in this run) leaves the letter to the search.
+        private static bool HoldsTypedKey(InputAction a)
+        {
+            for (int i = 0; i < a.Bindings.Count; i++)
+            {
+                var b = a.Bindings[i];
+                if (_live.Contains(b) && b.ConflictsWithTypeahead && b.Held()) return a.IsAvailable;
+            }
+            return false;
+        }
+
         private static bool HeldLive(InputAction a)
         {
             for (int i = 0; i < a.Bindings.Count; i++)
@@ -147,8 +159,15 @@ namespace MonsterTrainAccessibility.Core.Input
             if (!consumed) action.InvokePerformed();
         }
 
+        /// <summary>Whether a live action outside the navigator holds a key the type-ahead search would
+        /// type this frame (Shift+G reads the Monolith): that letter is the action's, not the search's.
+        /// Set by <see cref="Tick"/>, which runs before the search's tick.</summary>
+        public static bool ActionHoldsTypedKey { get; private set; }
+
         public static void Tick()
         {
+            ActionHoldsTypedKey = false;
+
             // Do not steal keystrokes while the player is typing in a game text field.
             if (TextFieldFocused()) return;
 
@@ -168,6 +187,8 @@ namespace MonsterTrainAccessibility.Core.Input
             {
                 var action = _actions[i];
                 bool held = HeldLive(action);
+                if (held && !ActionHoldsTypedKey && action.Category != InputCategory.UI)
+                    ActionHoldsTypedKey = HoldsTypedKey(action);
 
                 bool fire = false;
                 if (JustPressedLive(action))

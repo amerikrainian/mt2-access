@@ -822,6 +822,7 @@ namespace MonsterTrainAccessibility.Core.UI
 
             var typed = input.TypedText;
             if (string.IsNullOrEmpty(typed)) return;
+            if (InputManager.ActionHoldsTypedKey) return; // Shift+G is the Monolith's, not a G
 
             foreach (var ch in typed)
             {

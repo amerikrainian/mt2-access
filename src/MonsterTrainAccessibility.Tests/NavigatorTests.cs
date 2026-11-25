@@ -152,6 +152,52 @@ namespace MonsterTrainAccessibility.Tests
             }
         }
 
+        // A held letter key, as Shift+S would be; it competes with the search for the letter it types.
+        private sealed class HeldLetter : InputBinding
+        {
+            public override string DisplayName => "Shift+S";
+            public override bool JustPressed() => true;
+            public override bool Held() => true;
+            public override bool Released() => false;
+            public override bool ConflictsWithTypeahead => true;
+            public override string Type => "test";
+            public override string Serialize() => DisplayName;
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void ALetterAnActionHoldsIsNotTypedIntoTheSearch(bool available)
+        {
+            Speech.Speak = (t, i) => { };
+            var input = new FakeNavInput { FrameCount = 1 };
+            NavInput.Current = input;
+            InputManager.Clear();
+            int fired = 0;
+            try
+            {
+                InputManager.Register("run.monolith", "Read Monolith", InputCategory.Global, () => fired++)
+                    .AddBinding(new HeldLetter()).When(() => available);
+                var nav = new GraphNavigator();
+                var screen = new ChooseOnLandingScreen();
+                nav.Attach(screen);
+                nav.EnsureFocus();
+                nav.TickTypeahead(); // the first tick on a screen only notes it
+
+                input.TypedText = "S";
+                InputManager.Tick();
+                nav.TickTypeahead();
+
+                Assert.Equal(1, fired);
+                Assert.Equal(!available, screen.Chosen.Contains("Stryx"));
+            }
+            finally
+            {
+                InputManager.Clear();
+                Speech.Speak = (t, i) => { };
+            }
+        }
+
         [Fact]
         public void AUiKeyTheNavigatorDoesNotOwnGoesToTheScreenByItsKey()
         {
