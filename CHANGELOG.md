@@ -1,5 +1,9 @@
 # Changelog
 
+## V0.3.9
+
+- Shift+g to check monolith now works in and out of combat.
+
 ## V0.3.8
 
 - The added calcified ember announcement has been restored.
