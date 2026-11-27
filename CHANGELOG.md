@@ -1,5 +1,9 @@
 # Changelog
 
+## V0.4.0
+
+- Adds support for better random start mod.
+
 ## V0.3.9
 
 - Shift+g to check monolith now works in and out of combat.
