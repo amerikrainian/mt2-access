@@ -120,11 +120,7 @@ namespace MonsterTrainAccessibility.Module.Nodes
         private static void Champion(GraphBuilder b, string key, RunSetupClassLevelInfoUI info)
         {
             if (info.ClassData == null) return;
-            Func<string> name = () =>
-            {
-                var champion = info.ClassData != null ? info.ClassData.GetChampionData(info.ChampionIndex) : null;
-                return champion != null && champion.championCardData != null ? champion.championCardData.GetName() : null;
-            };
+            Func<string> name = () => ChampionName(info);
             var id = ControlId.Structural("setup:champion:" + key);
             var swap = info.swapChampionButton;
             if (swap != null && swap.gameObject.activeInHierarchy)
@@ -141,6 +137,19 @@ namespace MonsterTrainAccessibility.Module.Nodes
                 vt.Details = () => StarterCard(info);
                 b.AddItem(id, vt);
             }
+        }
+
+        private static string ChampionName(RunSetupClassLevelInfoUI info)
+        {
+            var champion = info.ClassData != null ? info.ClassData.GetChampionData(info.ChampionIndex) : null;
+            return champion != null && champion.championCardData != null ? champion.championCardData.GetName() : null;
+        }
+
+        /// <summary>A clan as drawn: "Primary Clan, Pyreborne, Lord Fel".</summary>
+        public static string ClanSummary(RunSetupClassLevelInfoUI info)
+        {
+            if (info == null || !info.gameObject.activeInHierarchy) return null;
+            return StartingConditionsNodes.Commas(StartingConditionsNodes.HeaderOf(info), Text(info.titleLabel), ChampionName(info));
         }
 
         // The pyre heart: "Pyre Heart, button, Herzal's Horde, Pyre attack 35, Pyre health 65", then what

@@ -254,7 +254,7 @@ namespace MonsterTrainAccessibility.Module.Nodes
         private static string Stat(Func<string, string> format, string value)
             => string.IsNullOrWhiteSpace(value) ? null : format(value);
 
-        private static string Commas(params string[] parts)
+        internal static string Commas(params string[] parts)
         {
             var kept = new List<string>();
             foreach (var part in parts) if (!string.IsNullOrWhiteSpace(part)) kept.Add(part);

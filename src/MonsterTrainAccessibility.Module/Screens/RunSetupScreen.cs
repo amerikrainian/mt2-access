@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using MonsterTrainAccessibility.Core;
 using MonsterTrainAccessibility.Core.Graph;
 using MonsterTrainAccessibility.Core.Strings;
 using MonsterTrainAccessibility.Core.UI;
@@ -42,6 +43,7 @@ namespace MonsterTrainAccessibility.Module.Screens
                 {
                     Mutators(sb, screen);
                     RunSetupNodes.Button(sb, "mutators", screen.toggleEnableMutatorsButton, () => RunSetupNodes.Text(screen.toggleEnableMutatorsButtonLabel));
+                    BetterRandom(sb, screen);
                 },
                 Start = screen.startButton,
                 Settings = screen.settingsButton,
@@ -107,6 +109,35 @@ namespace MonsterTrainAccessibility.Module.Screens
                 return lines;
             };
             b.AddItem(ControlId.Structural("setup:editmutators"), vt);
+        }
+
+        // Better Random Start (Bokeher's com.bokeher.better_random, an optional BepInEx plugin): its
+        // "Better Random" button, a plain uGUI Button it adds at the screen's Start as
+        // ButtonBorder/CustomRandomButton under the Settings button's canvas (drawn below Settings).
+        // Pressing it sets both clans to a pair not yet beaten at Covenant 10 with the Titans, and the
+        // new pair is spoken once the panel redraws. Listed only when the plugin made it.
+        private static void BetterRandom(GraphBuilder b, global::RunSetupScreen screen)
+        {
+            var canvas = screen.settingsButton != null ? screen.settingsButton.GetComponentInParent<UnityEngine.Canvas>() : null;
+            var found = canvas != null ? canvas.transform.Find("ButtonBorder/CustomRandomButton") : null;
+            var button = found != null && found.gameObject.activeInHierarchy ? found.GetComponent<UnityEngine.UI.Button>() : null;
+            if (button == null) return;
+            b.AddItem(ControlId.Structural("setup:betterrandom"), GameNodes.Button(() => GameNodes.LabelOf(button), () =>
+            {
+                button.onClick.Invoke();
+                Later.Frames(1, () =>
+                {
+                    var now = Game;
+                    if (now == null) return;
+                    var pair = new List<string>();
+                    foreach (var info in new[] { now.mainClassInfo, now.subClassInfo })
+                    {
+                        string clan = RunSetupNodes.ClanSummary(info);
+                        if (clan != null) pair.Add(clan);
+                    }
+                    if (pair.Count > 0) Speech.Say(string.Join(". ", pair), interrupt: true);
+                }, "better random pair");
+            }, () => button != null && button.interactable));
         }
 
         // The chosen mutators' preview entries, in order.
