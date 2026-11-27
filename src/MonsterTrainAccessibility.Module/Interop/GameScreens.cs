@@ -27,6 +27,12 @@ namespace MonsterTrainAccessibility.Module.Interop
         private const int LoadFrames = 5;
         private static int _loadingSince = -1;
 
+        /// <summary>Whether the game's loading screen is up at all, from its first frame. A dialog that
+        /// stands down only for <see cref="Loading"/> (a one-frame load as it opens is none) is still
+        /// active over a real load's first frames; it declares nothing then, so a return to it from the
+        /// confirmation that started the load reads nothing.</summary>
+        public static bool LoadStarted() => ShinyShoe.Loading.LoadingScreen.IsWorking();
+
         /// <summary>Whether the game's loading screen is up, and has been for a few frames.</summary>
         public static bool Loading()
         {

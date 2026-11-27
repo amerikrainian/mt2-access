@@ -54,7 +54,10 @@ namespace MonsterTrainAccessibility.Module.Screens
         public override void Build(GraphBuilder b)
         {
             var dialog = Dialog;
-            if (dialog == null) return;
+            // Nothing while a load is under way: Yes on the confirmation New Run raises starts the run
+            // setup's load and closes, and the list would be read again in the load's first frames
+            // (GameScreens.LoadStarted).
+            if (dialog == null || GameScreens.LoadStarted()) return;
             b.PushContext(null);
             var start = RunOptionNodes.Option(b, "depart:new", dialog.standardRunOption);
             var resume = RunOptionNodes.Option(b, "depart:resume", dialog.continueGameOption);

@@ -46,7 +46,8 @@ namespace MonsterTrainAccessibility.Module.Screens
         public override void Build(GraphBuilder b)
         {
             var dialog = Dialog;
-            if (dialog == null) return;
+            // Nothing while a load is under way (GameScreens.LoadStarted).
+            if (dialog == null || GameScreens.LoadStarted()) return;
             b.PushContext(null);
             var resume = RunOptionNodes.Option(b, "soulsavior:resume", dialog.continueGameOption);
             if (resume != null) RunOptionNodes.SavedRun(b, "soulsavior", dialog.continueGameOption);
